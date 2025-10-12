@@ -1,0 +1,19 @@
+[project]
+name = "csv_stats"
+version = "0.1.0"
+description = "A Python package for the life sciences to compute statistics from CSV files."
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Mitchell Tillman", email = "mtillman14@gmail.com"},
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+]
+dependencies = [
+    "pandas>=1.0.0",
+]

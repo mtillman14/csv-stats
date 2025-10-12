@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: csv_stats
+Version: 0.1.0
+Summary: A Python package for the life sciences to compute statistics from CSV files.
+Author-email: Mitchell Tillman <mtillman14@gmail.com>
+License: MIT
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Intended Audience :: Science/Research
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: pandas>=1.0.0

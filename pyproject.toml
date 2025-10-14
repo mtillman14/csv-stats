@@ -22,7 +22,8 @@ dependencies = [
     "pandas>=2.3.3",
     "pingouin>=0.5.5",
     "scipy>=1.16.2",
-    "statsmodels>=0.14.5",    
+    "statsmodels>=0.14.5",
+    "reportlab",
 ]
 
 [project.urls]

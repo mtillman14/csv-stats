@@ -43,6 +43,11 @@ def anova1way(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
     is_repeated_measures = repeated_measures_column != ""
 
     result = {}
+    result["date"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+    if is_repeated_measures:
+        result["test"] = "One-way Repeated Measures ANOVA"
+    else:
+        result["test"] = "One-way Independent Samples ANOVA"    
     result["group_column"] = group_column
     result["data_column"] = data_column
     result["repeated_measures_column"] = repeated_measures_column

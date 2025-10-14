@@ -293,7 +293,7 @@ def _perform_anova(data: pd.DataFrame, formula: str, group_column: Union[list, s
                         subject=repeated_measures_column, 
                         within=[group_column]).fit()
         anova_table = model.anova_table
-        
+
         # Calculate residuals for repeated measures
         grand_mean = data[data_column].mean()
         
@@ -306,8 +306,14 @@ def _perform_anova(data: pd.DataFrame, formula: str, group_column: Union[list, s
         group_effects = group_means - grand_mean
         predicted = grand_mean + subject_effects + group_effects
         residuals = data[data_column] - predicted
+
+        # Perform Mauchly test of sphericity
         mauchly_test_result = test_sphericity_assumption(data, group_column, repeated_measures_column, data_column)
-        homogeneity_variances_result = "Not applicable"        
+        homogeneity_variances_result = "Not applicable"
+
+        # TODO: Perform Greenhouse-Geisser adjustment if needed
+        if mauchly_test_result["p_value"] < 0.05:
+            pass
 
     result["model"] = model
     result["anova_table"] = anova_table

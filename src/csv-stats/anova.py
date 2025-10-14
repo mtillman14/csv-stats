@@ -293,9 +293,19 @@ def _perform_anova(data: pd.DataFrame, formula: str, group_column: Union[list, s
                         subject=repeated_measures_column, 
                         within=[group_column]).fit()
         anova_table = model.anova_table
+        
         # Calculate residuals for repeated measures
+        grand_mean = data[data_column].mean()
+        
+        # Subject effects: deviation of each subject's overall mean from grand mean
+        subject_means = data.groupby(repeated_measures_column)[data_column].transform('mean')
+        subject_effects = subject_means - grand_mean
+
+        # Group effects:        
         group_means = data.groupby(group_column)[data_column].transform('mean')
-        residuals = data[data_column] - group_means
+        group_effects = group_means - grand_mean
+        predicted = grand_mean + subject_effects + group_effects
+        residuals = data[data_column] - predicted
         mauchly_test_result = test_sphericity_assumption(data, group_column, repeated_measures_column, data_column)
         homogeneity_variances_result = "Not applicable"        
 

@@ -4,7 +4,7 @@ from scipy import stats
 import pandas as pd
 import pingouin as pg
 
-def test_normality_assumption(model) -> dict:
+def test_normality_assumption(residuals) -> dict:
     """Test the normality assumption of residuals using the Shapiro-Wilk test.
 
     Args:
@@ -15,7 +15,6 @@ def test_normality_assumption(model) -> dict:
     """
 
     # Test for normality
-    residuals = model.resid
     normality_test_statistic, p_value_normality = stats.shapiro(residuals)
 
     normality_result = {}
@@ -77,11 +76,11 @@ def test_sphericity_assumption(data: pd.DataFrame, group_columns: Union[str, lis
     
     sphericity_result = {}
     sphericity_result["mauchly"] = {
-        "W": mauchly_result['W'].values[0],
-        "p_value": mauchly_result['pval'].values[0]
+        "W": mauchly_result.W,
+        "p_value": mauchly_result.pval
     }
 
-    if mauchly_result['pval'].values[0] < 0.05:
-        print(f"Warning: Mauchly's test for sphericity returned a p-value of {mauchly_result['pval'].values[0]:.4f}. A p-value less than 0.05 suggests that the sphericity assumption may be violated. Consider applying a correction (e.g., Greenhouse-Geisser or Huynh-Feldt) to the ANOVA results.")
+    if mauchly_result.pval < 0.05:
+        print(f"Warning: Mauchly's test for sphericity returned a p-value of {mauchly_result.pval:.4f}. A p-value less than 0.05 suggests that the sphericity assumption may be violated. Consider applying a correction (e.g., Greenhouse-Geisser or Huynh-Feldt) to the ANOVA results.")
     
     return sphericity_result

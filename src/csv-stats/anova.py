@@ -40,7 +40,7 @@ def anova1way(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
         repeated_measures_column = ""
 
     # Define a boolean flag for repeated measures ANOVA
-    is_repeated_measures = repeated_measures_column == ""
+    is_repeated_measures = repeated_measures_column != ""
 
     result = {}
     result["group_column"] = group_column
@@ -55,8 +55,8 @@ def anova1way(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
     anova_result = _perform_anova(data, formula, group_column, data_column, repeated_measures_column, is_repeated_measures)
     
     # Extract F-statistic and p-value
-    F = anova_result["anova_table"].loc[f"C({group_column})", "F"]
-    p = anova_result["anova_table"].loc[f"C({group_column})", "PR(>F)"]
+    F = anova_result["anova_table"].loc[f"{group_column}", "F Value"]
+    p = anova_result["anova_table"].loc[f"{group_column}", "Pr > F"]
 
     # Calculate degrees of freedom
     df_between = len(data[group_column].unique()) - 1
@@ -119,7 +119,7 @@ def anova2way(data: Union[Path, str, pd.DataFrame], group_column1: str, group_co
         repeated_measures_column = ""
 
     # Define a boolean flag for repeated measures ANOVA
-    is_repeated_measures = repeated_measures_column == ""
+    is_repeated_measures = repeated_measures_column != ""
 
     result = {}
     result["group_column1"] = group_column1
@@ -281,12 +281,16 @@ def _perform_anova(data: pd.DataFrame, formula: str, group_column: Union[list, s
         anova_table = sm.stats.anova_lm(model, typ=2)
         homogeneity_variances_result = test_variance_homogeneity_assumption(data, group_column, data_column)        
         mauchly_test_result = "Not applicable"
+        residuals = model.resid
     else:
         model = AnovaRM(data, 
                         depvar=data_column, 
                         subject=repeated_measures_column, 
                         within=[group_column]).fit()
         anova_table = model.anova_table
+        # Calculate residuals for repeated measures
+        group_means = data.groupby(group_column)[data_column].transform('mean')
+        residuals = data[data_column] - group_means
         mauchly_test_result = test_sphericity_assumption(data, group_column, repeated_measures_column, data_column)
         homogeneity_variances_result = "Not applicable"        
 
@@ -295,7 +299,7 @@ def _perform_anova(data: pd.DataFrame, formula: str, group_column: Union[list, s
     result["homogeneity_of_variance_test"] = homogeneity_variances_result
     result["sphericity_test"] = mauchly_test_result
 
-    normality_result = test_normality_assumption(model)
+    normality_result = test_normality_assumption(residuals)
     result["normality_test"] = normality_result
 
     return result

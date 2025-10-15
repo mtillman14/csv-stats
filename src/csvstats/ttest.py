@@ -42,6 +42,8 @@ def ttest_ind(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
     num_groups = len(groups)
     if num_groups == 2:
         result = anova1way(data, group_column, data_column, group_column, filename)
+        summary_stats = calculate_summary_statistics(data, group_column, data_column)
+        result["summary_statistics"] = summary_stats
         dict_to_pdf(result, filename=filename)
         return result
     
@@ -55,15 +57,14 @@ def ttest_ind(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
     summary_stats = calculate_summary_statistics(data, group_column, data_column)
     result["summary_statistics"] = summary_stats
 
-    # Get the model for normality assumption testing
-    formula = f"{data_column} ~ C({group_column})"
-    model = ols(formula, data=data).fit()
-
     # Test model assumptions
-    normality_test_result = test_normality_assumption(model)
-    homogeneity_variances_result = test_variance_homogeneity_assumption(data, group_column, data_column)
+    normality_test_result = test_normality_assumption(data[data_column])    
     result["normality_test"] = normality_test_result
-    result["homogeneity_of_variance_test"] = homogeneity_variances_result
+    if num_groups == 2:
+        homogeneity_variances_result = test_variance_homogeneity_assumption(data, group_column, data_column)
+        result["homogeneity_of_variance_test"] = homogeneity_variances_result
+    else:
+        result['homogeneity_of_variance_test'] = 'Not applicable'
 
     if filename is not None:
         dict_to_pdf(result, filename=filename)
@@ -91,11 +92,16 @@ def ttest_dep(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
 
     # Pivot the data to have one column per group
     pivot_data = data.pivot(index=repeated_measures_column, columns=group_column, values=data_column)
+    pivot_data = pivot_data.dropna()
     delta_column_name = f"{groups[0]}_minus_{groups[1]}"
     pivot_data[delta_column_name] = pivot_data[groups[0]] - pivot_data[groups[1]]
 
     # Perform paired t-test on the difference column
     ttest_ind_result = ttest_ind(pivot_data, "", delta_column_name, filename=None)
+
+    # Calculate summary statistics for the two groups
+    summary_stats = calculate_summary_statistics(data, group_column, data_column)
+    ttest_ind_result["summary_statistics"] = summary_stats
     
     # Calculate and add summary statistics for the repeated measures
     # i.e. if there was a pre and post test per subject, this will provide a mean per subject

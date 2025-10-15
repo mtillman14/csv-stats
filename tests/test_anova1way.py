@@ -1,6 +1,5 @@
 
-
-from csv_stats.anova import anova1way
+from csvstats.anova import anova1way
 import numpy as np
 import pandas as pd
 

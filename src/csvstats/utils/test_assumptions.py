@@ -2,8 +2,9 @@ from typing import Union
 
 from scipy import stats
 import pandas as pd
+import pingouin as pg
 
-def test_normality_assumption(model) -> dict:
+def test_normality_assumption(residuals) -> dict:
     """Test the normality assumption of residuals using the Shapiro-Wilk test.
 
     Args:
@@ -14,7 +15,6 @@ def test_normality_assumption(model) -> dict:
     """
 
     # Test for normality
-    residuals = model.resid
     normality_test_statistic, p_value_normality = stats.shapiro(residuals)
 
     normality_result = {}
@@ -53,3 +53,31 @@ def test_variance_homogeneity_assumption(data: pd.DataFrame, group_columns: Unio
         print(f"Warning: The Levene's test for homogeneity of variances returned a p-value of {p_value_levene:.4f}. A p-value less than 0.05 suggests that the variances across groups may not be equal. Consider using a non-parametric test if homogeneity of variances is violated.")
 
     return homogeneity_variances_result
+
+
+def test_sphericity_assumption(data: pd.DataFrame, group_columns: Union[str, list], subject_column: str, data_column: str) -> dict:
+    """Test the sphericity assumption using Mauchly's test.
+
+    Args:
+        data (pd.DataFrame): The input data containing the groups, subjects, and values.
+        group_column (str): The name of the column containing group labels.
+        subject_column (str): The name of the column containing subject identifiers.
+        data_column (str): The name of the column containing data values.
+
+    Returns:
+        dict: The result of Mauchly's test containing the test statistic and p-value.
+    """
+
+    if isinstance(group_columns, str):
+        group_columns = [group_columns]
+
+    # Perform Mauchly's test for sphericity using pingouin
+    mauchly_result = pg.sphericity(data, dv=data_column, subject=subject_column, within=group_columns)
+    
+    sphericity_result = {}
+    sphericity_result["mauchly"] = {
+        "W": mauchly_result.W,
+        "p_value": mauchly_result.pval
+    }
+    
+    return sphericity_result

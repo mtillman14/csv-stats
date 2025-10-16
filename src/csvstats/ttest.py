@@ -10,6 +10,7 @@ from .utils.load_data import load_data_from_path
 from .utils.save_stats import dict_to_pdf
 from .utils.summary_stats import calculate_summary_statistics
 from .utils.test_assumptions import test_normality_assumption, test_variance_homogeneity_assumption
+from .utils.run_all_columns import _run_all_columns
 
 def ttest_ind(data: Union[Path, str, pd.DataFrame], group_column: str, data_column: str, filename: Union[str, None] = 'ttest_ind_results.pdf') -> dict:
     """Conduct a two-sample t-test (independent or paired) and save results to a PDF.
@@ -26,6 +27,11 @@ def ttest_ind(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
 
     # Load the data
     data = load_data_from_path(data)
+
+    # "_" is the special character indicating to loop through all columns
+    if data_column == "_":
+        results = _run_all_columns(ttest_ind, data, group_column, None, filename)
+        return results
 
     # Make sure there is a 'group_column' even for one-sample t-tests    
     if group_column is None:
@@ -84,6 +90,11 @@ def ttest_dep(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
 
     # Load the data
     data = load_data_from_path(data)
+
+    # "_" is the special character indicating to loop through all columns
+    if data_column == "_":
+        results = _run_all_columns(ttest_dep, data, group_column, repeated_measures_column, filename)
+        return results
 
     groups = data[group_column].unique()
     num_groups = len(groups)

@@ -11,6 +11,7 @@ from .utils.summary_stats import calculate_summary_statistics
 from .utils.load_data import load_data_from_path
 from .utils.test_assumptions import test_normality_assumption, test_variance_homogeneity_assumption, test_sphericity_assumption
 from .utils.save_stats import dict_to_pdf
+from .utils.run_all_columns import _run_all_columns
 
 def anova1way(data: Union[Path, str, pd.DataFrame], group_column: str, data_column: str, repeated_measures_column: str = "", filename: Union[str, None] = 'anova1way_results.pdf') -> dict:
     """
@@ -54,7 +55,12 @@ def anova1way(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
     result["repeated_measures_column"] = repeated_measures_column
 
     # Load the data as a pandas DataFrame
-    data = load_data_from_path(data)    
+    data = load_data_from_path(data) 
+
+    # "_" is the special character indicating to loop through all columns
+    if data_column == "_":
+        results = _run_all_columns(anova1way, data, group_column, repeated_measures_column, filename)
+        return results   
     
     # Perform ANOVA
     formula = f"{data_column} ~ C({group_column})"
@@ -148,6 +154,11 @@ def anova2way(data: Union[Path, str, pd.DataFrame], group_column1: str, group_co
 
     # Load the data as a pandas DataFrame
     data = load_data_from_path(data)
+
+    # "_" is the special character indicating to loop through all columns
+    if data_column == "_":
+        results = _run_all_columns(anova2way, data, group_column, repeated_measures_column, filename)
+        return results   
 
     # Fit the model with interaction
     formula = f"{data_column} ~ C({group_column1}) + C({group_column2}) + C({group_column1}):C({group_column2})"
@@ -255,6 +266,11 @@ def anova3way(data: Union[Path, str, pd.DataFrame], group_column1: str, group_co
 
     # Load the data as a pandas DataFrame
     data = load_data_from_path(data)
+
+    # "_" is the special character indicating to loop through all columns
+    if data_column == "_":
+        results = _run_all_columns(anova3way, data, group_column, repeated_measures_column, filename)
+        return results   
 
     # Perform ANOVA
     formula = f"{data_column} ~ C({group_column1}) * C({group_column2}) * C({group_column3})"

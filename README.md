@@ -19,9 +19,10 @@ repeated_measure_column = 'subject_id' # Column indicating repeated measures (e.
 ```
 
 # ANOVA
-One, two, and three-way ANOVA are supported. They include tests of homogeneity of variance and normality of residuals. Repeated measures ANOVA is also supported, including tests of sphericity.
+One way ANOVA is currently supported. They include tests of homogeneity of variance and normality of residuals. Repeated measures ANOVA is also supported, including tests of sphericity.
 
-NOTE: Currently, post-hoc tests are not implemented, but are planned for a future release.
+NOTE: Two- and three-way ANOVA support is planned, but not yet implemented.
+
 ```python
 # One way ANOVA, independent samples
 result_anova1way = anova1way(data_path, group1_column, data_column)
@@ -43,7 +44,7 @@ result_anova3way_rm = anova3way(data_path, group1_column, group2_column, group3_
 ```
 
 # t-test
-Both independent samples and paired samples t-tests are supported. They include tests of homogeneity of variance and normality of residuals.
+Both independent samples (one and two samples) and paired samples t-tests are supported. They include tests of homogeneity of variance and normality of residuals.
 ```python
 from csv_stats import ttest_ind, ttest_rel
 

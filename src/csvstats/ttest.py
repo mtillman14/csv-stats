@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pandas as pd
 from scipy import stats
-from statsmodels.formula.api import ols
 
 from .anova import anova1way
 from .utils.load_data import load_data_from_path
@@ -12,7 +11,7 @@ from .utils.summary_stats import calculate_summary_statistics
 from .utils.test_assumptions import test_normality_assumption, test_variance_homogeneity_assumption
 from .utils.run_all_columns import _run_all_columns
 
-def ttest_ind(data: Union[Path, str, pd.DataFrame], group_column: str, data_column: str, filename: Union[str, None] = 'ttest_ind_results.pdf') -> dict:
+def ttest_ind(data: Union[Path, str, pd.DataFrame], group_column: str, data_column: str, filename: Union[str, Path, None] = 'ttest_ind_results.pdf') -> dict:
     """Conduct a two-sample t-test (independent or paired) and save results to a PDF.
 
     Args:
@@ -30,7 +29,10 @@ def ttest_ind(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
 
     # "_" is the special character indicating to loop through all columns
     if data_column == "_":
-        results = _run_all_columns(ttest_ind, data, group_column, None, filename)
+        results = _run_all_columns(ttest_ind, 
+                                   data, 
+                                   group_column, 
+                                   filename=filename)
         return results
 
     # Make sure there is a 'group_column' even for one-sample t-tests    
@@ -77,7 +79,7 @@ def ttest_ind(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
     return result
 
 
-def ttest_dep(data: Union[Path, str, pd.DataFrame], group_column: str, data_column: str, repeated_measures_column: str, filename: Union[str, None] = 'ttest_dep_results.pdf') -> dict:
+def ttest_dep(data: Union[Path, str, pd.DataFrame], group_column: str, data_column: str, repeated_measures_column: str, filename: Union[str, Path, None] = 'ttest_dep_results.pdf') -> dict:
     """Conduct a paired t-test and save results to a PDF.
 
     Args:
@@ -93,7 +95,12 @@ def ttest_dep(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
 
     # "_" is the special character indicating to loop through all columns
     if data_column == "_":
-        results = _run_all_columns(ttest_dep, data, group_column, repeated_measures_column, filename)
+        results = _run_all_columns(ttest_dep, 
+                                   data, 
+                                   group_column, 
+                                   repeated_measures_column=repeated_measures_column, 
+                                   filename=filename
+                                )
         return results
 
     groups = data[group_column].unique()
@@ -103,21 +110,25 @@ def ttest_dep(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
 
     # Pivot the data to have one column per group
     pivot_data = data.pivot(index=repeated_measures_column, columns=group_column, values=data_column)
+    pivot_data.columns.name = None # Fixes artifact from the pivot() operation
+    pivot_data = pivot_data.reset_index()
     pivot_data = pivot_data.dropna()
-    delta_column_name = f"{groups[0]}_minus_{groups[1]}"
+    delta_column_name = f"{data_column}_{groups[0]}_minus_{groups[1]}"
     pivot_data[delta_column_name] = pivot_data[groups[0]] - pivot_data[groups[1]]
+    delta_group_column = "one_sample"
+    data[delta_group_column] = "all"
 
     # Perform paired t-test on the difference column
     ttest_ind_result = ttest_ind(pivot_data, "", delta_column_name, filename=None)
+    summary_stats_delta = ttest_ind_result["summary_statistics"]
+    del ttest_ind_result["summary_statistics"] # Delete so that it shows up next to the 2 groups' summary stats in the report
 
+    # Store summary statistics for the delta data (calculated in ttest_ind() )
+    ttest_ind_result["summary_statistics_delta"] = summary_stats_delta
+    
     # Calculate summary statistics for the two groups
     summary_stats = calculate_summary_statistics(data, group_column, data_column)
     ttest_ind_result["summary_statistics"] = summary_stats
-    
-    # Calculate and add summary statistics for the repeated measures
-    # i.e. if there was a pre and post test per subject, this will provide a mean per subject
-    # repeated_measures_summary = calculate_summary_statistics(data, repeated_measures_column, delta_column_name)
-    # ttest_ind_result["repeated_measures_summary_statistics"] = repeated_measures_summary
 
     if filename is not None:
         dict_to_pdf(ttest_ind_result, filename=filename)

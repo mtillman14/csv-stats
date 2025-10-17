@@ -3,7 +3,6 @@ from pathlib import Path
 
 import statsmodels.api as sm
 from statsmodels.formula.api import ols
-from statsmodels.stats.anova import AnovaRM
 import pandas as pd
 import pingouin as pg
 

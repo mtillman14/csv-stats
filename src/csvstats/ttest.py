@@ -10,8 +10,13 @@ from .utils.save_stats import dict_to_pdf
 from .utils.summary_stats import calculate_summary_statistics
 from .utils.test_assumptions import test_normality_assumption, test_variance_homogeneity_assumption
 from .utils.run_all_columns import _run_all_columns
+from .utils.save_stats import get_plot_data
 
-def ttest_ind(data: Union[Path, str, pd.DataFrame], group_column: str, data_column: str, filename: Union[str, Path, None] = 'ttest_ind_results.pdf') -> dict:
+def ttest_ind(data: Union[Path, str, pd.DataFrame], 
+              group_column: str, 
+              data_column: str, 
+              filename: Union[str, Path, None] = 'ttest_ind_results.pdf',
+              render_plot: bool = False) -> dict:
     """Conduct a two-sample t-test (independent or paired) and save results to a PDF.
 
     Args:
@@ -75,11 +80,17 @@ def ttest_ind(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
         result['homogeneity_of_variance_test'] = 'Not applicable'
 
     if filename is not None:
-        dict_to_pdf(result, filename=filename)
+        plot_data = get_plot_data(summary_stats, render_plot)
+        dict_to_pdf(result, plot_data=plot_data, filename=filename)
     return result
 
 
-def ttest_dep(data: Union[Path, str, pd.DataFrame], group_column: str, data_column: str, repeated_measures_column: str, filename: Union[str, Path, None] = 'ttest_dep_results.pdf') -> dict:
+def ttest_dep(data: Union[Path, str, pd.DataFrame], 
+              group_column: str, 
+              data_column: str, 
+              repeated_measures_column: str, 
+              filename: Union[str, Path, None] = 'ttest_dep_results.pdf',
+              render_plot: bool = False) -> dict:
     """Conduct a paired t-test and save results to a PDF.
 
     Args:
@@ -131,5 +142,6 @@ def ttest_dep(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
     ttest_ind_result["summary_statistics"] = summary_stats
 
     if filename is not None:
-        dict_to_pdf(ttest_ind_result, filename=filename)
+        plot_data = get_plot_data(summary_stats, render_plot)
+        dict_to_pdf(ttest_ind_result, plot_data=plot_data, filename=filename)
     return ttest_ind_result

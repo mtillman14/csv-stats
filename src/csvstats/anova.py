@@ -11,8 +11,14 @@ from .utils.load_data import load_data_from_path
 from .utils.test_assumptions import test_normality_assumption, test_variance_homogeneity_assumption, test_sphericity_assumption
 from .utils.save_stats import dict_to_pdf
 from .utils.run_all_columns import _run_all_columns
+from .utils.save_stats import get_plot_data
 
-def anova1way(data: Union[Path, str, pd.DataFrame], group_column: str, data_column: str, repeated_measures_column: str = "", filename: Union[str, None] = 'anova1way_results.pdf') -> dict:
+def anova1way(data: Union[Path, str, pd.DataFrame], 
+              group_column: str, 
+              data_column: str, 
+              repeated_measures_column: str = "", 
+              filename: Union[str, None] = 'anova1way_results.pdf',
+              render_plot: bool = False) -> dict:
     """
     Perform one-way ANOVA.
 
@@ -58,7 +64,7 @@ def anova1way(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
 
     # "_" is the special character indicating to loop through all columns
     if data_column == "_":
-        results = _run_all_columns(anova1way, data, group_column, repeated_measures_column, filename)
+        results = _run_all_columns(anova1way, data, group_column, filename, repeated_measures_column=repeated_measures_column)
         return results   
     
     # Perform ANOVA
@@ -99,7 +105,8 @@ def anova1way(data: Union[Path, str, pd.DataFrame], group_column: str, data_colu
         result['post_hoc'] = posthoc_result
 
     if filename is not None:
-        dict_to_pdf(result, filename=filename)
+        plot_data = get_plot_data(summary_stats, render_plot)
+        dict_to_pdf(result, plot_data=plot_data, filename=filename)
 
     return result
 

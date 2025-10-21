@@ -16,7 +16,8 @@ def ttest_ind(data: Union[Path, str, pd.DataFrame],
               group_column: str, 
               data_column: str, 
               filename: Union[str, Path, None] = 'ttest_ind_results.pdf',
-              render_plot: bool = False) -> dict:
+              render_plot: bool = False,
+              popmean: float = 0) -> dict:
     """Conduct a two-sample t-test (independent or paired) and save results to a PDF.
 
     Args:
@@ -37,7 +38,9 @@ def ttest_ind(data: Union[Path, str, pd.DataFrame],
         results = _run_all_columns(ttest_ind, 
                                    data, 
                                    group_column, 
-                                   filename=filename)
+                                   filename=filename,
+                                   render_plot=render_plot,
+                                   popmean=popmean)
         return results
 
     # Make sure there is a 'group_column' even for one-sample t-tests    
@@ -50,6 +53,7 @@ def ttest_ind(data: Union[Path, str, pd.DataFrame],
     # Store metadata
     result["group_column"] = group_column
     result["data_column"] = data_column
+    result["popmean"] = popmean
 
     groups = data[group_column].unique()
     num_groups = len(groups)
@@ -63,7 +67,7 @@ def ttest_ind(data: Union[Path, str, pd.DataFrame],
     if num_groups != 1:
         raise ValueError("Data must contain exactly one or two groups for a t-test.")
     
-    t_stat, p_value = stats.ttest_1samp(data[data_column], popmean=0)
+    t_stat, p_value = stats.ttest_1samp(data[data_column], popmean=popmean)
     result["t_statistic"] = round(t_stat, 4)
     result["p_value"] = round(p_value, 4)
 

@@ -7,7 +7,8 @@ def _run_all_columns(test_to_run: Callable, data: pd.DataFrame, group_column: st
     """Helper function to loop through all data columns if `data_column == "_"` is True"""
     results = {}
     numeric_cols = data.select_dtypes(include="number").columns.tolist()
-    filename = str(filename)
+    if filename is not None:
+        filename = str(filename)
 
     # Get the function signature once
     sig = inspect.signature(test_to_run)

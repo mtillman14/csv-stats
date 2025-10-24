@@ -22,6 +22,8 @@ def dict_to_pdf(data: dict, plot_data: dict = None, filename: Union[str, None] =
     """
     if filename is None:
         return
+    
+    filename = str(filename)
         
     # Create the PDF canvas
     c = canvas.Canvas(filename, pagesize=letter)

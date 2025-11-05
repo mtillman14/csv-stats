@@ -6,11 +6,10 @@ from scipy import stats
 
 from .anova import anova1way
 from .utils.load_data import load_data_from_path
-from .utils.save_stats import dict_to_pdf
+from .utils.save_stats import save_handler
 from .utils.summary_stats import calculate_summary_statistics
 from .utils.test_assumptions import test_normality_assumption, test_variance_homogeneity_assumption
 from .utils.run_all_columns import _run_all_columns
-from .utils.save_stats import get_plot_data
 
 def ttest_ind(data: Union[Path, str, pd.DataFrame], 
               group_column: str, 
@@ -61,7 +60,7 @@ def ttest_ind(data: Union[Path, str, pd.DataFrame],
         result = anova1way(data, group_column, data_column, group_column, filename)
         summary_stats = calculate_summary_statistics(data, group_column, data_column)
         result["summary_statistics"] = summary_stats
-        dict_to_pdf(result, filename=filename)
+        result = save_handler(result, filename=filename, render_plot=render_plot)
         return result
     
     if num_groups != 1:
@@ -83,9 +82,8 @@ def ttest_ind(data: Union[Path, str, pd.DataFrame],
     else:
         result['homogeneity_of_variance_test'] = 'Not applicable'
 
-    if filename is not None:
-        plot_data = get_plot_data(summary_stats, render_plot)
-        dict_to_pdf(result, plot_data=plot_data, filename=filename)
+    result = save_handler(result, filename=filename, render_plot=render_plot)
+
     return result
 
 
@@ -145,7 +143,6 @@ def ttest_dep(data: Union[Path, str, pd.DataFrame],
     summary_stats = calculate_summary_statistics(data, group_column, data_column)
     ttest_ind_result["summary_statistics"] = summary_stats
 
-    if filename is not None:
-        plot_data = get_plot_data(summary_stats, render_plot)
-        dict_to_pdf(ttest_ind_result, plot_data=plot_data, filename=filename)
+    ttest_ind_result = save_handler(ttest_ind_result, filename=filename, render_plot=render_plot)
+
     return ttest_ind_result

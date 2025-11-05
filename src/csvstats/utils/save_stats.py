@@ -2,6 +2,7 @@ import tempfile
 import os
 import json
 from typing import Union, Any
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 from reportlab.lib.pagesizes import letter
@@ -33,7 +34,7 @@ def dict_to_pdf(data: dict, plot_data: dict = None, filename: Union[str, None] =
     line_height = 0.15 * inch
     
     # Write dictionary content
-    json_str = json.dumps(convert_types(data), indent=2)
+    json_str = json.dumps(data, indent=2)
     c.setFont("Courier", 9)
     
     for line in json_str.split('\n'):
@@ -116,8 +117,8 @@ def dict_to_pdf(data: dict, plot_data: dict = None, filename: Union[str, None] =
     print(f"PDF saved as '{filename}'")
 
 
-# Convert NumPy types to native Python types for JSON serialization
 def convert_types(obj: Any) -> Any:
+    """Convert NumPy types to native Python types for JSON serialization"""
     if isinstance(obj, dict):
         return {k: convert_types(v) for k, v in obj.items()}
     elif isinstance(obj, (list, tuple)):
@@ -137,3 +138,33 @@ def get_plot_data(summary_stats: dict, render_plot: bool) -> dict:
         "std_devs": summary_stats['grouped']['std_dev']
     }
     return plot_data
+
+
+def dict_to_json(result: dict, filename: Union[str, Path]) -> str:
+    """Save a result dict to a specified JSON file."""
+    
+    str_result = json.dumps(result)
+    with open(filename, 'w') as f:
+        # TODO: Use the `str_result` to write the string directly to file without second dump
+        json.dump(f, result)
+
+    return str_result
+
+
+def save_handler(result: dict, filename: Union[str, Path, None], render_plot: bool = False) -> Union[dict, str]:
+    """Called by each of the tests to determine how to save the data given the save file path and other parameters"""
+
+    if filename is None:
+        return result
+    
+    filename = str(filename)
+
+    converted_result = convert_types(result)
+
+    if filename.endswith(".pdf"):
+        plot_data = get_plot_data(converted_result["summary_statistics"], render_plot=render_plot)
+        returned = dict_to_pdf(converted_result, plot_data=plot_data, filename=filename)
+    elif filename.endswith(".json"):
+        returned = dict_to_json(converted_result, filename=filename)
+
+    return returned

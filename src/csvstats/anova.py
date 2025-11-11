@@ -43,6 +43,11 @@ def anova1way(data: Union[Path, str, pd.DataFrame],
             The associated p-value, rounded to four decimal places.
     """
 
+    # Rather than return an error, just skip this column
+    if data_column in [group_column, repeated_measures_column]:
+        print("Error: data_column cannot be the same as group_column or repeated_measures_column. Returning None and skipping")
+        return None
+
     if repeated_measures_column is None:
         repeated_measures_column = ""
 

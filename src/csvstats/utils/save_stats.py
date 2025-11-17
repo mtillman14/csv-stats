@@ -4,6 +4,7 @@ import json
 from typing import Union, Any
 from pathlib import Path
 
+import pandas as pd
 import matplotlib.pyplot as plt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -12,17 +13,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 
-def dict_to_pdf(data: dict, plot_data: dict = None, filename: Union[str, None] = 'output.pdf'):
+from .plot_data import plot_data
+from .plot_helper import get_image_dims
+
+def dict_to_pdf(df: pd.DataFrame, data: dict, data_to_plot: Union[dict, None] = None, filename: Union[str, None] = 'output.pdf'):
     """
     Convert dictionary to PDF and optionally add bell curve plot.
     
     Args:
         data: The dictionary to convert
-        plot_data: Optional dict with 'means' and 'std_devs' for bell curves
+        data_to_plot: Optional dict with 'means' and 'std_devs' for bell curves
         filename: Output PDF filename
     """
     if filename is None:
-        return
+        return # Don't save if no filename provided
     
     filename = str(filename)
         
@@ -46,72 +50,22 @@ def dict_to_pdf(data: dict, plot_data: dict = None, filename: Union[str, None] =
         y_position -= line_height
     
     # Add plot if provided
-    if plot_data:
-        c.showPage()  # Start new page for plot
+    if data_to_plot:       
+        means = data_to_plot['means']
+        std_devs = data_to_plot['std_devs']
+        x_range = data_to_plot.get('x_range', None) 
+        draw_bell_curve(means, std_devs, c, width, height, margin, x_range)
 
-        means = plot_data['means']
-        std_devs = plot_data['std_devs']
-        x_range = plot_data.get('x_range', None)
-
-        # Create bell curves plot
-        if x_range is None:
-            all_means = list(means.values())
-            all_stds = list(std_devs.values())
-            x_min = min(all_means) - 4 * max(all_stds)
-            x_max = max(all_means) + 4 * max(all_stds)
-        else:
-            x_min, x_max = x_range
-        
-        # Create temporary file for plot
-        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_file:
-            temp_filename = tmp_file.name
-
-            fig_width = 12
-            fig_height = 7
-            
-            plt.figure(figsize=(fig_width, fig_height))                                
-        
-            x = np.linspace(x_min, x_max, 1000)
-            colors = plt.cm.Set2(np.linspace(0, 1, len(means)))
-            
-            for idx, (label, mean) in enumerate(means.items()):
-                std_dev = std_devs[label]
-                y = norm.pdf(x, mean, std_dev)
-                plt.plot(x, y, linewidth=2.5, label=f'{label} (μ={round(mean, 4)}, σ={round(std_dev, 4)})', color=colors[idx])
-                plt.fill_between(x, y, alpha=0.2, color=colors[idx])
-                plt.axvline(mean, color=colors[idx], linestyle='--', linewidth=1.5, alpha=0.7)
-            
-            plt.xlabel('x', fontsize=13)
-            plt.ylabel('Probability Density', fontsize=13)
-            plt.title('Normal Distribution Comparison', fontsize=15, fontweight='bold')
-            plt.legend(fontsize=11, loc='best', framealpha=0.9)
-            plt.grid(True, alpha=0.3)
-            plt.tight_layout()
-            
-            # Save to temp file instead of BytesIO
-            plt.savefig(temp_filename, format='png', dpi=300, bbox_inches='tight')
-            plt.close()
-            
-            # Calculate dimensions preserving aspect ratio
-            aspect_ratio = fig_width/fig_height  # Original figure size ratio
-            if (width - 2*margin) / (height - 2*margin) > aspect_ratio:
-                # Height limited
-                img_height = height - 2*margin
-                img_width = img_height * aspect_ratio
-            else:
-                # Width limited
-                img_width = width - 2*margin
-                img_height = img_width / aspect_ratio
-            
-            # Center the image on page
-            x = margin + (width - 2*margin - img_width) / 2
-            y = margin + (height - 2*margin - img_height) / 2
-            
-            # Draw image from temp file with centered positioning
-            c.drawImage(temp_filename, x, y, width=img_width, height=img_height)
-        
-        # Clean up temp file
-        os.unlink(temp_filename)
+        # Plot the data in the dataframe
+        plot_data(df, 
+                    c,
+                    data_column=data['data_column'],
+                    group_column=data['group_column'],
+                    width=width,
+                    height=height,
+                    margin=margin,
+                    repeated_measures_column=data['repeated_measures_column']
+                  )
     
     c.save()
     print(f"PDF saved as '{filename}'")
@@ -151,7 +105,7 @@ def dict_to_json(result: dict, filename: Union[str, Path]) -> str:
     return str_result
 
 
-def save_handler(result: dict, filename: Union[str, Path, None], render_plot: bool = False) -> Union[dict, str]:
+def save_handler(df: pd.DataFrame, result: dict, filename: Union[str, Path, None], render_plot: bool = False) -> Union[dict, str]:
     """Called by each of the tests to determine how to save the data given the save file path and other parameters"""
 
     if filename is None:
@@ -162,9 +116,83 @@ def save_handler(result: dict, filename: Union[str, Path, None], render_plot: bo
     converted_result = convert_types(result)
 
     if filename.endswith(".pdf"):
-        plot_data = get_plot_data(converted_result["summary_statistics"], render_plot=render_plot)
-        returned = dict_to_pdf(converted_result, plot_data=plot_data, filename=filename)
+        data_to_plot = get_plot_data(converted_result["summary_stats"], render_plot=render_plot)
+        returned = dict_to_pdf(df, converted_result, data_to_plot=data_to_plot, filename=filename)
     elif filename.endswith(".json"):
         returned = dict_to_json(converted_result, filename=filename)
 
     return returned
+
+
+def draw_bell_curve(means: dict, std_devs: dict, c: canvas.Canvas, width: float, height: float, margin: float, x_range: list = None) -> None:
+    """
+    Draw bell curves for given means and standard deviations on the provided PDF canvas.
+    Args:
+        means: Dictionary of group labels to means
+        std_devs: Dictionary of group labels to standard deviations
+        x_range: Optional list [x_min, x_max] for x-axis range
+        c: ReportLab canvas to draw on
+        width: Width of the PDF page
+        height: Height of the PDF page
+        margin: Margin to leave around the plot    
+    """
+    c.showPage()  # Start new page for plot    
+
+    # Create bell curves plot
+    if x_range is None:
+        all_means = list(means.values())
+        all_stds = list(std_devs.values())
+        x_min = min(all_means) - 4 * max(all_stds)
+        x_max = max(all_means) + 4 * max(all_stds)
+    else:
+        x_min, x_max = x_range
+
+    # Create temporary file for plot
+    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_file:
+        temp_filename = tmp_file.name
+
+        fig_width = 12
+        fig_height = 7
+        
+        plt.figure(figsize=(fig_width, fig_height))                                
+    
+        x = np.linspace(x_min, x_max, 1000)
+        colors = plt.cm.Set2(np.linspace(0, 1, len(means)))
+        
+        for idx, (label, mean) in enumerate(means.items()):
+            std_dev = std_devs[label]
+            y = norm.pdf(x, mean, std_dev)
+            plt.plot(x, y, linewidth=2.5, label=f'{label} (μ={round(mean, 4)}, σ={round(std_dev, 4)})', color=colors[idx])
+            plt.fill_between(x, y, alpha=0.2, color=colors[idx])
+            plt.axvline(mean, color=colors[idx], linestyle='--', linewidth=1.5, alpha=0.7)
+        
+        plt.xlabel('x', fontsize=13)
+        plt.ylabel('Probability Density', fontsize=13)
+        plt.title('Normal Distribution Comparison', fontsize=15, fontweight='bold')
+        plt.legend(fontsize=11, loc='best', framealpha=0.9)
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        
+        # Save to temp file instead of BytesIO
+        plt.savefig(temp_filename, format='png', dpi=300, bbox_inches='tight')
+        plt.close()
+        
+        image_dims = get_image_dims(
+            fig_width=fig_width,
+            fig_height=fig_height,
+            width=width,
+            height=height,
+            margin=margin
+        )
+        
+        # Draw image from temp file with centered positioning
+        c.drawImage(
+            temp_filename, 
+            image_dims['x'],
+            image_dims['y'],
+            width=image_dims['img_width'], 
+            height=image_dims['img_height']
+        )
+    
+    # Clean up temp file
+    os.unlink(temp_filename)

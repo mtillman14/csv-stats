@@ -9,7 +9,6 @@ import pingouin as pg
 from .utils.summary_stats import calculate_summary_statistics
 from .utils.load_data import load_data_from_path
 from .utils.test_assumptions import test_normality_assumption, test_variance_homogeneity_assumption, test_sphericity_assumption
-from .utils.save_stats import dict_to_pdf
 from .utils.run_all_columns import _run_all_columns
 from .utils.save_stats import save_handler
 
@@ -69,7 +68,7 @@ def anova1way(data: Union[Path, str, pd.DataFrame],
 
     # "_" is the special character indicating to loop through all columns
     if data_column == "_":
-        results = _run_all_columns(anova1way, data, group_column, filename, repeated_measures_column=repeated_measures_column)
+        results = _run_all_columns(anova1way, data, group_column, filename, repeated_measures_column=repeated_measures_column, render_plot=render_plot)
         return results   
     
     # Perform ANOVA
@@ -109,7 +108,7 @@ def anova1way(data: Union[Path, str, pd.DataFrame],
         posthoc_result = _perform_posthoc_tests(data, group_column, data_column, repeated_measures_column, is_repeated_measures)
         result['post_hoc'] = posthoc_result
 
-    result = save_handler(result, filename=filename, render_plot=render_plot)
+    result = save_handler(data, result, filename=filename, render_plot=render_plot)
 
     return result
 
@@ -217,7 +216,7 @@ def anova2way(data: Union[Path, str, pd.DataFrame], group_column1: str, group_co
     result["homogeneity_of_variance_test"] = anova_result["homogeneity_of_variance_test"]
     result["sphericity_test"] = anova_result["sphericity_test"]
 
-    result = save_handler(result, filename=filename, render_plot=render_plot) 
+    result = save_handler(data, result, filename=filename, render_plot=render_plot) 
 
     return result
 
@@ -336,7 +335,7 @@ def anova3way(data: Union[Path, str, pd.DataFrame], group_column1: str, group_co
     result["homogeneity_of_variance_test"] = anova_result["homogeneity_of_variance_test"]
     result["sphericity_test"] = anova_result["sphericity_test"]
 
-    result = save_handler(result, filename=filename, render_plot=render_plot)
+    result = save_handler(data, result, filename=filename, render_plot=render_plot)
 
     return result
 

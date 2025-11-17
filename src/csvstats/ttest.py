@@ -60,7 +60,7 @@ def ttest_ind(data: Union[Path, str, pd.DataFrame],
         result = anova1way(data, group_column, data_column, group_column, filename)
         summary_stats = calculate_summary_statistics(data, group_column, data_column)
         result["summary_statistics"] = summary_stats
-        result = save_handler(result, filename=filename, render_plot=render_plot)
+        result = save_handler(data, result, filename=filename, render_plot=render_plot)
         return result
     
     if num_groups != 1:
@@ -82,7 +82,7 @@ def ttest_ind(data: Union[Path, str, pd.DataFrame],
     else:
         result['homogeneity_of_variance_test'] = 'Not applicable'
 
-    result = save_handler(result, filename=filename, render_plot=render_plot)
+    result = save_handler(data, result, filename=filename, render_plot=render_plot)
 
     return result
 

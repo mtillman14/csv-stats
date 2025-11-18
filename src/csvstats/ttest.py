@@ -82,7 +82,7 @@ def ttest_ind(data: Union[Path, str, pd.DataFrame],
     else:
         result['homogeneity_of_variance_test'] = 'Not applicable'
 
-    result = save_handler(data, result, filename=filename, render_plot=render_plot)
+    result = save_handler(data, result, filename=filename, render_plot=render_plot, group_column=group_column)
 
     return result
 
@@ -143,6 +143,11 @@ def ttest_dep(data: Union[Path, str, pd.DataFrame],
     summary_stats = calculate_summary_statistics(data, group_column, data_column)
     ttest_ind_result["summary_statistics"] = summary_stats
 
-    ttest_ind_result = save_handler(ttest_ind_result, filename=filename, render_plot=render_plot)
+    ttest_ind_result = save_handler(data, 
+                                    ttest_ind_result, 
+                                    filename=filename, 
+                                    render_plot=render_plot, 
+                                    group_column=group_column,
+                                    repeated_measures_column=repeated_measures_column)
 
     return ttest_ind_result

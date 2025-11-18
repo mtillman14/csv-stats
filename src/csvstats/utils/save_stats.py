@@ -16,19 +16,30 @@ from scipy.stats import norm
 from .plot_data import plot_data
 from .plot_helper import get_image_dims
 
-def dict_to_pdf(df: pd.DataFrame, data: dict, data_to_plot: Union[dict, None] = None, filename: Union[str, None] = 'output.pdf'):
+def dict_to_pdf(df: pd.DataFrame, data: dict, data_to_plot: Union[dict, None] = None, filename: Union[str, None] = 'output.pdf', group_column: str = None, repeated_measures_column: str = None):
     """
     Convert dictionary to PDF and optionally add bell curve plot.
     
     Args:
+        df: The DataFrame containing the data
         data: The dictionary to convert
         data_to_plot: Optional dict with 'means' and 'std_devs' for bell curves
         filename: Output PDF filename
+        group_column: Column name for grouping data (different than in the data dict if a 2 sample t-test)
     """
     if filename is None:
         return # Don't save if no filename provided
     
     filename = str(filename)
+
+    if group_column is None:
+        group_column = data['group_column']
+
+    data_column = data['data_column']
+
+    if repeated_measures_column is None:
+        if 'repeated_measures_column' in data:
+            repeated_measures_column = data['repeated_measures_column']
         
     # Create the PDF canvas
     c = canvas.Canvas(filename, pagesize=letter)
@@ -56,15 +67,25 @@ def dict_to_pdf(df: pd.DataFrame, data: dict, data_to_plot: Union[dict, None] = 
         x_range = data_to_plot.get('x_range', None) 
         draw_bell_curve(means, std_devs, c, width, height, margin, x_range)
 
+        # Column won't be in df if it's a delta column. Build the column name until we find a match.
+        if data_column not in df.columns and "_minus_" in data_column:
+            parts = data_column.split("_")
+            # Try progressively shorter combinations, starting from the full string
+            for i in range(len(parts), 0, -1):
+                candidate = "_".join(parts[:i])
+                if candidate in df.columns:
+                    data_column = candidate
+                    break
+
         # Plot the data in the dataframe
         plot_data(df, 
                     c,
-                    data_column=data['data_column'],
-                    group_column=data['group_column'],
+                    data_column=data_column,
+                    group_column=group_column,
                     width=width,
                     height=height,
                     margin=margin,
-                    repeated_measures_column=data['repeated_measures_column']
+                    repeated_measures_column=repeated_measures_column
                   )
     
     c.save()
@@ -105,7 +126,7 @@ def dict_to_json(result: dict, filename: Union[str, Path]) -> str:
     return str_result
 
 
-def save_handler(df: pd.DataFrame, result: dict, filename: Union[str, Path, None], render_plot: bool = False) -> Union[dict, str]:
+def save_handler(df: pd.DataFrame, result: dict, filename: Union[str, Path, None], render_plot: bool = False, group_column: str = None, repeated_measures_column: str = None) -> Union[dict, str]:
     """Called by each of the tests to determine how to save the data given the save file path and other parameters"""
 
     if filename is None:
@@ -115,9 +136,16 @@ def save_handler(df: pd.DataFrame, result: dict, filename: Union[str, Path, None
 
     converted_result = convert_types(result)
 
+    if group_column is None:
+        group_column = result['group_column']
+
+    if repeated_measures_column is None:
+        if 'repeated_measures_column' in result:
+            repeated_measures_column = result['repeated_measures_column']
+
     if filename.endswith(".pdf"):
-        data_to_plot = get_plot_data(converted_result["summary_stats"], render_plot=render_plot)
-        returned = dict_to_pdf(df, converted_result, data_to_plot=data_to_plot, filename=filename)
+        data_to_plot = get_plot_data(converted_result["summary_statistics"], render_plot=render_plot)
+        returned = dict_to_pdf(df, converted_result, data_to_plot=data_to_plot, filename=filename, group_column=group_column, repeated_measures_column=repeated_measures_column)
     elif filename.endswith(".json"):
         returned = dict_to_json(converted_result, filename=filename)
 

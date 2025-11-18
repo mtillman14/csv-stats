@@ -53,7 +53,7 @@ def plot_data(df: pd.DataFrame,
         fig_height = 7
         
         # Create figure and axis
-        fig, ax = plt.subplots(figsize=(10, 6))
+        fig, ax = plt.subplots(figsize=(10, 6))        
         
         # Create violin plot
         sns.violinplot(data=df, x=group_column, y=data_column, ax=ax, 

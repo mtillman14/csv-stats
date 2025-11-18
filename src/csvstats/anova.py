@@ -96,7 +96,7 @@ def anova1way(data: Union[Path, str, pd.DataFrame],
     result["p"] = round(p, 4)
     result["df_between"] = df_between
     result["df_within"] = df_within
-    result["summary_stats"] = summary_stats    
+    result["summary_statistics"] = summary_stats    
     result["normality_test"] = anova_result["normality_test"]
     result["homogeneity_of_variance_test"] = anova_result["homogeneity_of_variance_test"]   
     result["sphericity_test"] = anova_result["sphericity_test"]    
@@ -208,9 +208,9 @@ def anova2way(data: Union[Path, str, pd.DataFrame], group_column1: str, group_co
     interaction_key = f"C({group_column1}):C({group_column2})"
     result["interaction"]["F"] = anova_table.loc[interaction_key, "F"]
     result["interaction"]["p"] = round(anova_table.loc[interaction_key, "PR(>F)"], 4)
-    result[f"summary_stats_{group_column1}"] = summary_stats_group1
-    result[f"summary_stats_{group_column2}"] = summary_stats_group2
-    result["summary_stats_interaction"] = summary_stats_interaction    
+    result[f"summary_statistics_{group_column1}"] = summary_stats_group1
+    result[f"summary_statistics_{group_column2}"] = summary_stats_group2
+    result["summary_statistics_interaction"] = summary_stats_interaction    
 
     result["normality_test"] = anova_result["normality_test"]
     result["homogeneity_of_variance_test"] = anova_result["homogeneity_of_variance_test"]
@@ -326,10 +326,10 @@ def anova3way(data: Union[Path, str, pd.DataFrame], group_column1: str, group_co
     interaction_key = f"C({group_column1}):C({group_column2}):C({group_column3})"
     result["interaction"]["F"] = anova_table.loc[interaction_key, "F"]
     result["interaction"]["p"] = round(anova_table.loc[interaction_key, "PR(>F)"], 4)
-    result[f"summary_stats_{group_column1}"] = summary_stats_group1
-    result[f"summary_stats_{group_column2}"] = summary_stats_group2
-    result[f"summary_stats_{group_column3}"] = summary_stats_group3
-    result["summary_stats_interaction"] = summary_stats_interaction    
+    result[f"summary_statistics_{group_column1}"] = summary_stats_group1
+    result[f"summary_statistics_{group_column2}"] = summary_stats_group2
+    result[f"summary_statistics_{group_column3}"] = summary_stats_group3
+    result["summary_statistics_interaction"] = summary_stats_interaction    
 
     result["normality_test"] = anova_result["normality_test"]
     result["homogeneity_of_variance_test"] = anova_result["homogeneity_of_variance_test"]

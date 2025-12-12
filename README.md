@@ -66,3 +66,6 @@ result_ttest_rel = ttest_dep(DATA_PATH,
                             render_plot = False # For speed, by default no plots are generated
                         )
 ```
+
+# Multiple Data Columns
+If you have multiple columns of data that you want to run the same test on, you can specify the `data_column` argument as "_". This will automatically loop over all columns. Note that to save these results to a file, the filename should be an f-string containing `f"{data_column}"`. The test function will replace `data_column` with the column name in the file name.

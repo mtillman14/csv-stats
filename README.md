@@ -7,15 +7,12 @@ pip install csv-stats
 ```
 
 ## Examples
-All code examples below assume the following import and metadata:
+All code examples below use the following constants:
 ```python
-from csv_stats import anova1way, anova2way, anova3way, anova_repeated
-data_path = "path/to/data.csv" # Path to your CSV file
-data_column = 'values' # The column to run the hypothesis tests on
-group1_column = 'group1' # First grouping variable (i.e. statistical factor)
-group2_column = 'group2' # Second grouping variable (i.e. statistical factor)
-group3_column = 'group3' # Third grouping variable (i.e. statistical factor)
-repeated_measure_column = 'subject_id' # Column indicating repeated measures (e.g. subject IDs)
+DATA_PATH = "path/to/data.csv" # Path to your CSV file
+DATA_COLUMN = 'values' # The column to run the hypothesis tests on
+GROUP_COLUMN = 'groups' # Grouping variable (i.e. statistical factor)
+REPEATED_MEASURES_COLUMN = 'subject_id' # Column indicating repeated measures (e.g. subject IDs)
 ```
 
 # ANOVA
@@ -24,36 +21,48 @@ One way ANOVA is currently supported. They include tests of homogeneity of varia
 NOTE: Two- and three-way ANOVA support is planned, but not yet implemented.
 
 ```python
+from csv_stats.anova import anova1way
+
 # One way ANOVA, independent samples
-result_anova1way = anova1way(data_path, group1_column, data_column)
+result_anova1way = anova1way(DATA_PATH, 
+                            GROUP_COLUMN, 
+                            DATA_COLUMN,                            
+                            filename = "anova1way_results.pdf", # Default save name. Enter `None` to not save.
+                            render_plot = False # For speed, by default no plots are generated
+                        )
 
 # One way ANOVA, repeated measures
-result_anova1way_rm = anova1way(data_path, group1_column, data_column, repeated_measure_column)
-
-# Two way ANOVA, independent samples
-result_anova2way = anova2way(data_path, group1_column, group2_column, data_column)
-
-# Two way ANOVA, repeated measures
-result_anova2way_rm = anova2way(data_path, group1_column, group2_column, data_column, repeated_measure_column)
-
-# Three way ANOVA, independent samples
-result_anova3way = anova3way(data_path, group1_column, group2_column, group3_column, data_column)
-
-# Three way ANOVA, repeated measures
-result_anova3way_rm = anova3way(data_path, group1_column, group2_column, group3_column, data_column, repeated_measure_column)
+result_anova1way_rm = anova1way(DATA_PATH, 
+                            GROUP_COLUMN, 
+                            DATA_COLUMN,                             
+                            repeated_measures_column = REPEATED_MEASURES_COLUMN,
+                            filename = "anova1way_results.pdf", # Default save name. Enter `None` to not save.     
+                            render_plot = False # For speed, by default no plots are generated                       
+                        )
 ```
 
 # t-test
 Both independent samples (one and two samples) and paired samples t-tests are supported. They include tests of homogeneity of variance and normality of residuals.
 ```python
-from csv_stats import ttest_ind, ttest_rel
+from csv_stats.ttest import ttest_ind, ttest_dep
 
-# Independent samples t-test
-result_ttest_ind = ttest_ind(data_path, group1_column, data_column)
+# Independent samples t-test 
+# Two sample when the GROUP_COLUMN has two groups
+# One smaple when the GROUP_COLUMN has one group
+result_ttest_ind = ttest_ind(DATA_PATH, 
+                            GROUP_COLUMN, 
+                            DATA_COLUMN,
+                            popmean = 0, # Test against a population mean of 0 (default)
+                            filename = "ttest_ind_results.pdf", # Default save name. Enter `None` to not save.
+                            render_plot = False # For speed, by default no plots are generated
+                        )
 
 # Paired samples t-test
-result_ttest_rel = ttest_dep(data_path, group1_column, data_column, repeated_measure_column)
-
-# One sample t-test
-result_ttest_1samp = ttest_1samp(data_path, group1_column, data_column) # Tests against a mean of 0
+result_ttest_rel = ttest_dep(DATA_PATH, 
+                            GROUP_COLUMN, 
+                            DATA_COLUMN, 
+                            repeated_measures_column = REPEATED_MEASURES_COLUMN,
+                            filename = "ttest_dep_results.pdf", # Default save name. Enter `None` to not save.
+                            render_plot = False # For speed, by default no plots are generated
+                        )
 ```

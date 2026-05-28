@@ -79,11 +79,11 @@ def anova1way(data: Union[Path, str, pd.DataFrame],
     if is_repeated_measures:
         # Index into the output of pg.rm_anova()
         F = anova_result["anova_table"]['F'].iloc[0]
-        p = anova_result["anova_table"]['p-unc'].iloc[0]
+        p = anova_result["anova_table"]['p_unc'].iloc[0]
     else:
-        # Index into the output of sm.stats.anova_lm()
-        F = anova_result["anova_table"].loc[f"{group_column}", "F Value"]
-        p = anova_result["anova_table"].loc[f"{group_column}", "Pr > F"]
+        # Index into the output of sm.stats.anova_lm() with typ=2
+        F = anova_result["anova_table"].loc[f"C({group_column})", "F"]
+        p = anova_result["anova_table"].loc[f"C({group_column})", "PR(>F)"]
 
     # Calculate degrees of freedom
     df_between = len(data[group_column].unique()) - 1
@@ -113,7 +113,13 @@ def anova1way(data: Union[Path, str, pd.DataFrame],
     return result
 
 
-def anova2way(data: Union[Path, str, pd.DataFrame], group_column1: str, group_column2: str, data_column: str, repeated_measures_column: str = "", filename: Union[str, None] = 'anova2way_results.pdf') -> dict:
+def anova2way(data: Union[Path, str, pd.DataFrame],
+              group_column1: str,
+              group_column2: str,
+              data_column: str,
+              repeated_measures_column: str = "",
+              filename: Union[str, None] = 'anova2way_results.pdf',
+              render_plot: bool = False) -> dict:
     """
     Perform two-way ANOVA.
 
@@ -130,23 +136,22 @@ def anova2way(data: Union[Path, str, pd.DataFrame], group_column1: str, group_co
         The name of the column containing the repeated measures identifiers. Defaults to "".
     filename : str, optional
         The filename to save the results to. Defaults to 'anova2way_results.pdf'. If None, results are not saved to a file.
+    render_plot : bool, optional
+        Whether to render a plot in the PDF. Defaults to False.
 
     Returns:
     result: dict
         A dictionary containing:
-        "F1" : float
-            The computed F-statistic for the first factor.
-        "p1" : float
-            The associated p-value for the first factor, rounded to four decimal places.
-        "F2" : float
-            The computed F-statistic for the second factor.
-        "p2" : float
-            The associated p-value for the second factor, rounded to four decimal places.
-        "F_interaction" : float
-            The computed F-statistic for the interaction between factors.
-        "p_interaction" : float
-            The associated p-value for the interaction, rounded to four decimal places.
+        "main_effects" : dict
+            F-statistics and p-values for each main effect.
+        "interaction" : dict
+            F-statistic and p-value for the interaction between factors.
     """
+
+    # Rather than return an error, just skip this column
+    if data_column in [group_column1, group_column2, repeated_measures_column]:
+        print("Error: data_column cannot be the same as group_column1, group_column2, or repeated_measures_column. Returning None and skipping")
+        return None
 
     if repeated_measures_column is None:
         repeated_measures_column = ""
@@ -155,8 +160,13 @@ def anova2way(data: Union[Path, str, pd.DataFrame], group_column1: str, group_co
     is_repeated_measures = repeated_measures_column != ""
 
     result = {}
+    result["date"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+    if is_repeated_measures:
+        result["test"] = "Two-way Repeated Measures ANOVA"
+    else:
+        result["test"] = "Two-way Independent Samples ANOVA"
     result["group_column1"] = group_column1
-    result["group_column2"] = group_column2    
+    result["group_column2"] = group_column2
     result["data_column"] = data_column
     result["repeated_measures_column"] = repeated_measures_column
 
@@ -165,14 +175,23 @@ def anova2way(data: Union[Path, str, pd.DataFrame], group_column1: str, group_co
 
     # "_" is the special character indicating to loop through all columns
     if data_column == "_":
-        results = _run_all_columns(anova2way, data, group_column, repeated_measures_column, filename)
-        return results   
+        results = {}
+        numeric_cols = data.select_dtypes(include="number").columns.tolist()
+        for col in numeric_cols:
+            try:
+                fn = filename.format(data_column=col) if filename else None
+            except (KeyError, IndexError):
+                fn = filename
+            results[col] = anova2way(data, group_column1, group_column2, col,
+                                     repeated_measures_column=repeated_measures_column,
+                                     filename=fn, render_plot=render_plot)
+        return results
 
     # Fit the model with interaction
     formula = f"{data_column} ~ C({group_column1}) + C({group_column2}) + C({group_column1}):C({group_column2})"
     anova_result = _perform_anova(data, formula, [group_column1, group_column2], data_column, repeated_measures_column, is_repeated_measures)
 
-    summary_stats_group1 = calculate_summary_statistics(data, group_column1, data_column) 
+    summary_stats_group1 = calculate_summary_statistics(data, group_column1, data_column)
     summary_stats_group2 = calculate_summary_statistics(data, group_column2, data_column)
     # Prepare the dataframe to calculate the summary statistics for the interaction effect
     interaction_column_name = f"{group_column1}_{group_column2}"
@@ -189,34 +208,54 @@ def anova2way(data: Union[Path, str, pd.DataFrame], group_column1: str, group_co
     # Extract F-statistic and p-value
     if is_repeated_measures:
         # Index into the output of pg.rm_anova()
-        F1 = anova_result["anova_table"]['F'].iloc[0]
-        p1 = anova_result["anova_table"]['p-unc'].iloc[0]
-        F2 = anova_result["anova_table"]['F'].iloc[1]
-        p2 = anova_result["anova_table"]['p-unc'].iloc[1]
+        F1 = anova_table['F'].iloc[0]
+        p1 = anova_table['p_unc'].iloc[0]
+        F2 = anova_table['F'].iloc[1]
+        p2 = anova_table['p_unc'].iloc[1]
+        F_interaction = anova_table['F'].iloc[2]
+        p_interaction = anova_table['p_unc'].iloc[2]
     else:
         # Index into the output of sm.stats.anova_lm()
-        F1 = anova_result["anova_table"].loc[f"{group_column1}", "F Value"]
-        p1 = anova_result["anova_table"].loc[f"{group_column1}", "Pr > F"]
-        F2 = anova_result["anova_table"].loc[f"{group_column2}", "F Value"]
-        p2 = anova_result["anova_table"].loc[f"{group_column2}", "Pr > F"]
+        F1 = anova_table.loc[f"C({group_column1})", "F"]
+        p1 = anova_table.loc[f"C({group_column1})", "PR(>F)"]
+        F2 = anova_table.loc[f"C({group_column2})", "F"]
+        p2 = anova_table.loc[f"C({group_column2})", "PR(>F)"]
+        interaction_key = f"C({group_column1}):C({group_column2})"
+        F_interaction = anova_table.loc[interaction_key, "F"]
+        p_interaction = anova_table.loc[interaction_key, "PR(>F)"]
 
     result["main_effects"][group_column1]["F"] = F1
     result["main_effects"][group_column1]["p"] = round(p1, 4)
     result["main_effects"][group_column2]["F"] = F2
     result["main_effects"][group_column2]["p"] = round(p2, 4)
-    
-    interaction_key = f"C({group_column1}):C({group_column2})"
-    result["interaction"]["F"] = anova_table.loc[interaction_key, "F"]
-    result["interaction"]["p"] = round(anova_table.loc[interaction_key, "PR(>F)"], 4)
-    result[f"summary_statistics_{group_column1}"] = summary_stats_group1
-    result[f"summary_statistics_{group_column2}"] = summary_stats_group2
-    result["summary_statistics_interaction"] = summary_stats_interaction    
+
+    result["interaction"]["F"] = F_interaction
+    result["interaction"]["p"] = round(p_interaction, 4)
+    # Remove redundant "overall" from per-factor stats (identical to interaction's overall)
+    result[f"summary_statistics_{group_column1}"] = {"grouped": summary_stats_group1["grouped"]}
+    result[f"summary_statistics_{group_column2}"] = {"grouped": summary_stats_group2["grouped"]}
+    result["summary_statistics_interaction"] = summary_stats_interaction
 
     result["normality_test"] = anova_result["normality_test"]
     result["homogeneity_of_variance_test"] = anova_result["homogeneity_of_variance_test"]
     result["sphericity_test"] = anova_result["sphericity_test"]
 
-    result = save_handler(data, result, filename=filename, render_plot=render_plot) 
+    # Perform post-hoc tests for significant effects
+    result["post_hoc"] = {}
+    if round(p1, 4) < 0.05:
+        result["post_hoc"][group_column1] = _perform_posthoc_tests(data, group_column1, data_column, repeated_measures_column, is_repeated_measures)
+    else:
+        result["post_hoc"][group_column1] = "Not applicable"
+    if round(p2, 4) < 0.05:
+        result["post_hoc"][group_column2] = _perform_posthoc_tests(data, group_column2, data_column, repeated_measures_column, is_repeated_measures)
+    else:
+        result["post_hoc"][group_column2] = "Not applicable"
+    if round(p_interaction, 4) < 0.05:
+        result["post_hoc"]["interaction"] = _perform_posthoc_tests(data, [group_column1, group_column2], data_column, repeated_measures_column, is_repeated_measures)
+    else:
+        result["post_hoc"]["interaction"] = "Not applicable"
+
+    result = save_handler(data, result, filename=filename, render_plot=render_plot, group_column=interaction_column_name)
 
     return result
 
@@ -303,11 +342,11 @@ def anova3way(data: Union[Path, str, pd.DataFrame], group_column1: str, group_co
     if is_repeated_measures:
         # Index into the output of pg.rm_anova()
         F1 = anova_result["anova_table"]['F'].iloc[0]
-        p1 = anova_result["anova_table"]['p-unc'].iloc[0]
+        p1 = anova_result["anova_table"]['p_unc'].iloc[0]
         F2 = anova_result["anova_table"]['F'].iloc[1]
-        p2 = anova_result["anova_table"]['p-unc'].iloc[1]
+        p2 = anova_result["anova_table"]['p_unc'].iloc[1]
         F3 = anova_result["anova_table"]['F'].iloc[2]
-        p3 = anova_result["anova_table"]['p-unc'].iloc[2]
+        p3 = anova_result["anova_table"]['p_unc'].iloc[2]
     else:
         # Index into the output of sm.stats.anova_lm()
         F1 = anova_result["anova_table"].loc[f"{group_column1}", "F Value"]

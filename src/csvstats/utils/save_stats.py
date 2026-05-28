@@ -144,12 +144,13 @@ def save_handler(df: pd.DataFrame, result: dict, filename: Union[str, Path, None
             repeated_measures_column = result['repeated_measures_column']
 
     if filename.endswith(".pdf"):
-        data_to_plot = get_plot_data(converted_result["summary_statistics"], render_plot=render_plot)
-        returned = dict_to_pdf(df, converted_result, data_to_plot=data_to_plot, filename=filename, group_column=group_column, repeated_measures_column=repeated_measures_column)
+        summary_stats = converted_result.get("summary_statistics") or converted_result.get("summary_statistics_interaction")
+        data_to_plot = get_plot_data(summary_stats, render_plot=render_plot)
+        dict_to_pdf(df, converted_result, data_to_plot=data_to_plot, filename=filename, group_column=group_column, repeated_measures_column=repeated_measures_column)
     elif filename.endswith(".json"):
-        returned = dict_to_json(converted_result, filename=filename)
+        dict_to_json(converted_result, filename=filename)
 
-    return returned
+    return result
 
 
 def draw_bell_curve(means: dict, std_devs: dict, c: canvas.Canvas, width: float, height: float, margin: float, x_range: list = None) -> None:

@@ -72,12 +72,13 @@ def test_sphericity_assumption(data: pd.DataFrame, group_columns: Union[str, lis
         group_columns = [group_columns]
 
     # Perform Mauchly's test for sphericity using pingouin
-    mauchly_result = pg.sphericity(data, dv=data_column, subject=subject_column, within=group_columns)
-    
+    # Returns a tuple: (spher, W, chi2, dof, pval)
+    spher, W, chi2, dof, pval = pg.sphericity(data, dv=data_column, subject=subject_column, within=group_columns)
+
     sphericity_result = {}
     sphericity_result["mauchly"] = {
-        "W": mauchly_result.W,
-        "p_value": mauchly_result.pval
+        "W": W,
+        "p_value": pval
     }
     
     return sphericity_result

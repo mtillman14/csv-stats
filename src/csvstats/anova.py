@@ -79,7 +79,7 @@ def anova1way(data: Union[Path, str, pd.DataFrame],
     if is_repeated_measures:
         # Index into the output of pg.rm_anova()
         F = anova_result["anova_table"]['F'].iloc[0]
-        p = anova_result["anova_table"]['p_unc'].iloc[0]
+        p = anova_result["anova_table"]['p-unc'].iloc[0]
     else:
         # Index into the output of sm.stats.anova_lm() with typ=2
         F = anova_result["anova_table"].loc[f"C({group_column})", "F"]
@@ -175,17 +175,8 @@ def anova2way(data: Union[Path, str, pd.DataFrame],
 
     # "_" is the special character indicating to loop through all columns
     if data_column == "_":
-        results = {}
-        numeric_cols = data.select_dtypes(include="number").columns.tolist()
-        for col in numeric_cols:
-            try:
-                fn = filename.format(data_column=col) if filename else None
-            except (KeyError, IndexError):
-                fn = filename
-            results[col] = anova2way(data, group_column1, group_column2, col,
-                                     repeated_measures_column=repeated_measures_column,
-                                     filename=fn, render_plot=render_plot)
-        return results
+        results = _run_all_columns(anova2way, data, group_column1, group_column2, repeated_measures_column, filename)
+        return results   
 
     # Fit the model with interaction
     formula = f"{data_column} ~ C({group_column1}) + C({group_column2}) + C({group_column1}):C({group_column2})"
@@ -209,11 +200,11 @@ def anova2way(data: Union[Path, str, pd.DataFrame],
     if is_repeated_measures:
         # Index into the output of pg.rm_anova()
         F1 = anova_table['F'].iloc[0]
-        p1 = anova_table['p_unc'].iloc[0]
+        p1 = anova_table['p-unc'].iloc[0]
         F2 = anova_table['F'].iloc[1]
-        p2 = anova_table['p_unc'].iloc[1]
+        p2 = anova_table['p-unc'].iloc[1]
         F_interaction = anova_table['F'].iloc[2]
-        p_interaction = anova_table['p_unc'].iloc[2]
+        p_interaction = anova_table['p-unc'].iloc[2]
     else:
         # Index into the output of sm.stats.anova_lm()
         F1 = anova_table.loc[f"C({group_column1})", "F"]
@@ -342,11 +333,11 @@ def anova3way(data: Union[Path, str, pd.DataFrame], group_column1: str, group_co
     if is_repeated_measures:
         # Index into the output of pg.rm_anova()
         F1 = anova_result["anova_table"]['F'].iloc[0]
-        p1 = anova_result["anova_table"]['p_unc'].iloc[0]
+        p1 = anova_result["anova_table"]['p-unc'].iloc[0]
         F2 = anova_result["anova_table"]['F'].iloc[1]
-        p2 = anova_result["anova_table"]['p_unc'].iloc[1]
+        p2 = anova_result["anova_table"]['p-unc'].iloc[1]
         F3 = anova_result["anova_table"]['F'].iloc[2]
-        p3 = anova_result["anova_table"]['p_unc'].iloc[2]
+        p3 = anova_result["anova_table"]['p-unc'].iloc[2]
     else:
         # Index into the output of sm.stats.anova_lm()
         F1 = anova_result["anova_table"].loc[f"{group_column1}", "F Value"]

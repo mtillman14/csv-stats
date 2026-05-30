@@ -76,13 +76,21 @@ for domain in \
     echo "Resolving $domain..."
     ips=$(dig +noall +answer A "$domain" | awk '$4 == "A" {print $5}')
     if [ -z "$ips" ]; then
+<<<<<<< Updated upstream
         echo "WARNING: Failed to resolve $domain"
+=======
+        echo "WARNING: Failed to resolve $domain, skipping"
+>>>>>>> Stashed changes
         continue
     fi
     
     while read -r ip; do
         if [[ ! "$ip" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+<<<<<<< Updated upstream
             echo "WARNING: Invalid IP from DNS for $domain: $ip"
+=======
+            echo "WARNING: Invalid IP from DNS for $domain: $ip, skipping"
+>>>>>>> Stashed changes
             continue
         fi
         echo "Adding $ip for $domain"

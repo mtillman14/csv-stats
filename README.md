@@ -3,7 +3,21 @@ Python package for rapid hypothesis testing on CSV files with data in long table
 
 ## Installation
 ```bash
-pip install csv-stats
+pip install "csv-stats[full]"   # hypothesis tests + PDF reports
+pip install csv-stats           # descriptive statistics only (numpy, pandas, scipy)
+```
+
+## Descriptive statistics
+`csvstats.descriptive` is the one definition of every descriptive formula: NaN
+skipped (counted in `n_missing`), SD with n - 1, linear quartiles, and a
+t-based 95% CI of the mean. Fewer than two values give NaN, not 0.
+
+```python
+from csvstats.descriptive import summarize, ci_interval, ci_half_width
+
+summarize([4.1, 5.0, 6.2, None])   # n=3, n_missing=1, mean, sd, sem, ci_low, ci_high, median, q1, q3, iqr, skewness, kurtosis, ...
+ci_interval([4.1, 5.0, 6.2])       # (low, high); also a seaborn errorbar= callable
+ci_half_width(sd=1.2, n=5)         # t(0.975, 4) * 1.2 / sqrt(5)
 ```
 
 ## Examples

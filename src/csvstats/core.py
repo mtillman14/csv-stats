@@ -850,3 +850,118 @@ def friedman(
     return _record("friedman", "Friedman test", prep, between=[], within=[factor], alpha=alpha,
                    ci_level=ci_level, tails="two-sided", effects=[effect], assumptions=[],
                    details={"subjects": int(n)})
+
+
+# ---------------------------------------------------------------------------
+# SPM1d: statistical parametric mapping on 1-D curves (wraps spm1d)
+# ---------------------------------------------------------------------------
+
+
+def _curve_matrix(values, label: str) -> np.ndarray:
+    arrays = [np.asarray(v, dtype=float).ravel() for v in values]
+    lengths = sorted({len(a) for a in arrays})
+    if len(lengths) != 1:
+        raise ValueError(
+            f"{label}: curves of unequal length {lengths}; SPM needs every curve time-normalised "
+            f"to the same number of nodes"
+        )
+    return np.vstack(arrays)
+
+
+def spm_ttest(
+    data: pd.DataFrame,
+    dv: str,
+    *,
+    between: Sequence[str] = (),
+    within: Sequence[str] = (),
+    subject: str | None = None,
+    levels: dict[str, list[Any]] | None = None,
+    alpha: float = 0.05,
+    ci_level: float = 0.95,
+    tails: str = "two-sided",
+) -> dict[str, Any]:
+    """SPM{t} over 1-D curves: two-sample (``between``) or paired (``within``).
+
+    Each value of ``dv`` is one curve (a sequence), every curve with the same
+    number of nodes. Returns the core record: one effect whose ``clusters``
+    are the supra-threshold regions (``start`` / ``end`` nodes, ``p``),
+    ``threshold`` the critical t*, ``curve`` the SPM{t}, and
+    ``mean_difference`` the mean a − b curve. ``p`` is the smallest cluster
+    p-value, or None when no cluster crosses the threshold.
+
+    Needs ``spm1d`` (``pip install spm1d``); without it, raises
+    :class:`NotSupported`.
+    """
+    try:
+        import spm1d
+    except ImportError as exc:
+        raise NotSupported("SPM needs the spm1d package (pip install spm1d)") from exc
+    _check_tails(tails)
+    factor, paired = _one_factor(between, within, "spm_ttest")
+    if paired and not subject:
+        raise ValueError("a within-subject SPM test needs subject=")
+    if not isinstance(data, pd.DataFrame) or dv not in data.columns:
+        raise ValueError(f"column {dv!r} is not in the data")
+    frame = data.copy()
+    missing = frame[dv].isna() if frame[dv].dtype != object else frame[dv].map(lambda v: v is None)
+    frame = frame[~missing]
+    prep_levels = _level_order(frame[factor], (levels or {}).get(factor))
+    if len(prep_levels) != 2:
+        raise ValueError(f"spm_ttest needs exactly 2 levels of {factor!r}, found {[str(v) for v in prep_levels]}")
+    a, b = prep_levels
+    excluded: list[dict[str, Any]] = []
+    if paired:
+        counts = frame.groupby(subject)[factor].nunique()
+        complete = counts[counts == 2].index
+        dropped = [str(s) for s in counts.index if s not in set(complete)]
+        excluded += [{"subject": s, "reason": "missing a within-subject level"} for s in dropped]
+        frame = frame[frame[subject].isin(complete)].sort_values(subject)
+        ya = _curve_matrix(frame.loc[frame[factor] == a, dv], f"{factor}={a}")
+        yb = _curve_matrix(frame.loc[frame[factor] == b, dv], f"{factor}={b}")
+        if ya.shape[1] != yb.shape[1]:
+            raise ValueError(f"{factor}: the two levels' curves have {ya.shape[1]} and {yb.shape[1]} nodes")
+        spm = spm1d.stats.ttest_paired(ya, yb)
+        test, label = "spm_ttest_paired", "SPM paired t-test (spm1d)"
+    else:
+        ya = _curve_matrix(frame.loc[frame[factor] == a, dv], f"{factor}={a}")
+        yb = _curve_matrix(frame.loc[frame[factor] == b, dv], f"{factor}={b}")
+        if ya.shape[1] != yb.shape[1]:
+            raise ValueError(f"{factor}: the two levels' curves have {ya.shape[1]} and {yb.shape[1]} nodes")
+        spm = spm1d.stats.ttest2(ya, yb)
+        test, label = "spm_ttest2", "SPM two-sample t-test (spm1d)"
+    inference = spm.inference(alpha=alpha, two_tailed=(tails == "two-sided"), interp=True)
+    clusters = []
+    for cluster in getattr(inference, "clusters", None) or []:
+        endpoints = getattr(cluster, "endpoints", (None, None))
+        clusters.append({
+            "start": _num(endpoints[0]), "end": _num(endpoints[1]),
+            "p": _num(getattr(cluster, "P", None)), "extent": _num(getattr(cluster, "extent", None)),
+        })
+    curve = np.asarray(getattr(inference, "z", spm.z), dtype=float)
+    p_values = [c["p"] for c in clusters if c["p"] is not None]
+    effect = {
+        "term": factor, "a": _text(a), "b": _text(b),
+        "statistic_name": "SPM{t}", "statistic": _num(np.nanmax(np.abs(curve))) if curve.size else None,
+        "df": [_num(d) for d in np.atleast_1d(getattr(spm, "df", []))],
+        "df_method": "spm1d", "p": min(p_values) if p_values else None, "sphericity_correction": None,
+        "estimate": {"name": "mean_difference_curve", "value": None, "ci": None,
+                     "curve": [_num(v) for v in (ya.mean(axis=0) - yb.mean(axis=0))]},
+        "effect_size": None, "effect_sizes": {},
+        "clusters": clusters, "threshold": _num(getattr(inference, "zstar", None)),
+        "curve": [_num(v) for v in curve], "nodes": int(ya.shape[1]),
+    }
+    n = {"total": int(ya.shape[0] + yb.shape[0]), "subjects": int(ya.shape[0]) if paired else None,
+         "per_cell": [{"cell": {factor: _text(a)}, "n": int(ya.shape[0])}, {"cell": {factor: _text(b)}, "n": int(yb.shape[0])}],
+         "excluded": len(excluded), "excluded_detail": excluded}
+    import spm1d as _spm1d
+
+    return {
+        "schema_version": SCHEMA_VERSION, "test": test, "test_label": label,
+        "design": _design(dv, [] if paired else [factor], [factor] if paired else [], subject if paired else None),
+        "levels": {factor: [_text(a), _text(b)]}, "alpha": alpha, "ci_level": ci_level, "tails": tails,
+        "n": n, "effects": [effect], "assumptions": [], "post_hoc": None,
+        "warnings": ([{"code": "subjects_dropped_incomplete", "message": f"{len(excluded)} subject(s) dropped"}]
+                     if excluded else []),
+        "engine": {**_engine_versions(), "spm1d": getattr(_spm1d, "__version__", "unknown")},
+        "seed": None, "details": {"h0reject": bool(getattr(inference, "h0reject", False))},
+    }

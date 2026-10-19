@@ -253,3 +253,36 @@ def test_pingouin_p_columns_are_read_under_both_spellings():
 
     assert _p_unc(pd.Series({"p_unc": 0.2})) == 0.2
     assert _p_unc(pd.Series({"p-unc": 0.3})) == 0.3
+
+
+def _curves(paired: bool):
+    rng = np.random.default_rng(11)
+    rows = []
+    for s in range(8):
+        base = np.sin(np.linspace(0, np.pi, 101)) + rng.normal(0, 0.05, 101)
+        for level, shift in (("pre", 0.0), ("post", 0.6)):
+            bump = shift * np.exp(-((np.arange(101) - 50) ** 2) / 50.0)
+            rows.append({"subject": f"S{s}" if paired else f"{level}{s}", "time": level,
+                         "y": list(base + bump + rng.normal(0, 0.05, 101))})
+    return pd.DataFrame(rows)
+
+
+def test_spm_refuses_unequal_lengths_before_needing_spm1d():
+    from csvstats.core import _curve_matrix
+
+    with pytest.raises(ValueError, match="unequal length"):
+        _curve_matrix([[1, 2, 3], [1, 2]], "x")
+
+
+def test_spm_paired_finds_the_middle_cluster():
+    pytest.importorskip("spm1d", reason="SPM tests need spm1d (pip install spm1d)")
+    from csvstats.core import spm_ttest
+
+    out = spm_ttest(_curves(True), "y", within=["time"], subject="subject", levels={"time": ["post", "pre"]})
+    (effect,) = out["effects"]
+    assert out["test"] == "spm_ttest_paired"
+    assert effect["clusters"], "the bump at node 50 is supra-threshold"
+    cluster = effect["clusters"][0]
+    assert cluster["start"] < 50 < cluster["end"]
+    assert effect["p"] is not None and effect["p"] < 0.05
+    assert len(effect["curve"]) == 101

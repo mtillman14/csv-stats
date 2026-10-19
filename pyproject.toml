@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "csv-stats"
-version = "0.2.0"
+version = "0.2.1"
 description = "A Python package for the life sciences to conduct hypothesis testing from CSV files."
 readme = "README.md"
 requires-python = ">=3.8"
@@ -53,5 +53,11 @@ Issues = "https://github.com/mtillman14/csv-stats/issues"
 [tool.hatch.build.targets.wheel]
 packages = ["src/csvstats"]
 
+# The sdist keeps the src/ layout: the wheel is built FROM the sdist, and
+# looks for src/csvstats. `packages` here re-rooted it to csvstats/, so the
+# 0.2.0 wheel came out empty (metadata only).
 [tool.hatch.build.targets.sdist]
-packages = ["src/csvstats"]
+only-include = ["src/csvstats", "tests", "README.md"]
+
+[tool.hatch.build]
+ignore-vcs = true

@@ -324,8 +324,10 @@ def _setup(data: pd.DataFrame, dv: str, between: Sequence[str], within: Sequence
 
 
 def _formula_text(dv: str, factors: list[str], covariates: Sequence[str], terms: Sequence[RandomTerm]) -> str:
-    fixed = " * ".join([*factors, *covariates]) or "1"
-    return f"{dv} ~ {fixed} + {random_formula(terms)}"
+    """The fitted model's lme4 spelling; the grammar owner renders it."""
+    from .lmm_formula import ModelFormula, render
+
+    return render(ModelFormula(fixed=(*factors, *covariates), random=tuple(terms)), response=dv)
 
 
 #: patsy's name for one Sum-coded column: ``C(f0__, Sum)[S.<level>]``.

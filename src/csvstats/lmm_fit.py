@@ -29,6 +29,7 @@ Plan: .claude/plan-lmm-general-fit.md in the scistack repo.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Mapping, Sequence
 
@@ -95,12 +96,27 @@ def parse_random(random: Iterable[Any] | None, subject: str) -> list[RandomTerm]
     return out
 
 
+_PLAIN_NAME = re.compile(r"^[A-Za-z_.][A-Za-z0-9_.]*$")
+
+
+def quote_name(name: str) -> str:
+    """A column name as a formula writes it: as is when it is an R
+    identifier, else in backticks (`` `speed (m/s)` ``). The grammar that
+    reads it back is :mod:`csvstats.lmm_formula`."""
+    return name if _PLAIN_NAME.match(name) else f"`{name}`"
+
+
 def random_formula(terms: Sequence[RandomTerm]) -> str:
-    """The lme4 spelling: ``(1 + x | subject) + (1 | item)``."""
+    """The lme4 spelling: ``(1 + x | subject) + (1 | item)`` (parsed back by
+    :func:`csvstats.lmm_formula.parse`)."""
     parts = []
     for t in terms:
-        lhs = " + ".join("1" if c == INTERCEPT else c for c in t.terms)
-        parts.append(f"({lhs} {'|' if t.correlated else '||'} {t.label})")
+        if t.terms and t.terms[0] == INTERCEPT:
+            lhs = " + ".join(["1", *(quote_name(c) for c in t.terms[1:])])
+        else:  # no intercept: lme4's 0 + x
+            lhs = " + ".join(["0", *(quote_name(c) for c in t.terms if c != INTERCEPT)])
+        group = ":".join(quote_name(g) for g in t.group)
+        parts.append(f"({lhs} {'|' if t.correlated else '||'} {group})")
     return " + ".join(parts)
 
 
@@ -214,6 +230,18 @@ def build_blocks(frame: pd.DataFrame, terms: Sequence[RandomTerm],
         else:
             groups = [cols]
         for g in groups:
+            # lme4 refuses this before fitting (its check.nobs.vs.nRE): with
+            # no more observations than random effects, the random effects
+            # and the residual variance cannot be told apart. RIS_014 in the
+            # scenario set (2026-10-20); in StatStudio, a within-factor slope
+            # on rows that are one mean per unit x level.
+            n_re = len(uniques) * len(g)
+            if len(frame) <= n_re:
+                spelled = random_formula([t])
+                raise ValueError(
+                    f"number of observations ({len(frame)}) <= number of random effects ({n_re}) for "
+                    f"{spelled}: the random effects and the residual variance cannot be told apart. "
+                    f"Drop a slope, or use data with more observations per {t.label}.")
             blocks.append(Block(label=t.label, columns=[name for name, _ in g],
                                 Xk=np.column_stack([v for _, v in g]), codes=codes.astype(int),
                                 n_levels=len(uniques)))

@@ -34,6 +34,13 @@ as in lmerTest and SAS. So a factor crossed with a covariate is tested at
 covariate = 0, and a `type3_at_covariate_zero` warning says so. Centre the
 covariate to test the factor at the covariate's mean.
 
+`csvstats.lmm_formula` reads and writes the lme4 spelling of these models
+(`parse("y ~ group * time * x + (1 + x | subject)")`, `render(...)`), with
+errors that point at the offending character. It accepts what `lmm` can fit:
+the fixed part is ONE crossing (`a * b * x`, or `1`), and random terms are
+`(… | g)`, `(… || g)`, `a:b` and `a/b`. A model with no more observations
+than random effects is refused before fitting, as lme4 does.
+
 `lmm_pairwise` takes the same `covariates=` and compares levels with each
 covariate at its mean (emmeans' reference grid), or at the value you give
 in `covariates_at={"age": 65}`. The record's `details["covariates_at"]`

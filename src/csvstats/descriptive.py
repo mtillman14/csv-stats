@@ -6,9 +6,13 @@ shape statistic gets it from here. That includes csv-stats' own test results
 (StatStudio descriptives). So an error bar on a figure and the number in a
 table cannot disagree.
 
-Light on purpose: this module imports numpy, pandas and scipy only (never
+Light on purpose: importing this module loads numpy and pandas only (never
 pingouin, statsmodels, matplotlib or reportlab), so a plotting package can
-depend on it cheaply. ``tests/test_descriptive.py`` guards that.
+depend on it cheaply. scipy is imported inside the two functions that need
+it (:func:`t_critical`, :func:`summarize`): ``scipy.stats`` alone cost 2 s of
+scistackplot's 4 s first import on Windows (2026-10-20), paid on every Plot
+Studio open even when no figure draws an interval. ``tests/test_descriptive.py``
+guards both.
 
 Conventions (each one is a decision, stated once):
 
@@ -34,7 +38,6 @@ from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
-from scipy import stats
 
 #: Divisor offset of the sample SD (and variance): ``n - SD_DDOF``.
 SD_DDOF = 1
@@ -61,6 +64,8 @@ def t_critical(n: Any, level: float = CI_LEVEL) -> Any:
     NaN where ``n < 2``. Accepts a scalar, numpy array or pandas Series
     (index kept) and returns the same kind.
     """
+    from scipy import stats  # lazy: see the module docstring
+
     counts = np.asarray(n, dtype=float)
     upper = 1.0 - (1.0 - level) / 2.0
     with np.errstate(invalid="ignore"):
@@ -126,6 +131,8 @@ def summarize(values: Any, level: float = CI_LEVEL) -> dict[str, float]:
     ``cv`` (SD / mean) is NaN when the mean is 0. Skewness needs 3 values and
     kurtosis 4; with fewer they are NaN.
     """
+    from scipy import stats  # lazy: see the module docstring
+
     raw = pd.Series(values, dtype=float)
     clean = raw.dropna()
     n = int(len(clean))

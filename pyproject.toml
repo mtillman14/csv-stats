@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "csv-stats"
-version = "0.4.1"
+version = "0.4.2"
 description = "A Python package for the life sciences to conduct hypothesis testing from CSV files."
 readme = "README.md"
 requires-python = ">=3.8"
@@ -62,3 +62,9 @@ only-include = ["src/csvstats", "tests", "README.md"]
 
 [tool.hatch.build]
 ignore-vcs = true
+
+# Collect only tests/. A bare `pytest` also walked src/, where the library
+# module utils/test_assumptions.py (functions named test_*) was collected as
+# tests and errored for missing fixtures.
+[tool.pytest.ini_options]
+testpaths = ["tests"]

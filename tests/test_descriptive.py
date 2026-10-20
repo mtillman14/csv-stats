@@ -106,10 +106,15 @@ def test_summary_statistics_count_excludes_missing_values():
 
 
 def test_descriptive_imports_no_heavy_dependencies():
-    """A plotting package depends on this module; it must stay light."""
+    """A plotting package depends on this module; it must stay light.
+
+    scipy included: it is imported lazily by the functions that use it, so a
+    plot that draws no interval never pays its import (2 s on Windows).
+    """
     code = (
         "import sys, csvstats.descriptive\n"
-        "heavy = {'pingouin', 'statsmodels', 'matplotlib', 'reportlab', 'seaborn'}\n"
+        "heavy = {'pingouin', 'statsmodels', 'matplotlib', 'reportlab', 'seaborn',"
+        " 'scipy'}\n"
         "print(sorted(heavy & {m.split('.')[0] for m in sys.modules}))\n"
     )
     out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=True)

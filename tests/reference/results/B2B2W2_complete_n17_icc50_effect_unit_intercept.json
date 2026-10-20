@@ -1,0 +1,596 @@
+{
+  "id": "B2B2W2_complete_n17_icc50_effect_unit_intercept",
+  "scenario": {
+    "design": "B2B2W2",
+    "missing": "complete",
+    "n": 17,
+    "icc": 0.5,
+    "effect": "effect",
+    "scale": "unit",
+    "slopes": false,
+    "future": false,
+    "seed": 113541
+  },
+  "factors": ["group", "site", "time"],
+  "between": ["group", "site"],
+  "within": "time",
+  "levels": {
+    "group": ["ctl", "trt"],
+    "site": ["A", "B"],
+    "time": ["pre", "post"]
+  },
+  "subject": "subject",
+  "dv": "y",
+  "random_slope": null,
+  "n_rows": 34,
+  "n_subjects": 17,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ group * site * time + (1 | subject)",
+  "coding": "contr.sum",
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 11.2630003824871,
+      "se": 0.215589253182827,
+      "df": 12.9999999982604,
+      "t": 52.242865616941,
+      "p": 1.69975291031497e-16,
+      "_row": "(Intercept)"
+    },
+    {
+      "name": "group1",
+      "estimate": -0.336744940453492,
+      "se": 0.215589253182827,
+      "df": 12.9999999991114,
+      "t": -1.56197461367854,
+      "p": 0.142300545924954,
+      "_row": "group1"
+    },
+    {
+      "name": "site1",
+      "estimate": -0.379388287543645,
+      "se": 0.215589253182827,
+      "df": 12.9999999979635,
+      "t": -1.75977365264079,
+      "p": 0.101940743540912,
+      "_row": "site1"
+    },
+    {
+      "name": "time1",
+      "estimate": -0.159956994793615,
+      "se": 0.151280974836111,
+      "df": 13.0000000011476,
+      "t": -1.05735037050695,
+      "p": 0.309604778864343,
+      "_row": "time1"
+    },
+    {
+      "name": "group1:site1",
+      "estimate": 0.212616584972223,
+      "se": 0.215589253182827,
+      "df": 12.9999999984077,
+      "t": 0.986211426744524,
+      "p": 0.342029854194783,
+      "_row": "group1:site1"
+    },
+    {
+      "name": "group1:time1",
+      "estimate": 0.0303407573925845,
+      "se": 0.151280974836111,
+      "df": 13.0000000011476,
+      "t": 0.200558975941648,
+      "p": 0.844147064486064,
+      "_row": "group1:time1"
+    },
+    {
+      "name": "site1:time1",
+      "estimate": -0.0483257598546725,
+      "se": 0.151280974836111,
+      "df": 13.0000000011476,
+      "t": -0.319443736444889,
+      "p": 0.754465363926365,
+      "_row": "site1:time1"
+    },
+    {
+      "name": "group1:site1:time1",
+      "estimate": -0.0250577983161337,
+      "se": 0.151280974836111,
+      "df": 13.0000000011283,
+      "t": -0.165637472545903,
+      "p": 0.870990424622925,
+      "_row": "group1:site1:time1"
+    }
+  ],
+  "anova_satterthwaite": [
+    {
+      "term": "group",
+      "num_df": 1,
+      "den_df": 12.9999999991114,
+      "F": 2.43976469377623,
+      "p": 0.142300545924954,
+      "_row": "group"
+    },
+    {
+      "term": "site",
+      "num_df": 1,
+      "den_df": 12.9999999979635,
+      "F": 3.09680330852872,
+      "p": 0.101940743540912,
+      "_row": "site"
+    },
+    {
+      "term": "time",
+      "num_df": 1,
+      "den_df": 13.0000000011476,
+      "F": 1.11798980601119,
+      "p": 0.309604778864343,
+      "_row": "time"
+    },
+    {
+      "term": "group:site",
+      "num_df": 1,
+      "den_df": 12.9999999984077,
+      "F": 0.972612978241469,
+      "p": 0.342029854194783,
+      "_row": "group:site"
+    },
+    {
+      "term": "group:time",
+      "num_df": 1,
+      "den_df": 13.0000000011476,
+      "F": 0.0402239028307624,
+      "p": 0.844147064486064,
+      "_row": "group:time"
+    },
+    {
+      "term": "site:time",
+      "num_df": 1,
+      "den_df": 13.0000000011476,
+      "F": 0.102044300753872,
+      "p": 0.754465363926365,
+      "_row": "site:time"
+    },
+    {
+      "term": "group:site:time",
+      "num_df": 1,
+      "den_df": 13.0000000011283,
+      "F": 0.0274357723113947,
+      "p": 0.870990424622925,
+      "_row": "group:site:time"
+    }
+  ],
+  "anova_kenward_roger": [
+    {
+      "term": "group",
+      "num_df": 1,
+      "den_df": 13,
+      "F": 2.43976469377623,
+      "p": 0.142300545923338,
+      "_row": "group"
+    },
+    {
+      "term": "site",
+      "num_df": 1,
+      "den_df": 13,
+      "F": 3.09680330852873,
+      "p": 0.101940743537247,
+      "_row": "site"
+    },
+    {
+      "term": "time",
+      "num_df": 1,
+      "den_df": 13,
+      "F": 1.11798980601119,
+      "p": 0.309604778866008,
+      "_row": "time"
+    },
+    {
+      "term": "group:site",
+      "num_df": 1,
+      "den_df": 13,
+      "F": 0.972612978241469,
+      "p": 0.342029854192622,
+      "_row": "group:site"
+    },
+    {
+      "term": "group:time",
+      "num_df": 1,
+      "den_df": 13,
+      "F": 0.0402239028307624,
+      "p": 0.844147064486334,
+      "_row": "group:time"
+    },
+    {
+      "term": "site:time",
+      "num_df": 1,
+      "den_df": 13,
+      "F": 0.102044300753872,
+      "p": 0.754465363926807,
+      "_row": "site:time"
+    },
+    {
+      "term": "group:site:time",
+      "num_df": 1,
+      "den_df": 13,
+      "F": 0.0274357723113947,
+      "p": 0.870990424623143,
+      "_row": "group:site:time"
+    }
+  ],
+  "wald_terms": [
+    {
+      "term": "group",
+      "chi2": 2.43976469377623,
+      "df": 1,
+      "p": 0.118293969435581
+    },
+    {
+      "term": "site",
+      "chi2": 3.09680330852872,
+      "df": 1,
+      "p": 0.0784461920309732
+    },
+    {
+      "term": "time",
+      "chi2": 1.11798980601119,
+      "df": 1,
+      "p": 0.290351712770532
+    },
+    {
+      "term": "group:site",
+      "chi2": 0.972612978241469,
+      "df": 1,
+      "p": 0.32402937314667
+    },
+    {
+      "term": "group:time",
+      "chi2": 0.0402239028307624,
+      "df": 1,
+      "p": 0.841043438664047
+    },
+    {
+      "term": "site:time",
+      "chi2": 0.102044300753872,
+      "df": 1,
+      "p": 0.749390049800373
+    },
+    {
+      "term": "group:site:time",
+      "chi2": 0.0274357723113947,
+      "df": 1,
+      "p": 0.868442255782432
+    }
+  ],
+  "contrasts_satterthwaite": {
+    "group": [
+      {
+        "site": "A",
+        "time": "pre",
+        "estimate": -0.237690792809637,
+        "SE": 0.725059379008739,
+        "df": 23.3040402146582,
+        "statistic": -0.327822520046006,
+        "p.value": 0.745972888007136,
+        "a": "ctl",
+        "b": "trt",
+        "factor": "group"
+      },
+      {
+        "site": "B",
+        "time": "pre",
+        "estimate": -0.987925939433992,
+        "SE": 0.764279692178298,
+        "df": 23.3040402148764,
+        "statistic": -1.29262356378759,
+        "p.value": 0.208811212854606,
+        "a": "ctl",
+        "b": "trt",
+        "factor": "group"
+      },
+      {
+        "site": "A",
+        "time": "post",
+        "estimate": -0.25882262911544,
+        "SE": 0.725059379008739,
+        "df": 23.3040402146582,
+        "statistic": -0.356967493433832,
+        "p.value": 0.724328298671085,
+        "a": "ctl",
+        "b": "trt",
+        "factor": "group"
+      },
+      {
+        "site": "B",
+        "time": "post",
+        "estimate": -1.20952016226887,
+        "SE": 0.764279692178298,
+        "df": 23.3040402148764,
+        "statistic": -1.58256221465413,
+        "p.value": 0.126999554591992,
+        "a": "ctl",
+        "b": "trt",
+        "factor": "group"
+      }
+    ],
+    "site": [
+      {
+        "group": "ctl",
+        "time": "pre",
+        "estimate": -0.480310521484458,
+        "SE": 0.725059379008739,
+        "df": 23.3040402142796,
+        "statistic": -0.662443015551515,
+        "p.value": 0.514186046001388,
+        "a": "A",
+        "b": "B",
+        "factor": "site"
+      },
+      {
+        "group": "trt",
+        "time": "pre",
+        "estimate": -1.23054566810881,
+        "SE": 0.764279692178298,
+        "df": 23.3040402143303,
+        "statistic": -1.61007243905905,
+        "p.value": 0.12084585095143,
+        "a": "A",
+        "b": "B",
+        "factor": "site"
+      },
+      {
+        "group": "ctl",
+        "time": "post",
+        "estimate": -0.186776288801233,
+        "SE": 0.725059379008739,
+        "df": 23.3040402142796,
+        "statistic": -0.257601369223833,
+        "p.value": 0.79897566524409,
+        "a": "A",
+        "b": "B",
+        "factor": "site"
+      },
+      {
+        "group": "trt",
+        "time": "post",
+        "estimate": -1.13747382195466,
+        "SE": 0.764279692178298,
+        "df": 23.3040402143303,
+        "statistic": -1.48829523222409,
+        "p.value": 0.150081314731221,
+        "a": "A",
+        "b": "B",
+        "factor": "site"
+      }
+    ],
+    "time": [
+      {
+        "group": "ctl",
+        "site": "A",
+        "estimate": -0.405999591143672,
+        "SE": 0.555299773802885,
+        "df": 13.0000000011366,
+        "statistic": -0.731135884250855,
+        "p.value": 0.477668365944859,
+        "a": "pre",
+        "b": "post",
+        "factor": "time"
+      },
+      {
+        "group": "trt",
+        "site": "A",
+        "estimate": -0.427131427449476,
+        "SE": 0.620844021056754,
+        "df": 13.0000000011444,
+        "statistic": -0.68798508637072,
+        "p.value": 0.503553807008805,
+        "a": "pre",
+        "b": "post",
+        "factor": "time"
+      },
+      {
+        "group": "ctl",
+        "site": "B",
+        "estimate": -0.112465358460448,
+        "SE": 0.620844021056754,
+        "df": 13.0000000011365,
+        "statistic": -0.181149136733278,
+        "p.value": 0.859044283314291,
+        "a": "pre",
+        "b": "post",
+        "factor": "time"
+      },
+      {
+        "group": "trt",
+        "site": "B",
+        "estimate": -0.334059581295321,
+        "SE": 0.620844021056754,
+        "df": 13.0000000011523,
+        "statistic": -0.538073284054036,
+        "p.value": 0.599618086580965,
+        "a": "pre",
+        "b": "post",
+        "factor": "time"
+      }
+    ]
+  },
+  "contrasts_wald": {
+    "group": [
+      {
+        "site": "A",
+        "time": "pre",
+        "estimate": -0.237690792809637,
+        "SE": 0.725059379008739,
+        "df": null,
+        "statistic": -0.327822520046006,
+        "p.value": 0.743045858891654,
+        "a": "ctl",
+        "b": "trt",
+        "factor": "group"
+      },
+      {
+        "site": "B",
+        "time": "pre",
+        "estimate": -0.987925939433992,
+        "SE": 0.764279692178298,
+        "df": null,
+        "statistic": -1.29262356378759,
+        "p.value": 0.196141285712893,
+        "a": "ctl",
+        "b": "trt",
+        "factor": "group"
+      },
+      {
+        "site": "A",
+        "time": "post",
+        "estimate": -0.25882262911544,
+        "SE": 0.725059379008739,
+        "df": null,
+        "statistic": -0.356967493433832,
+        "p.value": 0.721116141134317,
+        "a": "ctl",
+        "b": "trt",
+        "factor": "group"
+      },
+      {
+        "site": "B",
+        "time": "post",
+        "estimate": -1.20952016226887,
+        "SE": 0.764279692178298,
+        "df": null,
+        "statistic": -1.58256221465413,
+        "p.value": 0.113521281473875,
+        "a": "ctl",
+        "b": "trt",
+        "factor": "group"
+      }
+    ],
+    "site": [
+      {
+        "group": "ctl",
+        "time": "pre",
+        "estimate": -0.480310521484458,
+        "SE": 0.725059379008739,
+        "df": null,
+        "statistic": -0.662443015551515,
+        "p.value": 0.507687343609006,
+        "a": "A",
+        "b": "B",
+        "factor": "site"
+      },
+      {
+        "group": "trt",
+        "time": "pre",
+        "estimate": -1.23054566810881,
+        "SE": 0.764279692178298,
+        "df": null,
+        "statistic": -1.61007243905905,
+        "p.value": 0.107382043081329,
+        "a": "A",
+        "b": "B",
+        "factor": "site"
+      },
+      {
+        "group": "ctl",
+        "time": "post",
+        "estimate": -0.186776288801233,
+        "SE": 0.725059379008739,
+        "df": null,
+        "statistic": -0.257601369223833,
+        "p.value": 0.796714572880364,
+        "a": "A",
+        "b": "B",
+        "factor": "site"
+      },
+      {
+        "group": "trt",
+        "time": "post",
+        "estimate": -1.13747382195466,
+        "SE": 0.764279692178298,
+        "df": null,
+        "statistic": -1.48829523222409,
+        "p.value": 0.136673051779928,
+        "a": "A",
+        "b": "B",
+        "factor": "site"
+      }
+    ],
+    "time": [
+      {
+        "group": "ctl",
+        "site": "A",
+        "estimate": -0.405999591143672,
+        "SE": 0.555299773802885,
+        "df": null,
+        "statistic": -0.731135884250855,
+        "p.value": 0.464696157809416,
+        "a": "pre",
+        "b": "post",
+        "factor": "time"
+      },
+      {
+        "group": "trt",
+        "site": "A",
+        "estimate": -0.427131427449476,
+        "SE": 0.620844021056754,
+        "df": null,
+        "statistic": -0.68798508637072,
+        "p.value": 0.491462172983272,
+        "a": "pre",
+        "b": "post",
+        "factor": "time"
+      },
+      {
+        "group": "ctl",
+        "site": "B",
+        "estimate": -0.112465358460448,
+        "SE": 0.620844021056754,
+        "df": null,
+        "statistic": -0.181149136733278,
+        "p.value": 0.856250516999725,
+        "a": "pre",
+        "b": "post",
+        "factor": "time"
+      },
+      {
+        "group": "trt",
+        "site": "B",
+        "estimate": -0.334059581295321,
+        "SE": 0.620844021056754,
+        "df": null,
+        "statistic": -0.538073284054036,
+        "p.value": 0.590526455756524,
+        "a": "pre",
+        "b": "post",
+        "factor": "time"
+      }
+    ]
+  },
+  "varcorr": [
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0.397352298788468,
+      "sdcor": 0.630358865082794
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 0.770894596963839,
+      "sdcor": 0.878006034696709
+    }
+  ],
+  "reml_criterion": 104.401823030179,
+  "loglik_reml": -52.2009115150893,
+  "singular": false,
+  "convergence_messages": [],
+  "notes": []
+}

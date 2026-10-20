@@ -1,0 +1,395 @@
+{
+  "id": "W2xW3_complete_n17_icc50_null_unit_intercept",
+  "scenario": {
+    "design": "W2xW3",
+    "missing": "complete",
+    "n": 17,
+    "icc": 0.5,
+    "effect": "null",
+    "scale": "unit",
+    "slopes": false,
+    "future": false,
+    "seed": 100524
+  },
+  "factors": ["speed", "session"],
+  "between": null,
+  "within": ["speed", "session"],
+  "levels": {
+    "speed": ["slow", "fast"],
+    "session": ["s1", "s2", "s3"]
+  },
+  "subject": "subject",
+  "dv": "y",
+  "random_slope": null,
+  "n_rows": 102,
+  "n_subjects": 17,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ speed * session + (1 | subject)",
+  "coding": "contr.sum",
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 10.0838175425717,
+      "se": 0.257343421133291,
+      "df": 15.9999998555807,
+      "t": 39.1842833912928,
+      "p": 2.5249352307401e-17,
+      "_row": "(Intercept)"
+    },
+    {
+      "name": "speed1",
+      "estimate": 0.00501244467791409,
+      "se": 0.077729271715673,
+      "df": 80.0000000568355,
+      "t": 0.0644859338995119,
+      "p": 0.948744172363954,
+      "_row": "speed1"
+    },
+    {
+      "name": "session1",
+      "estimate": -0.184626499840608,
+      "se": 0.109925790253688,
+      "df": 80.0000000567266,
+      "t": -1.67955581137533,
+      "p": 0.0969453700919381,
+      "_row": "session1"
+    },
+    {
+      "name": "session2",
+      "estimate": 0.129004550021057,
+      "se": 0.109925790253688,
+      "df": 80.0000000567266,
+      "t": 1.17356036034254,
+      "p": 0.244053272777996,
+      "_row": "session2"
+    },
+    {
+      "name": "speed1:session1",
+      "estimate": -0.0176746007112681,
+      "se": 0.109925790253688,
+      "df": 80.0000000567266,
+      "t": -0.160786660441362,
+      "p": 0.872666762442954,
+      "_row": "speed1:session1"
+    },
+    {
+      "name": "speed1:session2",
+      "estimate": -0.12388023642774,
+      "se": 0.109925790253688,
+      "df": 80.0000000567266,
+      "t": -1.12694424249166,
+      "p": 0.263134991580861,
+      "_row": "speed1:session2"
+    }
+  ],
+  "anova_satterthwaite": [
+    {
+      "term": "speed",
+      "num_df": 1,
+      "den_df": 80.0000000568355,
+      "F": 0.00415843273824423,
+      "p": 0.948744190412146,
+      "_row": "speed"
+    },
+    {
+      "term": "session",
+      "num_df": 2,
+      "den_df": 80.0000000567266,
+      "F": 1.48472767978595,
+      "p": 0.232739399827917,
+      "_row": "session"
+    },
+    {
+      "term": "speed:session",
+      "num_df": 2,
+      "den_df": 80.0000000567266,
+      "F": 0.984702184743233,
+      "p": 0.378031776989409,
+      "_row": "speed:session"
+    }
+  ],
+  "anova_kenward_roger": [
+    {
+      "term": "speed",
+      "num_df": 1,
+      "den_df": 80.0000000000008,
+      "F": 0.00415843273824423,
+      "p": 0.94874419041226,
+      "_row": "speed"
+    },
+    {
+      "term": "session",
+      "num_df": 2,
+      "den_df": 80.0000000000011,
+      "F": 1.48472767978595,
+      "p": 0.232739399832248,
+      "_row": "session"
+    },
+    {
+      "term": "speed:session",
+      "num_df": 2,
+      "den_df": 80.0000000000007,
+      "F": 0.984702184743233,
+      "p": 0.378031776992554,
+      "_row": "speed:session"
+    }
+  ],
+  "wald_terms": [
+    {
+      "term": "speed",
+      "chi2": 0.00415843273824423,
+      "df": 1,
+      "p": 0.948583325026646
+    },
+    {
+      "term": "session",
+      "chi2": 2.9694553595719,
+      "df": 2,
+      "p": 0.226564030241642
+    },
+    {
+      "term": "speed:session",
+      "chi2": 1.96940436948647,
+      "df": 2,
+      "p": 0.373550459398458
+    }
+  ],
+  "contrasts_satterthwaite": {
+    "speed": [
+      {
+        "session": "s1",
+        "estimate": -0.025324312066708,
+        "SE": 0.269262095693744,
+        "df": 80.0000000567629,
+        "statistic": -0.0940507872133315,
+        "p.value": 0.9253039727233,
+        "a": "slow",
+        "b": "fast",
+        "factor": "speed"
+      },
+      {
+        "session": "s2",
+        "estimate": -0.237735583499652,
+        "SE": 0.269262095693744,
+        "df": 80.0000000567629,
+        "statistic": -0.882915149594802,
+        "p.value": 0.379927563976703,
+        "a": "slow",
+        "b": "fast",
+        "factor": "speed"
+      },
+      {
+        "session": "s3",
+        "estimate": 0.293134563633845,
+        "SE": 0.269262095693744,
+        "df": 80.0000000567629,
+        "statistic": 1.08865885069562,
+        "p.value": 0.279573102362737,
+        "a": "slow",
+        "b": "fast",
+        "factor": "speed"
+      }
+    ],
+    "session": [
+      {
+        "speed": "slow",
+        "estimate": -0.207425414145193,
+        "SE": 0.269262095693744,
+        "df": 80.0000000567266,
+        "statistic": -0.770347618407888,
+        "p.value": 0.443362710130675,
+        "a": "s1",
+        "b": "s2",
+        "factor": "session"
+      },
+      {
+        "speed": "slow",
+        "estimate": -0.399477887510435,
+        "SE": 0.269262095693744,
+        "df": 80.0000000567266,
+        "statistic": -1.48360238555373,
+        "p.value": 0.141843673368731,
+        "a": "s1",
+        "b": "s3",
+        "factor": "session"
+      },
+      {
+        "speed": "slow",
+        "estimate": -0.192052473365243,
+        "SE": 0.269262095693744,
+        "df": 80.0000000567266,
+        "statistic": -0.713254767145841,
+        "p.value": 0.477763637088372,
+        "a": "s2",
+        "b": "s3",
+        "factor": "session"
+      },
+      {
+        "speed": "fast",
+        "estimate": -0.419836685578137,
+        "SE": 0.269262095693744,
+        "df": 80.0000000567266,
+        "statistic": -1.55921198078936,
+        "p.value": 0.122893653590398,
+        "a": "s1",
+        "b": "s2",
+        "factor": "session"
+      },
+      {
+        "speed": "fast",
+        "estimate": -0.0810190118098827,
+        "SE": 0.269262095693744,
+        "df": 80.0000000567266,
+        "statistic": -0.300892747644781,
+        "p.value": 0.764276908908599,
+        "a": "s1",
+        "b": "s3",
+        "factor": "session"
+      },
+      {
+        "speed": "fast",
+        "estimate": 0.338817673768254,
+        "SE": 0.269262095693744,
+        "df": 80.0000000567266,
+        "statistic": 1.25831923314458,
+        "p.value": 0.211936393238961,
+        "a": "s2",
+        "b": "s3",
+        "factor": "session"
+      }
+    ]
+  },
+  "contrasts_wald": {
+    "speed": [
+      {
+        "session": "s1",
+        "estimate": -0.025324312066708,
+        "SE": 0.269262095693744,
+        "df": null,
+        "statistic": -0.0940507872133315,
+        "p.value": 0.925068813133085,
+        "a": "slow",
+        "b": "fast",
+        "factor": "speed"
+      },
+      {
+        "session": "s2",
+        "estimate": -0.237735583499652,
+        "SE": 0.269262095693744,
+        "df": null,
+        "statistic": -0.882915149594802,
+        "p.value": 0.377282117668517,
+        "a": "slow",
+        "b": "fast",
+        "factor": "speed"
+      },
+      {
+        "session": "s3",
+        "estimate": 0.293134563633845,
+        "SE": 0.269262095693744,
+        "df": null,
+        "statistic": 1.08865885069562,
+        "p.value": 0.276304354237778,
+        "a": "slow",
+        "b": "fast",
+        "factor": "speed"
+      }
+    ],
+    "session": [
+      {
+        "speed": "slow",
+        "estimate": -0.207425414145193,
+        "SE": 0.269262095693744,
+        "df": null,
+        "statistic": -0.770347618407888,
+        "p.value": 0.441093716690815,
+        "a": "s1",
+        "b": "s2",
+        "factor": "session"
+      },
+      {
+        "speed": "slow",
+        "estimate": -0.399477887510435,
+        "SE": 0.269262095693744,
+        "df": null,
+        "statistic": -1.48360238555373,
+        "p.value": 0.137914436155579,
+        "a": "s1",
+        "b": "s3",
+        "factor": "session"
+      },
+      {
+        "speed": "slow",
+        "estimate": -0.192052473365243,
+        "SE": 0.269262095693744,
+        "df": null,
+        "statistic": -0.713254767145841,
+        "p.value": 0.47568812197019,
+        "a": "s2",
+        "b": "s3",
+        "factor": "session"
+      },
+      {
+        "speed": "fast",
+        "estimate": -0.419836685578137,
+        "SE": 0.269262095693744,
+        "df": null,
+        "statistic": -1.55921198078936,
+        "p.value": 0.118946216115301,
+        "a": "s1",
+        "b": "s2",
+        "factor": "session"
+      },
+      {
+        "speed": "fast",
+        "estimate": -0.0810190118098827,
+        "SE": 0.269262095693744,
+        "df": null,
+        "statistic": -0.300892747644781,
+        "p.value": 0.763496280746029,
+        "a": "s1",
+        "b": "s3",
+        "factor": "session"
+      },
+      {
+        "speed": "fast",
+        "estimate": 0.338817673768254,
+        "SE": 0.269262095693744,
+        "df": null,
+        "statistic": 1.25831923314458,
+        "p.value": 0.208276328181763,
+        "a": "s2",
+        "b": "s3",
+        "factor": "session"
+      }
+    ]
+  },
+  "varcorr": [
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 1.02312454422534,
+      "sdcor": 1.01149619090995
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 0.61626764750779,
+      "sdcor": 0.785027163547727
+    }
+  ],
+  "reml_criterion": 289.827460174595,
+  "loglik_reml": -144.913730087297,
+  "singular": false,
+  "convergence_messages": [],
+  "notes": []
+}

@@ -1,0 +1,185 @@
+{
+  "id": "W3_complete_n17_icc0_effect_unit_intercept",
+  "scenario": {
+    "design": "W3",
+    "missing": "complete",
+    "n": 17,
+    "icc": 0,
+    "effect": "effect",
+    "scale": "unit",
+    "slopes": false,
+    "future": false,
+    "seed": 92643
+  },
+  "factors": "time",
+  "between": null,
+  "within": "time",
+  "levels": {
+    "time": ["t1", "t2", "t3"]
+  },
+  "subject": "subject",
+  "dv": "y",
+  "random_slope": null,
+  "n_rows": 51,
+  "n_subjects": 17,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ time + (1 | subject)",
+  "coding": "contr.sum",
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 10.5,
+      "se": 0.103475109548309,
+      "df": 47.9999999993094,
+      "t": 101.473678509109,
+      "p": 1.13861830496628e-57,
+      "_row": "(Intercept)"
+    },
+    {
+      "name": "time1",
+      "estimate": -0.0319853827582386,
+      "se": 0.146335903291261,
+      "df": 47.9999999993094,
+      "t": -0.218575086761697,
+      "p": 0.827907747233628,
+      "_row": "time1"
+    },
+    {
+      "name": "time2",
+      "estimate": -0.253116389514614,
+      "se": 0.146335903291261,
+      "df": 47.9999999993094,
+      "t": -1.72969437999656,
+      "p": 0.0901113677603525,
+      "_row": "time2"
+    }
+  ],
+  "anova_satterthwaite": [
+    {
+      "term": "time",
+      "num_df": 2,
+      "den_df": 47.9999999993094,
+      "F": 2.2784572106157,
+      "p": 0.113415667369524,
+      "_row": "time"
+    }
+  ],
+  "anova_kenward_roger": [
+    {
+      "term": "time",
+      "num_df": 2,
+      "den_df": 32,
+      "F": 2.2784572106157,
+      "p": 0.118819341164119,
+      "_row": "time"
+    }
+  ],
+  "wald_terms": [
+    {
+      "term": "time",
+      "chi2": 4.55691442123139,
+      "df": 2,
+      "p": 0.102442131494852
+    }
+  ],
+  "contrasts_satterthwaite": {
+    "time": [
+      {
+        "estimate": 0.221131006756376,
+        "SE": 0.253461219471949,
+        "df": 47.9999999993094,
+        "statistic": 0.872445130726787,
+        "p.value": 0.387309021790937,
+        "a": "t1",
+        "b": "t2",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.317087155031091,
+        "SE": 0.253461219471949,
+        "df": 47.9999999993094,
+        "statistic": -1.25102828626682,
+        "p.value": 0.2169876234592,
+        "a": "t1",
+        "b": "t3",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.538218161787467,
+        "SE": 0.253461219471949,
+        "df": 47.9999999993095,
+        "statistic": -2.12347341699361,
+        "p.value": 0.0388956844122994,
+        "a": "t2",
+        "b": "t3",
+        "factor": "time"
+      }
+    ]
+  },
+  "contrasts_wald": {
+    "time": [
+      {
+        "estimate": 0.221131006756376,
+        "SE": 0.253461219471949,
+        "df": null,
+        "statistic": 0.872445130726787,
+        "p.value": 0.382965589085733,
+        "a": "t1",
+        "b": "t2",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.317087155031091,
+        "SE": 0.253461219471949,
+        "df": null,
+        "statistic": -1.25102828626682,
+        "p.value": 0.210924157614321,
+        "a": "t1",
+        "b": "t3",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.538218161787467,
+        "SE": 0.253461219471949,
+        "df": null,
+        "statistic": -2.12347341699361,
+        "p.value": 0.0337142007765291,
+        "a": "t2",
+        "b": "t3",
+        "factor": "time"
+      }
+    ]
+  },
+  "varcorr": [
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0,
+      "sdcor": 0
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 0.546062013097765,
+      "sdcor": 0.738960088974882
+    }
+  ],
+  "reml_criterion": 117.873872633098,
+  "loglik_reml": -58.936936316549,
+  "singular": true,
+  "convergence_messages": [
+    "boundary (singular) fit: see help('isSingular')"
+  ],
+  "notes": [
+    "message: boundary (singular) fit: see help('isSingular')"
+  ]
+}

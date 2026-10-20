@@ -1,0 +1,395 @@
+{
+  "id": "W2xW3_complete_n17_icc50_effect_unit_intercept",
+  "scenario": {
+    "design": "W2xW3",
+    "missing": "complete",
+    "n": 17,
+    "icc": 0.5,
+    "effect": "effect",
+    "scale": "unit",
+    "slopes": false,
+    "future": false,
+    "seed": 109304
+  },
+  "factors": ["speed", "session"],
+  "between": null,
+  "within": ["speed", "session"],
+  "levels": {
+    "speed": ["slow", "fast"],
+    "session": ["s1", "s2", "s3"]
+  },
+  "subject": "subject",
+  "dv": "y",
+  "random_slope": null,
+  "n_rows": 102,
+  "n_subjects": 17,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ speed * session + (1 | subject)",
+  "coding": "contr.sum",
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 10.8664834814151,
+      "se": 0.174126811077483,
+      "df": 15.9999996052257,
+      "t": 62.4055733529726,
+      "p": 1.54536557473488e-20,
+      "_row": "(Intercept)"
+    },
+    {
+      "name": "speed1",
+      "estimate": -0.359209052138886,
+      "se": 0.0648843539068186,
+      "df": 80.0000001620754,
+      "t": -5.53614285278622,
+      "p": 3.80745674101892e-07,
+      "_row": "speed1"
+    },
+    {
+      "name": "session1",
+      "estimate": -0.56275359277109,
+      "se": 0.0917603332808386,
+      "df": 80.0000001620754,
+      "t": -6.13286343510485,
+      "p": 3.10101000099426e-08,
+      "_row": "session1"
+    },
+    {
+      "name": "session2",
+      "estimate": -0.0282294668793014,
+      "se": 0.0917603332808386,
+      "df": 80.0000001620754,
+      "t": -0.307643464991602,
+      "p": 0.759153142967466,
+      "_row": "session2"
+    },
+    {
+      "name": "speed1:session1",
+      "estimate": 0.22464128572423,
+      "se": 0.0917603332808386,
+      "df": 80.0000001620754,
+      "t": 2.44813066487782,
+      "p": 0.0165481785528688,
+      "_row": "speed1:session1"
+    },
+    {
+      "name": "speed1:session2",
+      "estimate": -0.00629541756150281,
+      "se": 0.0917603332808386,
+      "df": 80.0000001620754,
+      "t": -0.0686071784660509,
+      "p": 0.945473497399403,
+      "_row": "speed1:session2"
+    }
+  ],
+  "anova_satterthwaite": [
+    {
+      "term": "speed",
+      "num_df": 1,
+      "den_df": 80.0000001620754,
+      "F": 30.6488738530313,
+      "p": 3.80746217631653e-07,
+      "_row": "speed"
+    },
+    {
+      "term": "session",
+      "num_df": 2,
+      "den_df": 80.0000001620754,
+      "F": 26.3955958484627,
+      "p": 1.57336230457648e-09,
+      "_row": "session"
+    },
+    {
+      "term": "speed:session",
+      "num_df": 2,
+      "den_df": 80.0000001620754,
+      "F": 3.88672757321247,
+      "p": 0.0244946761956512,
+      "_row": "speed:session"
+    }
+  ],
+  "anova_kenward_roger": [
+    {
+      "term": "speed",
+      "num_df": 1,
+      "den_df": 80.0000000000004,
+      "F": 30.6488738530313,
+      "p": 3.80746219197318e-07,
+      "_row": "speed"
+    },
+    {
+      "term": "session",
+      "num_df": 2,
+      "den_df": 80.0000000000004,
+      "F": 26.3955958484627,
+      "p": 1.57336231849974e-09,
+      "_row": "session"
+    },
+    {
+      "term": "speed:session",
+      "num_df": 2,
+      "den_df": 80.0000000000004,
+      "F": 3.88672757321247,
+      "p": 0.0244946762039282,
+      "_row": "speed:session"
+    }
+  ],
+  "wald_terms": [
+    {
+      "term": "speed",
+      "chi2": 30.6488738530313,
+      "df": 1,
+      "p": 3.09206012870735e-08
+    },
+    {
+      "term": "session",
+      "chi2": 52.7911916969253,
+      "df": 2,
+      "p": 3.43984106218896e-12
+    },
+    {
+      "term": "speed:session",
+      "chi2": 7.77345514642494,
+      "df": 2,
+      "p": 0.0205123615278302
+    }
+  ],
+  "contrasts_satterthwaite": {
+    "speed": [
+      {
+        "session": "s1",
+        "estimate": -0.269135532829312,
+        "SE": 0.22476599516578,
+        "df": 80.0000001620754,
+        "statistic": -1.19740324879129,
+        "p.value": 0.234685364886025,
+        "a": "slow",
+        "b": "fast",
+        "factor": "speed"
+      },
+      {
+        "session": "s2",
+        "estimate": -0.731008939400777,
+        "SE": 0.22476599516578,
+        "df": 80.0000001620754,
+        "statistic": -3.25231109297298,
+        "p.value": 0.0016771193777741,
+        "a": "slow",
+        "b": "fast",
+        "factor": "speed"
+      },
+      {
+        "session": "s3",
+        "estimate": -1.15510984060323,
+        "SE": 0.22476599516578,
+        "df": 80.0000001620754,
+        "statistic": -5.13916635722078,
+        "p.value": 1.9097075592952e-06,
+        "a": "slow",
+        "b": "fast",
+        "factor": "speed"
+      }
+    ],
+    "session": [
+      {
+        "speed": "slow",
+        "estimate": -0.303587422606056,
+        "SE": 0.22476599516578,
+        "df": 80.0000001620754,
+        "statistic": -1.35068217228384,
+        "p.value": 0.180605515361802,
+        "a": "s1",
+        "b": "s2",
+        "factor": "session"
+      },
+      {
+        "speed": "slow",
+        "estimate": -0.710749498534524,
+        "SE": 0.22476599516578,
+        "df": 80.0000001620754,
+        "statistic": -3.16217539050023,
+        "p.value": 0.00221295580004311,
+        "a": "s1",
+        "b": "s3",
+        "factor": "session"
+      },
+      {
+        "speed": "slow",
+        "estimate": -0.407162075928468,
+        "SE": 0.22476599516578,
+        "df": 80.0000001620754,
+        "statistic": -1.81149321821639,
+        "p.value": 0.0738176160168182,
+        "a": "s2",
+        "b": "s3",
+        "factor": "session"
+      },
+      {
+        "speed": "fast",
+        "estimate": -0.765460829177521,
+        "SE": 0.22476599516578,
+        "df": 80.0000001620754,
+        "statistic": -3.40559001646553,
+        "p.value": 0.00103496445075083,
+        "a": "s1",
+        "b": "s2",
+        "factor": "session"
+      },
+      {
+        "speed": "fast",
+        "estimate": -1.59672380630844,
+        "SE": 0.22476599516578,
+        "df": 80.0000001620754,
+        "statistic": -7.10393849892972,
+        "p.value": 4.47679552966415e-10,
+        "a": "s1",
+        "b": "s3",
+        "factor": "session"
+      },
+      {
+        "speed": "fast",
+        "estimate": -0.831262977130917,
+        "SE": 0.22476599516578,
+        "df": 80.0000001620754,
+        "statistic": -3.69834848246419,
+        "p.value": 0.000396392773350151,
+        "a": "s2",
+        "b": "s3",
+        "factor": "session"
+      }
+    ]
+  },
+  "contrasts_wald": {
+    "speed": [
+      {
+        "session": "s1",
+        "estimate": -0.269135532829312,
+        "SE": 0.22476599516578,
+        "df": null,
+        "statistic": -1.19740324879129,
+        "p.value": 0.231149417989833,
+        "a": "slow",
+        "b": "fast",
+        "factor": "speed"
+      },
+      {
+        "session": "s2",
+        "estimate": -0.731008939400777,
+        "SE": 0.22476599516578,
+        "df": null,
+        "statistic": -3.25231109297298,
+        "p.value": 0.00114470658936801,
+        "a": "slow",
+        "b": "fast",
+        "factor": "speed"
+      },
+      {
+        "session": "s3",
+        "estimate": -1.15510984060323,
+        "SE": 0.22476599516578,
+        "df": null,
+        "statistic": -5.13916635722078,
+        "p.value": 2.75960008309979e-07,
+        "a": "slow",
+        "b": "fast",
+        "factor": "speed"
+      }
+    ],
+    "session": [
+      {
+        "speed": "slow",
+        "estimate": -0.303587422606056,
+        "SE": 0.22476599516578,
+        "df": null,
+        "statistic": -1.35068217228384,
+        "p.value": 0.176797265497803,
+        "a": "s1",
+        "b": "s2",
+        "factor": "session"
+      },
+      {
+        "speed": "slow",
+        "estimate": -0.710749498534524,
+        "SE": 0.22476599516578,
+        "df": null,
+        "statistic": -3.16217539050023,
+        "p.value": 0.00156595215927719,
+        "a": "s1",
+        "b": "s3",
+        "factor": "session"
+      },
+      {
+        "speed": "slow",
+        "estimate": -0.407162075928468,
+        "SE": 0.22476599516578,
+        "df": null,
+        "statistic": -1.81149321821639,
+        "p.value": 0.0700645379108505,
+        "a": "s2",
+        "b": "s3",
+        "factor": "session"
+      },
+      {
+        "speed": "fast",
+        "estimate": -0.765460829177521,
+        "SE": 0.22476599516578,
+        "df": null,
+        "statistic": -3.40559001646553,
+        "p.value": 0.000660212441828145,
+        "a": "s1",
+        "b": "s2",
+        "factor": "session"
+      },
+      {
+        "speed": "fast",
+        "estimate": -1.59672380630844,
+        "SE": 0.22476599516578,
+        "df": null,
+        "statistic": -7.10393849892972,
+        "p.value": 1.21250830033162e-12,
+        "a": "s1",
+        "b": "s3",
+        "factor": "session"
+      },
+      {
+        "speed": "fast",
+        "estimate": -0.831262977130917,
+        "SE": 0.22476599516578,
+        "df": null,
+        "statistic": -3.69834848246419,
+        "p.value": 0.000217006825982677,
+        "a": "s2",
+        "b": "s3",
+        "factor": "session"
+      }
+    ]
+  },
+  "varcorr": [
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0.44387283821984,
+      "sdcor": 0.666237824068733
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 0.42941789695434,
+      "sdcor": 0.655299852704348
+    }
+  ],
+  "reml_criterion": 248.427312186853,
+  "loglik_reml": -124.213656093426,
+  "singular": false,
+  "convergence_messages": [],
+  "notes": []
+}

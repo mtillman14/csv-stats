@@ -1,0 +1,395 @@
+{
+  "id": "LABELS_monotone15_n17_icc50_effect_unit_intercept",
+  "scenario": {
+    "design": "LABELS",
+    "missing": "monotone15",
+    "n": 17,
+    "icc": 0.5,
+    "effect": "effect",
+    "scale": "unit",
+    "slopes": false,
+    "future": false,
+    "seed": 121978
+  },
+  "factors": ["arm", "time_point"],
+  "between": "arm",
+  "within": "time_point",
+  "levels": {
+    "arm": ["Z-arm", "A-arm"],
+    "time_point": ["pre op", "6 wk", "12 wk"]
+  },
+  "subject": "subject",
+  "dv": "y",
+  "random_slope": null,
+  "n_rows": 45,
+  "n_subjects": 17,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ arm * time_point + (1 | subject)",
+  "coding": "contr.sum",
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 10.9104587051485,
+      "se": 0.236007918974948,
+      "df": 13.6700621278551,
+      "t": 46.2292060051875,
+      "p": 2.05076320604081e-16,
+      "_row": "(Intercept)"
+    },
+    {
+      "name": "arm1",
+      "estimate": -0.447417515614951,
+      "se": 0.236007918974948,
+      "df": 13.6700621282319,
+      "t": -1.89577331793872,
+      "p": 0.0793299291960541,
+      "_row": "arm1"
+    },
+    {
+      "name": "time_point1",
+      "estimate": -0.407308094162388,
+      "se": 0.181768783153278,
+      "df": 25.8903613102653,
+      "t": -2.24080332770299,
+      "p": 0.0338381698160099,
+      "_row": "time_point1"
+    },
+    {
+      "name": "time_point2",
+      "estimate": -0.211127741688047,
+      "se": 0.186697761341707,
+      "df": 23.9217024380533,
+      "t": -1.13085309738463,
+      "p": 0.269327530799647,
+      "_row": "time_point2"
+    },
+    {
+      "name": "arm1:time_point1",
+      "estimate": 0.000504855728206673,
+      "se": 0.181768783153278,
+      "df": 25.8903613101029,
+      "t": 0.00277746112092829,
+      "p": 0.997805200167251,
+      "_row": "arm1:time_point1"
+    },
+    {
+      "name": "arm1:time_point2",
+      "estimate": 0.123874105724742,
+      "se": 0.186697761341707,
+      "df": 23.9217024382368,
+      "t": 0.663500755630481,
+      "p": 0.51335393881133,
+      "_row": "arm1:time_point2"
+    }
+  ],
+  "anova_satterthwaite": [
+    {
+      "term": "arm",
+      "num_df": 1,
+      "den_df": 13.6700618526443,
+      "F": 3.59395652811371,
+      "p": 0.07932992757455,
+      "_row": "arm"
+    },
+    {
+      "term": "time_point",
+      "num_df": 2,
+      "den_df": 24.5383864984347,
+      "F": 5.74498474745429,
+      "p": 0.00898499155379619,
+      "_row": "time_point"
+    },
+    {
+      "term": "arm:time_point",
+      "num_df": 2,
+      "den_df": 24.5383864985272,
+      "F": 0.289659240500373,
+      "p": 0.751042612849233,
+      "_row": "arm:time_point"
+    }
+  ],
+  "anova_kenward_roger": [
+    {
+      "term": "arm",
+      "num_df": 1,
+      "den_df": 14.6613260961894,
+      "F": 3.56309788615077,
+      "p": 0.0790333000340642,
+      "_row": "arm"
+    },
+    {
+      "term": "time_point",
+      "num_df": 2,
+      "den_df": 25.549042762919,
+      "F": 5.70848214440149,
+      "p": 0.00892504159359536,
+      "_row": "time_point"
+    },
+    {
+      "term": "arm:time_point",
+      "num_df": 2,
+      "den_df": 25.549042762919,
+      "F": 0.289640187625063,
+      "p": 0.750958081365188,
+      "_row": "arm:time_point"
+    }
+  ],
+  "wald_terms": [
+    {
+      "term": "arm",
+      "chi2": 3.59395652811371,
+      "df": 1,
+      "p": 0.0579900236069656
+    },
+    {
+      "term": "time_point",
+      "chi2": 11.4899694949086,
+      "df": 2,
+      "p": 0.00319878334086011
+    },
+    {
+      "term": "arm:time_point",
+      "chi2": 0.579318481000745,
+      "df": 2,
+      "p": 0.748518588945452
+    }
+  ],
+  "contrasts_satterthwaite": {
+    "arm": [
+      {
+        "time_point": "pre op",
+        "estimate": -0.893825319773489,
+        "SE": 0.565945617305231,
+        "df": 27.3438025618419,
+        "statistic": -1.57934842578951,
+        "p.value": 0.12575616739932,
+        "a": "Z-arm",
+        "b": "A-arm",
+        "factor": "arm"
+      },
+      {
+        "time_point": "6 wk",
+        "estimate": -0.647086819780418,
+        "SE": 0.616080517025073,
+        "df": 31.0110495332579,
+        "statistic": -1.05032832868189,
+        "p.value": 0.301683768916082,
+        "a": "Z-arm",
+        "b": "A-arm",
+        "factor": "arm"
+      },
+      {
+        "time_point": "12 wk",
+        "estimate": -1.1435929541358,
+        "SE": 0.616080517025073,
+        "df": 31.0110495330902,
+        "statistic": -1.85623944035428,
+        "p.value": 0.072943386585943,
+        "a": "Z-arm",
+        "b": "A-arm",
+        "factor": "arm"
+      }
+    ],
+    "time_point": [
+      {
+        "arm": "Z-arm",
+        "estimate": -0.319549602470876,
+        "SE": 0.420624106909066,
+        "df": 24.38540780211,
+        "statistic": -0.75970349112672,
+        "p.value": 0.454714123763432,
+        "a": "pre op",
+        "b": "6 wk",
+        "factor": "time_point"
+      },
+      {
+        "arm": "Z-arm",
+        "estimate": -0.900860112831667,
+        "SE": 0.420624106909066,
+        "df": 24.385407802518,
+        "statistic": -2.14172249767516,
+        "p.value": 0.0424045880488723,
+        "a": "pre op",
+        "b": "12 wk",
+        "factor": "time_point"
+      },
+      {
+        "arm": "Z-arm",
+        "estimate": -0.581310510360791,
+        "SE": 0.427051671342,
+        "df": 23.3312347239699,
+        "statistic": -1.36121820700066,
+        "p.value": 0.186447825212273,
+        "a": "6 wk",
+        "b": "12 wk",
+        "factor": "time_point"
+      },
+      {
+        "arm": "A-arm",
+        "estimate": -0.0728111024778053,
+        "SE": 0.476254870084451,
+        "df": 25.8461636146538,
+        "statistic": -0.152882641315341,
+        "p.value": 0.879678128154029,
+        "a": "pre op",
+        "b": "6 wk",
+        "factor": "time_point"
+      },
+      {
+        "arm": "A-arm",
+        "estimate": -1.15062774719398,
+        "SE": 0.476254870084451,
+        "df": 25.8461636145612,
+        "statistic": -2.41599156138801,
+        "p.value": 0.0230622710443976,
+        "a": "pre op",
+        "b": "12 wk",
+        "factor": "time_point"
+      },
+      {
+        "arm": "A-arm",
+        "estimate": -1.07781664471617,
+        "SE": 0.493116794814366,
+        "df": 23.3312347239675,
+        "statistic": -2.18572284710343,
+        "p.value": 0.039122531677936,
+        "a": "6 wk",
+        "b": "12 wk",
+        "factor": "time_point"
+      }
+    ]
+  },
+  "contrasts_wald": {
+    "arm": [
+      {
+        "time_point": "pre op",
+        "estimate": -0.893825319773489,
+        "SE": 0.565945617305231,
+        "df": null,
+        "statistic": -1.57934842578951,
+        "p.value": 0.11425616004933,
+        "a": "Z-arm",
+        "b": "A-arm",
+        "factor": "arm"
+      },
+      {
+        "time_point": "6 wk",
+        "estimate": -0.647086819780418,
+        "SE": 0.616080517025073,
+        "df": null,
+        "statistic": -1.05032832868189,
+        "p.value": 0.293567184971326,
+        "a": "Z-arm",
+        "b": "A-arm",
+        "factor": "arm"
+      },
+      {
+        "time_point": "12 wk",
+        "estimate": -1.1435929541358,
+        "SE": 0.616080517025073,
+        "df": null,
+        "statistic": -1.85623944035428,
+        "p.value": 0.0634194367234501,
+        "a": "Z-arm",
+        "b": "A-arm",
+        "factor": "arm"
+      }
+    ],
+    "time_point": [
+      {
+        "arm": "Z-arm",
+        "estimate": -0.319549602470876,
+        "SE": 0.420624106909066,
+        "df": null,
+        "statistic": -0.75970349112672,
+        "p.value": 0.447431841484534,
+        "a": "pre op",
+        "b": "6 wk",
+        "factor": "time_point"
+      },
+      {
+        "arm": "Z-arm",
+        "estimate": -0.900860112831667,
+        "SE": 0.420624106909066,
+        "df": null,
+        "statistic": -2.14172249767516,
+        "p.value": 0.0322158192254071,
+        "a": "pre op",
+        "b": "12 wk",
+        "factor": "time_point"
+      },
+      {
+        "arm": "Z-arm",
+        "estimate": -0.581310510360791,
+        "SE": 0.427051671342,
+        "df": null,
+        "statistic": -1.36121820700066,
+        "p.value": 0.173444742060192,
+        "a": "6 wk",
+        "b": "12 wk",
+        "factor": "time_point"
+      },
+      {
+        "arm": "A-arm",
+        "estimate": -0.0728111024778053,
+        "SE": 0.476254870084451,
+        "df": null,
+        "statistic": -0.152882641315341,
+        "p.value": 0.87849082519878,
+        "a": "pre op",
+        "b": "6 wk",
+        "factor": "time_point"
+      },
+      {
+        "arm": "A-arm",
+        "estimate": -1.15062774719398,
+        "SE": 0.476254870084451,
+        "df": null,
+        "statistic": -2.41599156138801,
+        "p.value": 0.015692425023119,
+        "a": "pre op",
+        "b": "12 wk",
+        "factor": "time_point"
+      },
+      {
+        "arm": "A-arm",
+        "estimate": -1.07781664471617,
+        "SE": 0.493116794814366,
+        "df": null,
+        "statistic": -2.18572284710343,
+        "p.value": 0.0288358883242277,
+        "a": "6 wk",
+        "b": "12 wk",
+        "factor": "time_point"
+      }
+    ]
+  },
+  "varcorr": [
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0.627048645062133,
+      "sdcor": 0.791864031928546
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 0.729492519983981,
+      "sdcor": 0.854103342683999
+    }
+  ],
+  "reml_criterion": 136.109810336841,
+  "loglik_reml": -68.0549051684206,
+  "singular": false,
+  "convergence_messages": [],
+  "notes": []
+}

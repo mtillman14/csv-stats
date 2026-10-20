@@ -1,0 +1,181 @@
+{
+  "id": "W3_mcar15_n17_icc50_effect_small_intercept",
+  "scenario": {
+    "design": "W3",
+    "missing": "mcar15",
+    "n": 17,
+    "icc": 0.5,
+    "effect": "effect",
+    "scale": "small",
+    "slopes": false,
+    "future": false,
+    "seed": 90506
+  },
+  "factors": "time",
+  "between": null,
+  "within": "time",
+  "levels": {
+    "time": ["t1", "t2", "t3"]
+  },
+  "subject": "subject",
+  "dv": "y",
+  "random_slope": null,
+  "n_rows": 43,
+  "n_subjects": 17,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ time + (1 | subject)",
+  "coding": "contr.sum",
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 0.0104269923957076,
+      "se": 0.000180315045741312,
+      "df": 13.8365419795029,
+      "t": 57.8265244191914,
+      "p": 6.67044999437964e-18,
+      "_row": "(Intercept)"
+    },
+    {
+      "name": "time1",
+      "estimate": -0.000497221361154842,
+      "se": 0.000155507879261743,
+      "df": 23.1635455858549,
+      "t": -3.19740300951532,
+      "p": 0.0039797853456097,
+      "_row": "time1"
+    },
+    {
+      "name": "time2",
+      "estimate": 3.31993767868829e-05,
+      "se": 0.000159197683576441,
+      "df": 23.8385189892421,
+      "t": 0.208541833279513,
+      "p": 0.8365775306043,
+      "_row": "time2"
+    }
+  ],
+  "anova_satterthwaite": [
+    {
+      "term": "time",
+      "num_df": 2,
+      "den_df": 23.9112373434351,
+      "F": 5.84059752564319,
+      "p": 0.00860200521904216,
+      "_row": "time"
+    }
+  ],
+  "anova_kenward_roger": [
+    {
+      "term": "time",
+      "num_df": 2,
+      "den_df": 26.0155763347251,
+      "F": 5.76047286647635,
+      "p": 0.00848970173432058,
+      "_row": "time"
+    }
+  ],
+  "wald_terms": [
+    {
+      "term": "time",
+      "chi2": 11.6811950512864,
+      "df": 2,
+      "p": 0.00290710503693032
+    }
+  ],
+  "contrasts_satterthwaite": {
+    "time": [
+      {
+        "estimate": -0.000530420737941724,
+        "SE": 0.000264219206883412,
+        "df": 22.919958800238,
+        "statistic": -2.00750257408718,
+        "p.value": 0.056627879684082,
+        "a": "t1",
+        "b": "t2",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.0009612433455228,
+        "SE": 0.00028548963531278,
+        "df": 24.2236895680914,
+        "statistic": -3.36699910127971,
+        "p.value": 0.00253426683805066,
+        "a": "t1",
+        "b": "t3",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.000430822607581076,
+        "SE": 0.000291526907337699,
+        "df": 24.8023604603215,
+        "statistic": -1.47781421452813,
+        "p.value": 0.152044905079621,
+        "a": "t2",
+        "b": "t3",
+        "factor": "time"
+      }
+    ]
+  },
+  "contrasts_wald": {
+    "time": [
+      {
+        "estimate": -0.000530420737941724,
+        "SE": 0.000264219206883412,
+        "df": null,
+        "statistic": -2.00750257408718,
+        "p.value": 0.0446961768252404,
+        "a": "t1",
+        "b": "t2",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.0009612433455228,
+        "SE": 0.00028548963531278,
+        "df": null,
+        "statistic": -3.36699910127971,
+        "p.value": 0.000759909359942292,
+        "a": "t1",
+        "b": "t3",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.000430822607581076,
+        "SE": 0.000291526907337699,
+        "df": null,
+        "statistic": -1.47781421452813,
+        "p.value": 0.139457512629136,
+        "a": "t2",
+        "b": "t3",
+        "factor": "time"
+      }
+    ]
+  },
+  "varcorr": [
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 3.35061595694941e-07,
+      "sdcor": 0.00057884505326982
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 5.25817789430672e-07,
+      "sdcor": 0.000725132946038637
+    }
+  ],
+  "reml_criterion": -439.537863622003,
+  "loglik_reml": 219.768931811002,
+  "singular": false,
+  "convergence_messages": [],
+  "notes": []
+}

@@ -1,0 +1,132 @@
+{
+  "id": "W2_monotone15_n17_icc50_effect_unit_intercept",
+  "scenario": {
+    "design": "W2",
+    "missing": "monotone15",
+    "n": 17,
+    "icc": 0.5,
+    "effect": "effect",
+    "scale": "unit",
+    "slopes": false,
+    "future": false,
+    "seed": 103759
+  },
+  "factors": "time",
+  "between": null,
+  "within": "time",
+  "levels": {
+    "time": ["pre", "post"]
+  },
+  "subject": "subject",
+  "dv": "y",
+  "random_slope": null,
+  "n_rows": 31,
+  "n_subjects": 17,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ time + (1 | subject)",
+  "coding": "contr.sum",
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 10.1202606087033,
+      "se": 0.207482694749973,
+      "df": 16.5201097811606,
+      "t": 48.7764081765893,
+      "p": 2.71846835729386e-19,
+      "_row": "(Intercept)"
+    },
+    {
+      "name": "time1",
+      "estimate": -0.219568107690311,
+      "se": 0.155830179293103,
+      "df": 15.4432573684442,
+      "t": -1.40902172279044,
+      "p": 0.178645660183002,
+      "_row": "time1"
+    }
+  ],
+  "anova_satterthwaite": [
+    {
+      "term": "time",
+      "num_df": 1,
+      "den_df": 15.4432573684442,
+      "F": 1.98534221529534,
+      "p": 0.178645660183002,
+      "_row": "time"
+    }
+  ],
+  "anova_kenward_roger": [
+    {
+      "term": "time",
+      "num_df": 1,
+      "den_df": 14.5764722780708,
+      "F": 1.9522464444714,
+      "p": 0.183252133439143,
+      "_row": "time"
+    }
+  ],
+  "wald_terms": [
+    {
+      "term": "time",
+      "chi2": 1.98534221529534,
+      "df": 1,
+      "p": 0.158828744944294
+    }
+  ],
+  "contrasts_satterthwaite": {
+    "time": [
+      {
+        "estimate": -0.439136215380622,
+        "SE": 0.311660358586206,
+        "df": 15.4432573684442,
+        "statistic": -1.40902172279044,
+        "p.value": 0.178645660183002,
+        "a": "pre",
+        "b": "post",
+        "factor": "time"
+      }
+    ]
+  },
+  "contrasts_wald": {
+    "time": [
+      {
+        "estimate": -0.439136215380622,
+        "SE": 0.311660358586206,
+        "df": null,
+        "statistic": -1.40902172279044,
+        "p.value": 0.158828744944293,
+        "a": "pre",
+        "b": "post",
+        "factor": "time"
+      }
+    ]
+  },
+  "varcorr": [
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0.319022405317227,
+      "sdcor": 0.564820684215111
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 0.724291659241342,
+      "sdcor": 0.851053264632327
+    }
+  ],
+  "reml_criterion": 89.1105279345478,
+  "loglik_reml": -44.5552639672739,
+  "singular": false,
+  "convergence_messages": [],
+  "notes": []
+}

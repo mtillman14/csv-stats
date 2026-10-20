@@ -1,0 +1,181 @@
+{
+  "id": "W3rep_mcar15_n17_icc50_effect_unit_intercept",
+  "scenario": {
+    "design": "W3rep",
+    "missing": "mcar15",
+    "n": 17,
+    "icc": 0.5,
+    "effect": "effect",
+    "scale": "unit",
+    "slopes": false,
+    "future": false,
+    "seed": 99116
+  },
+  "factors": "time",
+  "between": null,
+  "within": "time",
+  "levels": {
+    "time": ["t1", "t2", "t3"]
+  },
+  "subject": "subject",
+  "dv": "y",
+  "random_slope": null,
+  "n_rows": 129,
+  "n_subjects": 17,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ time + (1 | subject)",
+  "coding": "contr.sum",
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 10.7774985724145,
+      "se": 0.213752029615827,
+      "df": 15.8524039287148,
+      "t": 50.4205671954774,
+      "p": 6.26064305292928e-19,
+      "_row": "(Intercept)"
+    },
+    {
+      "name": "time1",
+      "estimate": -0.589236183883884,
+      "se": 0.0961089685589766,
+      "df": 112.262777699556,
+      "t": -6.13091777717189,
+      "p": 1.33429745941615e-08,
+      "_row": "time1"
+    },
+    {
+      "name": "time2",
+      "estimate": -0.13083455337719,
+      "se": 0.104087464184721,
+      "df": 113.489552961393,
+      "t": -1.25696743985425,
+      "p": 0.211346213574331,
+      "_row": "time2"
+    }
+  ],
+  "anova_satterthwaite": [
+    {
+      "term": "time",
+      "num_df": 2,
+      "den_df": 112.274083650291,
+      "F": 35.3297929405189,
+      "p": 1.2535858651556e-12,
+      "_row": "time"
+    }
+  ],
+  "anova_kenward_roger": [
+    {
+      "term": "time",
+      "num_df": 2,
+      "den_df": 112.438285588149,
+      "F": 35.2766287392463,
+      "p": 1.28441857294723e-12,
+      "_row": "time"
+    }
+  ],
+  "wald_terms": [
+    {
+      "term": "time",
+      "chi2": 70.6595858810379,
+      "df": 2,
+      "p": 4.53383675763098e-16
+    }
+  ],
+  "contrasts_satterthwaite": {
+    "time": [
+      {
+        "estimate": -0.458401630506694,
+        "SE": 0.177265185865834,
+        "df": 113.344695492686,
+        "statistic": -2.585965361826,
+        "p.value": 0.0109777403356073,
+        "a": "t1",
+        "b": "t2",
+        "factor": "time"
+      },
+      {
+        "estimate": -1.30930692114496,
+        "SE": 0.158361331725713,
+        "df": 111.115325508866,
+        "statistic": -8.26784485124636,
+        "p.value": 3.25987040998867e-13,
+        "a": "t1",
+        "b": "t3",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.850905290638263,
+        "SE": 0.172829715253908,
+        "df": 112.664498124314,
+        "statistic": -4.92337379245334,
+        "p.value": 2.93454169185301e-06,
+        "a": "t2",
+        "b": "t3",
+        "factor": "time"
+      }
+    ]
+  },
+  "contrasts_wald": {
+    "time": [
+      {
+        "estimate": -0.458401630506694,
+        "SE": 0.177265185865834,
+        "df": null,
+        "statistic": -2.585965361826,
+        "p.value": 0.00971066886399203,
+        "a": "t1",
+        "b": "t2",
+        "factor": "time"
+      },
+      {
+        "estimate": -1.30930692114496,
+        "SE": 0.158361331725713,
+        "df": null,
+        "statistic": -8.26784485124636,
+        "p.value": 1.36402238605978e-16,
+        "a": "t1",
+        "b": "t3",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.850905290638263,
+        "SE": 0.172829715253908,
+        "df": null,
+        "statistic": -4.92337379245334,
+        "p.value": 8.50647457348975e-07,
+        "a": "t2",
+        "b": "t3",
+        "factor": "time"
+      }
+    ]
+  },
+  "varcorr": [
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0.698576133828097,
+      "sdcor": 0.835808670586814
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 0.557556071652331,
+      "sdcor": 0.746696773564967
+    }
+  ],
+  "reml_criterion": 334.604253180664,
+  "loglik_reml": -167.302126590332,
+  "singular": false,
+  "convergence_messages": [],
+  "notes": []
+}

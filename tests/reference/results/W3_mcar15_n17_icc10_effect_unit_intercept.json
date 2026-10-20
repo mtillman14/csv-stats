@@ -1,0 +1,185 @@
+{
+  "id": "W3_mcar15_n17_icc10_effect_unit_intercept",
+  "scenario": {
+    "design": "W3",
+    "missing": "mcar15",
+    "n": 17,
+    "icc": 0.1,
+    "effect": "effect",
+    "scale": "unit",
+    "slopes": false,
+    "future": false,
+    "seed": 86482
+  },
+  "factors": "time",
+  "between": null,
+  "within": "time",
+  "levels": {
+    "time": ["t1", "t2", "t3"]
+  },
+  "subject": "subject",
+  "dv": "y",
+  "random_slope": null,
+  "n_rows": 43,
+  "n_subjects": 17,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ time + (1 | subject)",
+  "coding": "contr.sum",
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 10.6726211831655,
+      "se": 0.153728406207817,
+      "df": 39.9999999993418,
+      "t": 69.4251729165641,
+      "p": 2.56235411477128e-43,
+      "_row": "(Intercept)"
+    },
+    {
+      "name": "time1",
+      "estimate": -0.433222458515814,
+      "se": 0.21863656206198,
+      "df": 39.9999999996185,
+      "t": -1.98147306392881,
+      "p": 0.0544406045900859,
+      "_row": "time1"
+    },
+    {
+      "name": "time2",
+      "estimate": 0.160542833939971,
+      "se": 0.218636562061981,
+      "df": 39.9999999996185,
+      "t": 0.73429088175316,
+      "p": 0.467054318340824,
+      "_row": "time2"
+    }
+  ],
+  "anova_satterthwaite": [
+    {
+      "term": "time",
+      "num_df": 2,
+      "den_df": 39.9999999996234,
+      "F": 2.02043274173709,
+      "p": 0.145909283655451,
+      "_row": "time"
+    }
+  ],
+  "anova_kenward_roger": [
+    {
+      "term": "time",
+      "num_df": 2,
+      "den_df": 28.3082454914871,
+      "F": 1.97771139964009,
+      "p": 0.157048804740854,
+      "_row": "time"
+    }
+  ],
+  "wald_terms": [
+    {
+      "term": "time",
+      "chi2": 4.04086548347418,
+      "df": 2,
+      "p": 0.132598071942827
+    }
+  ],
+  "contrasts_satterthwaite": {
+    "time": [
+      {
+        "estimate": -0.593765292455785,
+        "SE": 0.380811161037225,
+        "df": 39.9999999996139,
+        "statistic": -1.55921189609709,
+        "p.value": 0.126824079468096,
+        "a": "t1",
+        "b": "t2",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.705902083091656,
+        "SE": 0.374410517602673,
+        "df": 39.999999999628,
+        "statistic": -1.88536926689854,
+        "p.value": 0.0666581346244959,
+        "a": "t1",
+        "b": "t3",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.112136790635871,
+        "SE": 0.374410517602673,
+        "df": 39.999999999628,
+        "statistic": -0.299502245166285,
+        "p.value": 0.766107650761979,
+        "a": "t2",
+        "b": "t3",
+        "factor": "time"
+      }
+    ]
+  },
+  "contrasts_wald": {
+    "time": [
+      {
+        "estimate": -0.593765292455785,
+        "SE": 0.380811161037225,
+        "df": null,
+        "statistic": -1.55921189609709,
+        "p.value": 0.118946236153934,
+        "a": "t1",
+        "b": "t2",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.705902083091656,
+        "SE": 0.374410517602673,
+        "df": null,
+        "statistic": -1.88536926689854,
+        "p.value": 0.0593800003124883,
+        "a": "t1",
+        "b": "t3",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.112136790635871,
+        "SE": 0.374410517602673,
+        "df": null,
+        "statistic": -0.299502245166285,
+        "p.value": 0.764556859212936,
+        "a": "t2",
+        "b": "t3",
+        "factor": "time"
+      }
+    ]
+  },
+  "varcorr": [
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0,
+      "sdcor": 0
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 1.01511998259363,
+      "sdcor": 1.00753162858227
+    }
+  ],
+  "reml_criterion": 124.29874469242,
+  "loglik_reml": -62.1493723462098,
+  "singular": true,
+  "convergence_messages": [
+    "boundary (singular) fit: see help('isSingular')"
+  ],
+  "notes": [
+    "message: boundary (singular) fit: see help('isSingular')"
+  ]
+}

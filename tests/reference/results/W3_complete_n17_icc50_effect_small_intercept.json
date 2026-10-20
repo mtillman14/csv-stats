@@ -1,0 +1,181 @@
+{
+  "id": "W3_complete_n17_icc50_effect_small_intercept",
+  "scenario": {
+    "design": "W3",
+    "missing": "complete",
+    "n": 17,
+    "icc": 0.5,
+    "effect": "effect",
+    "scale": "small",
+    "slopes": false,
+    "future": false,
+    "seed": 100209
+  },
+  "factors": "time",
+  "between": null,
+  "within": "time",
+  "levels": {
+    "time": ["t1", "t2", "t3"]
+  },
+  "subject": "subject",
+  "dv": "y",
+  "random_slope": null,
+  "n_rows": 51,
+  "n_subjects": 17,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ time + (1 | subject)",
+  "coding": "contr.sum",
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 0.0103242709569917,
+      "se": 0.000250254710948571,
+      "df": 15.9999999781134,
+      "t": 41.2550513748908,
+      "p": 1.11614449930748e-17,
+      "_row": "(Intercept)"
+    },
+    {
+      "name": "time1",
+      "estimate": -0.000521999512345193,
+      "se": 0.000151682322961432,
+      "df": 32.0000000084858,
+      "t": -3.44139977654429,
+      "p": 0.00163116776334802,
+      "_row": "time1"
+    },
+    {
+      "name": "time2",
+      "estimate": 0.000193376229637886,
+      "se": 0.000151682322961432,
+      "df": 32.0000000085281,
+      "t": 1.27487650414646,
+      "p": 0.211532297364498,
+      "_row": "time2"
+    }
+  ],
+  "anova_satterthwaite": [
+    {
+      "term": "time",
+      "num_df": 2,
+      "den_df": 32.0000000085144,
+      "F": 6.05412187088841,
+      "p": 0.00588956745114228,
+      "_row": "time"
+    }
+  ],
+  "anova_kenward_roger": [
+    {
+      "term": "time",
+      "num_df": 2,
+      "den_df": 32.0000000000001,
+      "F": 6.05412187088841,
+      "p": 0.00588956745230563,
+      "_row": "time"
+    }
+  ],
+  "wald_terms": [
+    {
+      "term": "time",
+      "chi2": 12.1082437417768,
+      "df": 2,
+      "p": 0.00234816320606011
+    }
+  ],
+  "contrasts_satterthwaite": {
+    "time": [
+      {
+        "estimate": -0.000715375741983078,
+        "SE": 0.000262721489979272,
+        "df": 32.0000000084994,
+        "statistic": -2.72294338022945,
+        "p.value": 0.010388089465508,
+        "a": "t1",
+        "b": "t2",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.000850622795052499,
+        "SE": 0.000262721489979272,
+        "df": 32.0000000085008,
+        "statistic": -3.23773588190144,
+        "p.value": 0.00280446057158854,
+        "a": "t1",
+        "b": "t3",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.000135247053069421,
+        "SE": 0.000262721489979272,
+        "df": 32.0000000085431,
+        "statistic": -0.514792501671986,
+        "p.value": 0.610235751508794,
+        "a": "t2",
+        "b": "t3",
+        "factor": "time"
+      }
+    ]
+  },
+  "contrasts_wald": {
+    "time": [
+      {
+        "estimate": -0.000715375741983078,
+        "SE": 0.000262721489979272,
+        "df": null,
+        "statistic": -2.72294338022945,
+        "p.value": 0.00647031458845374,
+        "a": "t1",
+        "b": "t2",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.000850622795052499,
+        "SE": 0.000262721489979272,
+        "df": null,
+        "statistic": -3.23773588190144,
+        "p.value": 0.0012048229349427,
+        "a": "t1",
+        "b": "t3",
+        "factor": "time"
+      },
+      {
+        "estimate": -0.000135247053069421,
+        "SE": 0.000262721489979272,
+        "df": null,
+        "statistic": -0.514792501671986,
+        "p.value": 0.606698025675475,
+        "a": "t2",
+        "b": "t3",
+        "factor": "time"
+      }
+    ]
+  },
+  "varcorr": [
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 8.69102165641899e-07,
+      "sdcor": 0.000932256491338033
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 5.86691941023895e-07,
+      "sdcor": 0.000765958184905609
+    }
+  ],
+  "reml_criterion": -514.713338789542,
+  "loglik_reml": 257.356669394771,
+  "singular": false,
+  "convergence_messages": [],
+  "notes": []
+}

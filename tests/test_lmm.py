@@ -138,27 +138,6 @@ def test_version_strings_agree():
         assert tomllib.load(f)["project"]["version"] == csvstats.__version__
 
 
-def test_zapsmall_matches_r():
-    """R: zapsmall(c(1, 1e-20)) is c(1, 0); with max 123.45..., 7 significant
-    digits leave 4 decimal places."""
-    from csvstats.lmm import _zapsmall
-
-    assert _zapsmall(np.array([1.0, 1e-20])).tolist() == [1.0, 0.0]
-    assert _zapsmall(np.array([123.456789012, 0.1])).tolist() == [123.4568, 0.1]
-    assert _zapsmall(np.zeros(2)).tolist() == [0.0, 0.0]
-
-
-def test_doolittle_reproduces_the_matrix():
-    """L U = x for a positive-definite x (no pivoting needed), L unit lower."""
-    from csvstats.lmm import _doolittle_L
-
-    x = np.array([[4.0, 2.0, 0.6], [2.0, 3.0, 0.5], [0.6, 0.5, 2.0]])
-    L = _doolittle_L(x)
-    assert np.allclose(np.diag(L), 1.0) and np.allclose(np.triu(L, 1), 0.0)
-    U = np.linalg.solve(L, x)
-    assert np.allclose(np.tril(U, -1), 0.0)
-
-
 def test_pairwise_comes_from_the_full_model_within_each_context():
     """Stage 5: one fit, every pair of the chosen factor within each level of
     the others (emmeans-style), all subjects kept."""

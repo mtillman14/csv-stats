@@ -200,7 +200,7 @@ def test_fit_recovers_a_random_slope():
     assert comps[("Residual", None, None)]["sdcor"] == pytest.approx(1.0, rel=0.1)
     assert "singular_fit" not in {w["code"] for w in rec["warnings"]}
     assert rec["details"]["formula"] == "y ~ cond * x + (1 + x | subject)"
-    assert rec["details"]["term_tests"] == "coefficient_selection"
+    assert rec["details"]["term_tests"] == "type3"
     assert {c["name"] for c in rec["details"]["coefficients"]} == {"(Intercept)", "cond1", "x", "cond1:x"}
 
 

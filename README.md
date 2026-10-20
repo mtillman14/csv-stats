@@ -29,9 +29,12 @@ intercept per subject. `random=` takes any lme4-style structure:
 - crossed groupings, e.g. subject + item
 - nested and interaction groupings, e.g. `site:subject`
 
-Numeric `covariates=` are crossed with the factors.
+Numeric `covariates=` are crossed with the factors. Term tests are type III,
+as in lmerTest and SAS. So a factor crossed with a covariate is tested at
+covariate = 0, and a `type3_at_covariate_zero` warning says so. Centre the
+covariate to test the factor at the covariate's mean.
 
-The fit is checked against lme4 on 200 sampled scenarios over 8
+The fit is checked against lme4 on 225 sampled scenarios over 9
 random-effect structures (tests/reference/scenarios). That covers the
 criterion itself at fixed θ, the estimates, θ and the Satterthwaite df.
 Tests use **Satterthwaite** degrees of freedom, as R's lmerTest does: t(df) per

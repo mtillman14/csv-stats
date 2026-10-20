@@ -54,7 +54,7 @@ treat these files as ground truth.
 the test bed for random-effect structures beyond `(1 | subject)`. The curated
 set above stays as it is.
 
-It covers 8 random-effect structures, 25 scenarios each (200 in all):
+It covers 9 random-effect structures, 25 scenarios each (225 in all):
 
 | id | lme4 formula |
 |---|---|
@@ -66,6 +66,7 @@ It covers 8 random-effect structures, 25 scenarios each (200 in all):
 | CROSSED | `(1 \| subject) + (1 \| item)` |
 | NESTED | `(1 \| site) + (1 \| site:subject)` |
 | CROSSED_SLOPES | `(1 + cond \| subject) + (1 \| item)` |
+| RIS_FACTOR | `(1 + x \| subject)`, fixed `time * x` or `group * time * x` |
 
 Each scenario's dimensions are drawn from its own seed. The draws are
 stratified, so every structure always includes:

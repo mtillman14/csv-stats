@@ -15,7 +15,7 @@
 #   scenarios/manifest.csv        one row per scenario: every sampled
 #                                 dimension + R's verdict (coverage at a glance)
 #
-# 8 random-effect structures x 25 scenarios. Each scenario's dimensions are
+# 9 random-effect structures x 25 scenarios. Each scenario's dimensions are
 # DRAWN from a fixed seed (MASTER_SEED + structure + index), stratified so the
 # hard cases are always there: balanced data, a zero true variance, a
 # near-+-1 correlation, small n, heavy missingness, a non-unit scale and an
@@ -77,7 +77,12 @@ FIXED <- list(
   x       = list(between = list(), within = list(), covariate = TRUE),
   B2_x    = list(between = GROUP, within = list(), covariate = TRUE),
   cond    = list(between = list(), within = COND, covariate = FALSE),
-  B2_cond = list(between = GROUP, within = COND, covariate = FALSE)
+  B2_cond = list(between = GROUP, within = COND, covariate = FALSE),
+  # A 3-level factor crossed with a covariate: the type-III bases of
+  # time and group:time are multi-row there, so the Fai-Cornelius ddf
+  # depend on the construction (.claude/plan-lmm-covariate-type3.md).
+  W3_x    = list(between = list(), within = TIME, covariate = TRUE),
+  B2W3_x  = list(between = GROUP, within = TIME, covariate = TRUE)
 )
 
 # ---------------------------------------------------------------------------
@@ -102,7 +107,11 @@ STRUCTURES <- list(
   NESTED         = list(random = list(block("site"), block(c("site", "subject"))), fixed = c("W3", "B2W3", "x"),
                         reps = 1:3, nested = TRUE),
   CROSSED_SLOPES = list(random = list(block("subject", c("(Intercept)", "cond")), block("item")), fixed = "cond",
-                        reps = 1L, crossed = TRUE)
+                        reps = 1L, crossed = TRUE),
+  # Appended last: a new structure leaves every other scenario's seed and
+  # fixture unchanged.
+  RIS_FACTOR     = list(random = list(block("subject", c("(Intercept)", "x"))), fixed = c("W3_x", "B2W3_x"),
+                        reps = 2:4)
 )
 
 # Deterministic strata by index, so the quotas hold by construction (the
@@ -236,6 +245,7 @@ generate <- function(spec) {
     if (length(facs) >= 2) lin <- lin + 0.25 * k[[facs[1]]] * k[[facs[2]]]
     if (uses_x) lin <- lin + 1.0 * xc
     if (uses_x && "group" %in% facs) lin <- lin + 0.5 * xc * k[["group"]]
+    if (uses_x && "time" %in% facs) lin <- lin + 0.3 * xc * k[["time"]]
   }
 
   # Random effects, block by block: b ~ N(0, D R D), as rows of a

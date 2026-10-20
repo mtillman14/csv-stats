@@ -1,6 +1,6 @@
 # Shared by the two LMM reference scripts:
 #   make_lmm_reference.R   the curated set (named scenarios, random intercept)
-#   make_lmm_scenarios.R   the sampled set (stratified draws, 8 random-effect
+#   make_lmm_scenarios.R   the sampled set (stratified draws, 9 random-effect
 #                          structures)
 #
 # ONE owner for how a fitted model becomes JSON, so the two fixture sets can

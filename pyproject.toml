@@ -35,6 +35,7 @@ dependencies = [
 full = [
     "pingouin>=0.6.0",
     "statsmodels>=0.14.5",
+    "patsy>=0.5",  # csvstats.lmm builds its design matrices with patsy
     "reportlab>=4.4.4",
     "matplotlib>=3.6",
     "seaborn>=0.13",

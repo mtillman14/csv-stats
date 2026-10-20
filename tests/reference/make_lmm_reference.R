@@ -374,7 +374,11 @@ for (sc in SCENARIOS) {
   write.csv(data, file.path(data_dir, paste0(sc$id, ".csv")), row.names = FALSE)
   out <- list(
     id = sc$id, scenario = sc[setdiff(names(sc), "id")],
-    factors = factors_of(d), between = names(d$between), within = names(d$within),
+    # I(): always JSON arrays. Under auto_unbox a one-element vector became a
+    # bare string and names(list()) became null (first fixtures, 2026-10-19;
+    # the Python reader tolerates both).
+    factors = I(as.character(factors_of(d))), between = I(as.character(names(d$between))),
+    within = I(as.character(names(d$within))),
     levels = all_levels(d), subject = "subject", dv = "y",
     # The numeric covariate a random slope uses (null for intercept-only).
     random_slope = if (isTRUE(sc$slopes)) "time_num" else NULL,

@@ -20,7 +20,7 @@ ci_interval([4.1, 5.0, 6.2])       # (low, high); also a seaborn errorbar= calla
 ci_half_width(sd=1.2, n=5)         # t(0.975, 4) * 1.2 / sqrt(5)
 ```
 
-## Linear mixed models (0.4.0)
+## Linear mixed models (0.4.1)
 `csvstats.lmm` uses every observation: a subject missing some within-subject
 levels is kept, not dropped (a repeated-measures ANOVA or paired t-test would
 have to drop it). REML, sum-to-zero coding. The random effects default to an

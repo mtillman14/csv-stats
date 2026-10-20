@@ -334,6 +334,43 @@ def _levene(groups: list[np.ndarray], alpha: float) -> dict[str, Any]:
     return {"name": "homogeneity_of_variance", "test": "levene", "scope": "groups", "statistic": _num(w), "p": _num(p), "violated": bool(p < alpha)}
 
 
+def assumption_checks(
+    data: pd.DataFrame,
+    dv: str,
+    *,
+    between: Sequence[str] = (),
+    within: Sequence[str] = (),
+    subject: str | None = None,
+    levels: dict[str, list[Any]] | None = None,
+    alpha: float = 0.05,
+) -> dict[str, Any]:
+    """The checks a caller uses to RECOMMEND a test, before running one.
+
+    Normality (Shapiro–Wilk) of the residuals the parametric model would have:
+    ``y − cell mean`` for between-only designs, and additionally centred on
+    each subject's mean when there is a within factor (every observation is
+    used; nobody is dropped). Homogeneity of variance (Levene, median-centred)
+    across the between cells, when there are any.
+
+    Returns ``{"assumptions": [...], "n": ...}``. Pre-testing assumptions to
+    choose a test is debated; callers should show this as evidence for a
+    recommendation the user can override, never as a silent switch.
+    """
+    between, within = list(between), list(within)
+    factors = [*between, *within]
+    prep = _Prepared(data, dv, factors, subject if within else None, levels)
+    frame = prep.frame
+    y = frame[dv].astype(float)
+    resid = y - (frame.groupby(factors)[dv].transform("mean") if factors else y.mean())
+    if within and subject:
+        resid = resid - frame.groupby(subject)[dv].transform("mean") + y.mean()
+    checks = [_shapiro(resid.to_numpy(float), "residuals", alpha)]
+    if between:
+        groups = [g[dv].to_numpy(float) for _, g in frame.groupby(between)]
+        checks.append(_levene(groups, alpha))
+    return {"assumptions": checks, "n": prep.n_record()}
+
+
 def _flag_violations(assumptions: list[dict], warnings: list[dict]) -> None:
     for a in assumptions:
         if a.get("violated"):

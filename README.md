@@ -20,6 +20,23 @@ ci_interval([4.1, 5.0, 6.2])       # (low, high); also a seaborn errorbar= calla
 ci_half_width(sd=1.2, n=5)         # t(0.975, 4) * 1.2 / sqrt(5)
 ```
 
+## Linear mixed models (0.3.0)
+`csvstats.lmm` uses every observation: a subject missing some within-subject
+levels is kept, not dropped (a repeated-measures ANOVA or paired t-test would
+have to drop it). Random intercept per subject, REML, sum-to-zero coding.
+Tests are **Wald** (`df_method: "wald"`): χ² per term, z per contrast.
+Satterthwaite degrees of freedom are planned.
+
+```python
+from csvstats.lmm import lmm, lmm_pairwise
+from csvstats.core import assumption_checks
+
+lmm(df, "step_length", within=["session", "speed"], subject="subject")       # one χ² test per term
+lmm_pairwise(df, "step_length", within=["session"], subject="subject",
+             levels={"session": ["post", "pre"]})                             # post − pre, z test
+assumption_checks(df, "step_length", within=["session"], subject="subject")  # Shapiro–Wilk on residuals (+ Levene)
+```
+
 ## Examples
 All code examples below use the following constants:
 ```python

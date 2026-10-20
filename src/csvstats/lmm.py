@@ -21,10 +21,16 @@ the reference datasets in tests/reference (test_lmm_reference.py): the fixed
 effects, their SEs (sigma^2 (X' V^-1 X)^-1, as lme4), the variance
 components, the REML log-likelihood and the singular-fit flag.
 
-**Degrees of freedom: Wald only, for now** (§3.5). Every effect says
-``df_method: "wald"``, the statistic is ``chi2`` (omnibus) or ``z``
-(pairwise), and no t or F is ever implied. Satterthwaite (lmerTest's default)
-is being added on this fit (.claude/plan-lmm-satterthwaite.md).
+**Degrees of freedom: Satterthwaite** (lmerTest's default), checked against
+lmerTest on the reference datasets:
+- ``lmm``'s coefficients get t(df) (stage 3).
+- ``lmm``'s terms get F(q, ddf), Fai–Cornelius (stage 4).
+- ``lmm_pairwise`` is still Wald z until it moves to full-model contrasts
+  (stage 5).
+
+Every effect states its ``df_method``. If a df cannot be computed, the Wald
+test is the result, labelled, with a ``satterthwaite_unavailable`` warning
+(.claude/plan-lmm-satterthwaite.md).
 
 Fitting problems (non-convergence, a singular fit) become ``warnings``, never
 exceptions (§3.5).
@@ -277,6 +283,7 @@ def _fit(formula: str, frame: pd.DataFrame, reml: bool, warnings: list[dict[str,
     codes = pd.factorize(frame.loc[X.index, _G])[0]
     result = _RandomIntercept(X.to_numpy(float), y.to_numpy(float).ravel(), codes, reml=reml).fit()
     result.columns = list(X.columns)
+    result.X = X.to_numpy(float)
     result.design_info = X.design_info
     log.debug("lmm fit: theta=%.6g sigma2=%.6g loglik=%.6f singular=%s",
               result.theta, result.sigma2, result.loglik, result.singular)
@@ -363,6 +370,174 @@ def _coefficients(result, ci_level: float, names: dict[str, str], levels: dict[s
     return out
 
 
+# --- lmerTest's type-III contrast matrices (port) ----------------------------
+# Fai–Cornelius denominator df depend on the BASIS of the hypothesis matrix
+# L, not just its row space (the F statistic doesn't). Selecting a term's
+# sum-coded coefficients gives the same F as lmerTest but, on unbalanced
+# data, a ddf up to 1% different (reference run, 2026-10-19). These functions
+# port lmerTest's own construction (R/anova_contrasts.R get_contrasts_type3 /
+# get_contrasts_type1; R/contrast_utils.R extract_contrasts_type3, get_rdX,
+# containment, doolittle) so the ddf match it.
+
+
+def _zapsmall(x: np.ndarray, digits: int = 7) -> np.ndarray:
+    """R's zapsmall(): round to ``digits`` significant digits of the largest
+    absolute value (R's default getOption("digits") = 7)."""
+    x = np.asarray(x, dtype=float)
+    finite = np.abs(x[np.isfinite(x)])
+    mx = float(finite.max()) if finite.size else 0.0
+    places = max(0, digits - int(np.ceil(np.log10(mx)))) if mx > 0 else digits
+    return np.round(x, places)
+
+
+def _doolittle_L(x: np.ndarray, eps: float = 1e-6) -> np.ndarray:
+    """lmerTest's doolittle(): unit-lower-triangular L of an LU factorisation
+    without pivoting; entries below eps are zeroed, as there."""
+    n = x.shape[0]
+    L = np.eye(n)
+    U = np.zeros((n, n))
+    for i in range(n):
+        for j in range(n):
+            U[i, j] = x[i, j] - sum(L[i, k] * U[k, j] for k in range(i))
+        for j in range(i + 1, n):
+            v = x[j, i] - sum(L[j, k] * U[k, i] for k in range(i))
+            L[j, i] = 0.0 if abs(U[i, i]) < eps else v / U[i, i]
+    L[np.abs(L) < eps] = 0.0
+    return L
+
+
+def _lm_resid(X: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """Residuals of y on X (lm.fit, no intercept); unique even if X is
+    rank deficient."""
+    coef, *_ = np.linalg.lstsq(X, y, rcond=None)
+    return y - X @ coef
+
+
+def type3_contrasts(frame: pd.DataFrame, names: dict[str, str], factors: list[str],
+                    X_sum: np.ndarray, term_cols: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
+    """``{term label: L}``, lmerTest's type-III contrast matrix per term, in the
+    sum coding of ``X_sum``. With one term, lmerTest's type-I (Doolittle).
+
+    ``term_cols``: term label ("group:time") -> the columns of X_sum it
+    owns, in model order (the intercept excluded).
+    """
+    terms = list(term_cols)
+    if len(terms) <= 1:
+        Lfull = _doolittle_L(X_sum.T @ X_sum).T  # get_contrasts_type1
+        return {t: Lfull[term_cols[t], :] for t in terms}
+
+    levels = {f: list(frame[names[f]].cat.categories) for f in factors}
+    codes = {f: frame[names[f]].cat.codes.to_numpy() for f in factors}
+    n = len(frame)
+
+    def indicator(term: str, combo: tuple) -> np.ndarray:
+        col = np.ones(n)
+        for f, lv in zip(term.split(":"), combo):
+            col *= (codes[f] == levels[f].index(lv))
+        return col
+
+    def combos(term: str, skip_first: bool) -> list[tuple]:
+        """Level combinations, FIRST factor varying fastest (R's order)."""
+        lists = [levels[f][1:] if skip_first else levels[f] for f in term.split(":")]
+        out = [()]
+        for lv in lists:  # each later factor varies slower
+            out = [c + (v,) for v in lv for c in out]
+        return out
+
+    # X in treatment coding (full rank: every cell is present) and the
+    # 'complete' rank-deficient design rdX (get_rdX), both with keys.
+    trt_keys = [("(Intercept)", ())] + [(t, c) for t in terms for c in combos(t, True)]
+    rd_keys = [("(Intercept)", ())] + [(t, c) for t in terms for c in combos(t, False)]
+    col = lambda key: np.ones(n) if key[0] == "(Intercept)" else indicator(*key)  # noqa: E731
+    X_trt = np.column_stack([col(k) for k in trt_keys])
+    rdX = np.column_stack([col(k) for k in rd_keys])
+    trt_map, start = {}, 1
+    for t in terms:
+        m = len(combos(t, True))
+        trt_map[t] = np.arange(start, start + m)
+        start += m
+
+    L = _zapsmall((np.linalg.pinv(X_trt) @ rdX).T)  # rows: rdX columns; cols: X_trt columns
+    factor_sets = {t: set(t.split(":")) for t in terms}
+    contained_in = {t: [u for u in terms if u != t and factor_sets[t] < factor_sets[u]] for t in terms}
+    order = sorted(range(len(terms)), key=lambda i: -len(factor_sets[terms[i]]))  # stable, as R's order()
+    for i in order:
+        t = terms[i]
+        if contained_in[t]:
+            cols = np.concatenate([trt_map[u] for u in contained_in[t]])
+            L[:, trt_map[t]] = _zapsmall(_lm_resid(L[:, cols], L[:, trt_map[t]]))
+    rows = [rd_keys.index(k) for k in trt_keys]  # keep rows named like X_trt's columns
+    L = L[rows, :]
+    mapping = _zapsmall(np.linalg.pinv(X_trt) @ X_sum)  # treatment -> sum coding
+    out = {}
+    for t in terms:
+        Lt = L[:, trt_map[t]].T
+        Lt = Lt[np.abs(Lt).sum(axis=1) > 1e-8, :]
+        out[t] = Lt @ mapping
+    return out
+
+
+def fai_cornelius_ddf(nu: list[float], tol: float = 1e-8) -> float:
+    """Denominator df of an F test from its eigen-contrasts' df (Fai &
+    Cornelius 1996), exactly as lmerTest's ``get_Fstat_ddf``: one df is
+    itself; all equal gives their mean; any <= 2 gives 2; otherwise
+    E = sum nu / (nu - 2) and ddf = 2E / (E - q)."""
+    if len(nu) == 1:
+        return float(nu[0])
+    arr = np.asarray(nu, dtype=float)
+    if np.all(np.abs(np.diff(arr)) < tol):
+        return float(arr.mean())
+    if np.any(arr <= 2):
+        return 2.0
+    E = float(np.sum(arr / (arr - 2)))
+    return 2.0 * E / (E - len(arr))
+
+
+def _term_test(result, L: np.ndarray, beta: np.ndarray, cov: np.ndarray, label: str,
+               unavailable: list[str]) -> dict[str, Any]:
+    """The type-III F test of one term (``L beta = 0``) with Satterthwaite
+    denominator df: lmerTest's ``contestMD`` (stage 4).
+
+    Eigen-decompose L C L'. Each eigenvector m gives a single-df contrast
+    l_m = P_m' L with variance d_m, whose df is :func:`satterthwaite_df`.
+    F = sum (l_m' beta)^2 / d_m / q, ddf from :func:`fai_cornelius_ddf`.
+    The Wald chi2 of the same hypothesis is kept under ``"wald"``; if any
+    contrast's df is unavailable, the Wald test IS the result, labelled.
+    """
+    lb = L @ beta
+    VL = L @ cov @ L.T
+    try:
+        chi2 = float(lb @ np.linalg.solve(VL, lb))
+    except np.linalg.LinAlgError:
+        chi2 = float("nan")
+    q_full = L.shape[0]
+    wald = {"chi2": _num(chi2), "df": float(q_full),
+            "p": _num(stats.chi2.sf(chi2, q_full)) if np.isfinite(chi2) else None}
+    d, P = np.linalg.eigh(VL)
+    order = np.argsort(d)[::-1]
+    d, P = d[order], P[:, order]
+    tol = max(np.finfo(float).eps ** 0.5 * d[0], 0.0)  # lmerTest: sqrt(eps) * the largest
+    q = int(np.sum(d > tol))
+    PtL = (P.T @ L)[:q]
+    nus, why = [], None
+    for m in range(q):
+        nu, why = satterthwaite_df(result, PtL[m])
+        if nu is None:
+            break
+        nus.append(nu)
+    base = {"term": label, "sphericity_correction": None, "estimate": None,
+            "effect_size": None, "effect_sizes": {}, "wald": wald}
+    if why is not None or q == 0:
+        unavailable.append(f"{label}: {why or 'the term has rank 0'}")
+        return {**base, "statistic_name": "chi2", "statistic": wald["chi2"], "df": [float(q_full)],
+                "df_method": "wald", "p": wald["p"]}
+    F = float(np.sum((PtL @ beta) ** 2 / d[:q]) / q)
+    ddf = fai_cornelius_ddf(nus)
+    return {**base, "statistic_name": "F", "statistic": _num(F), "df": [float(q), _num(ddf)],
+            "df_method": "satterthwaite", "p": _num(stats.f.sf(F, q, ddf)),
+            "eigen_df": [_num(v) for v in nus]}
+
+
 def _incomplete_note(prep: _Prepared, within: list[str], warnings: list[dict[str, str]]) -> None:
     """Say, without dropping anyone, which subjects lack some within cells."""
     if not within:
@@ -392,9 +567,13 @@ def lmm(
 ) -> dict[str, Any]:
     """Linear mixed model ``dv ~ factors (full factorial) + (1 | subject)``.
 
-    One effect per fixed term: a Wald chi² test of all its coefficients
-    (sum-to-zero coding, so a main effect is tested at the average of the
-    other factors). Coefficients, variance components, ICC, log-likelihood
+    One effect per fixed term: a type-III F test of all its coefficients with
+    Satterthwaite denominator df (lmerTest's contestMD; sum-to-zero coding, so a
+    main effect is tested at the average of the other factors). The Wald chi2
+    of the same hypothesis is kept under each effect's ``"wald"``, and is the
+    result (``df_method: "wald"``, a ``satterthwaite_unavailable`` warning)
+    when a df cannot be computed. Coefficients (with t tests), variance
+    components, ICC, log-likelihood
     and convergence are in ``details``. No subject is dropped for missing a
     within level; the ones that do are named in an ``incomplete_within_used``
     warning.
@@ -422,32 +601,29 @@ def lmm(
     design_info = result.design_info
     back = {safe: f for f, safe in names.items()}
     effects = []
+    unavailable: list[str] = []
+    term_cols = {}
     for term, columns in design_info.term_name_slices.items():
         if term == "Intercept":
             continue
-        idx = np.arange(k)[columns]
-        L = np.zeros((len(idx), k))
-        L[np.arange(len(idx)), idx] = 1.0
-        lb = L @ beta
-        middle = L @ cov @ L.T
-        try:
-            chi2 = float(lb @ np.linalg.solve(middle, lb))
-        except np.linalg.LinAlgError:
-            chi2 = float("nan")
-        df = int(len(idx))
         label = ":".join(back[part.split(",")[0].replace("C(", "").strip()] for part in term.split(":"))
-        effects.append({
-            "term": label, "statistic_name": "chi2", "statistic": _num(chi2), "df": [float(df)],
-            "df_method": "wald", "p": _num(stats.chi2.sf(chi2, df)) if np.isfinite(chi2) else None,
-            "sphericity_correction": None, "estimate": None, "effect_size": None, "effect_sizes": {},
-        })
+        term_cols[label] = np.arange(k)[columns]
+    # lmerTest's type-III contrast bases, so the Fai–Cornelius ddf match it
+    # (the F is the same for any basis; the ddf is not).
+    contrasts = type3_contrasts(frame, names, factors, result.X, term_cols)
+    for label in term_cols:
+        effects.append(_term_test(result, contrasts[label], beta, cov, label, unavailable))
+    if unavailable:
+        prep.warnings.append({"code": "satterthwaite_unavailable",
+                              "message": "Wald chi2 used for: " + "; ".join(unavailable)})
+        log.info("lmm term Satterthwaite unavailable: %s", unavailable)
     details = {
         "formula": f"{dv} ~ {' * '.join(factors)} + (1 | {subject})",
         "reml": reml, "converged": bool(result.converged),
         "log_likelihood": _num(result.loglik), "coefficients": _coefficients(result, ci_level, names, prep.levels, prep.warnings),
         "coding": "sum-to-zero", **_variance_details(result),
     }
-    return _record("lmm", "Linear mixed model (Wald tests)", prep, between=between, within=within,
+    return _record("lmm", "Linear mixed model (Satterthwaite)", prep, between=between, within=within,
                    alpha=alpha, ci_level=ci_level, tails="two-sided", effects=effects, assumptions=[],
                    details=details, extra_engines=["patsy"])
 

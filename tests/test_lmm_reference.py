@@ -193,13 +193,44 @@ def test_coefficient_satterthwaite_matches_lmertest(case):
     assert not fallbacks, f"Wald fallback where lmerTest has a df: {fallbacks}"
 
 
+F_RTOL = 1e-5
+
+
+@pytest.mark.parametrize("case", CASES)
+def test_term_f_tests_match_lmertest_anova(case):
+    """Stage 4: every term's type-III F, NumDF, DenDF (Satterthwaite,
+    Fai–Cornelius) and p against lmerTest's anova(type = 3). The terms come
+    in the same order and with the same names ("group:time")."""
+    ref = _usable(case)
+    rec = fit(case)
+    ours = {e["term"]: e for e in rec["effects"]}
+    assert set(ours) == {r["term"] for r in ref["anova_satterthwaite"]}
+    loosen = 10.0 if ref.get("singular") or lme4_stopped_short(case) else 1.0
+    for r in ref["anova_satterthwaite"]:
+        mine = ours[r["term"]]
+        assert mine["df_method"] == "satterthwaite", f"{r['term']}: fell back to Wald ({rec['warnings']})"
+        assert mine["df"][0] == r["num_df"], f"{r['term']} NumDF"
+        assert mine["statistic"] == pytest.approx(r["F"], rel=F_RTOL * loosen), f"{r['term']} F"
+        assert mine["df"][1] == pytest.approx(r["den_df"], rel=DF_RTOL * loosen), f"{r['term']} DenDF"
+        assert mine["p"] == pytest.approx(r["p"], abs=P_ATOL * loosen), f"{r['term']} p"
+
+
+@pytest.mark.parametrize("case", CASES)
+def test_wald_chi2_alongside_matches_r(case):
+    """The Wald chi2 kept under each term's "wald" equals F * NumDF from R."""
+    ref = _usable(case)
+    ours = {e["term"]: e for e in fit(case)["effects"]}
+    for r in ref["wald_terms"]:
+        assert ours[r["term"]]["wald"]["chi2"] == pytest.approx(r["chi2"], rel=F_RTOL * 10)
+
+
 def _rel(a, b, floor):
     return abs(a - b) / max(abs(b), floor)
 
 
 def test_print_parity_table():
     """Not an assertion: the largest relative error per scenario (run with -s)."""
-    lines = [f"{'scenario':58} {'beta':>9} {'se':>9} {'var_s':>9} {'var_e':>9} {'loglik':>9} {'df':>9} sing"]
+    lines = [f"{'scenario':58} {'beta':>9} {'se':>9} {'var_s':>9} {'var_e':>9} {'loglik':>9} {'df':>9} {'ddf':>9} sing"]
     for case in CASES:
         if _skip_reason(case):
             continue
@@ -221,7 +252,10 @@ def test_print_parity_table():
         flagged = any(w["code"] == "singular_fit" for w in rec["warnings"])
         df = max((_rel(ours[r["name"]]["df"], r["df"], 1.0) for r in ref["fixed"]
                   if r["name"] in ours and ours[r["name"]]["df"] is not None and r["df"] is not None), default=np.nan)
-        lines.append(f"{case:58} {beta:9.1e} {se:9.1e} {var_s:9.1e} {var_e:9.1e} {loglik:9.1e} {df:9.1e} "
+        terms = {e["term"]: e for e in rec["effects"]}
+        ddf = max((_rel(terms[r["term"]]["df"][1], r["den_df"], 1.0) for r in ref["anova_satterthwaite"]
+                   if r["term"] in terms and terms[r["term"]]["df_method"] == "satterthwaite"), default=np.nan)
+        lines.append(f"{case:58} {beta:9.1e} {se:9.1e} {var_s:9.1e} {var_e:9.1e} {loglik:9.1e} {df:9.1e} {ddf:9.1e} "
                      f"{'R' if ref['singular'] else '-'}{'P' if flagged else '-'}")
     print("\nLMM fit parity vs lme4 (relative error; sing: R = lme4 singular, P = csv-stats flagged)")
     print("\n".join(lines))

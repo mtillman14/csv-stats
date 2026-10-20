@@ -1,8 +1,9 @@
 """csvstats.lmm: linear mixed models that use every observation (§3.5).
 
-Wald tests only for now: every effect says ``df_method: "wald"`` and never
-implies t/F df. Validated on synthetic data with a known effect; the
-Satterthwaite step will add R (lmerTest) reference values.
+Terms and coefficients are Satterthwaite F / t since stage 3-4; lmm_pairwise is
+still Wald (stage 5). Every effect says its ``df_method`` and Wald never
+implies t/F df. Validated here on synthetic data with a known effect; parity
+with R (lme4 / lmerTest) is in test_lmm_reference.py.
 """
 
 import json
@@ -31,13 +32,16 @@ def _sessions(n_subjects=16, drop=(), effect=1.0, seed=3):
     return pd.DataFrame(rows)
 
 
-def test_omnibus_record_is_wald_and_json():
+def test_omnibus_record_is_satterthwaite_f_and_json():
+    """Terms are F(q, ddf) with Satterthwaite ddf since stage 4; the Wald chi2
+    of the same hypothesis travels alongside."""
     rec = lmm(_sessions(), "y", within=["session"], subject="subject")
     assert rec["test"] == "lmm"
     (effect,) = rec["effects"]
     assert effect["term"] == "session"
-    assert effect["statistic_name"] == "chi2" and effect["df"] == [2.0]
-    assert effect["df_method"] == "wald"
+    assert effect["statistic_name"] == "F" and effect["df"][0] == 2.0 and effect["df"][1] > 2
+    assert effect["df_method"] == "satterthwaite"
+    assert effect["wald"]["df"] == 2.0 and effect["wald"]["chi2"] > 0
     assert effect["p"] < 1e-6, "a true effect of 1 SD-unit per session is detected"
     json.dumps(rec)  # C2: plain JSON
     assert rec["details"]["coding"] == "sum-to-zero"
@@ -131,3 +135,24 @@ def test_version_strings_agree():
     pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
     with open(pyproject, "rb") as f:
         assert tomllib.load(f)["project"]["version"] == csvstats.__version__
+
+
+def test_zapsmall_matches_r():
+    """R: zapsmall(c(1, 1e-20)) is c(1, 0); with max 123.45..., 7 significant
+    digits leave 4 decimal places."""
+    from csvstats.lmm import _zapsmall
+
+    assert _zapsmall(np.array([1.0, 1e-20])).tolist() == [1.0, 0.0]
+    assert _zapsmall(np.array([123.456789012, 0.1])).tolist() == [123.4568, 0.1]
+    assert _zapsmall(np.zeros(2)).tolist() == [0.0, 0.0]
+
+
+def test_doolittle_reproduces_the_matrix():
+    """L U = x for a positive-definite x (no pivoting needed), L unit lower."""
+    from csvstats.lmm import _doolittle_L
+
+    x = np.array([[4.0, 2.0, 0.6], [2.0, 3.0, 0.5], [0.6, 0.5, 2.0]])
+    L = _doolittle_L(x)
+    assert np.allclose(np.diag(L), 1.0) and np.allclose(np.triu(L, 1), 0.0)
+    U = np.linalg.solve(L, x)
+    assert np.allclose(np.tril(U, -1), 0.0)

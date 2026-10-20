@@ -1,7 +1,7 @@
 """csvstats.lmm: linear mixed models that use every observation (§3.5).
 
-Terms and coefficients are Satterthwaite F / t since stage 3-4; lmm_pairwise is
-still Wald (stage 5). Every effect says its ``df_method`` and Wald never
+Terms, coefficients and pairwise contrasts are Satterthwaite F / t (stages 3-5);
+every effect says its ``df_method`` and Wald never
 implies t/F df. Validated here on synthetic data with a known effect; parity
 with R (lme4 / lmerTest) is in test_lmm_reference.py.
 """
@@ -73,7 +73,8 @@ def test_pairwise_estimate_is_a_minus_b_and_keeps_unpaired_subjects():
     rec = lmm_pairwise(data, "y", within=["session"], subject="subject", levels={"session": ["post", "pre"]})
     (effect,) = rec["effects"]
     assert (effect["a"], effect["b"]) == ("post", "pre")
-    assert effect["statistic_name"] == "z" and effect["df"] == [] and effect["df_method"] == "wald"
+    assert effect["statistic_name"] == "t" and effect["df_method"] == "satterthwaite" and effect["df"][0] > 2
+    assert effect["context"] == {} and effect["wald"]["z"] == pytest.approx(effect["statistic"])
     est = effect["estimate"]
     assert est["value"] == pytest.approx(1.0, abs=0.3), "true post - pre = 1"
     assert est["ci"][0] < est["value"] < est["ci"][1]
@@ -156,3 +157,24 @@ def test_doolittle_reproduces_the_matrix():
     assert np.allclose(np.diag(L), 1.0) and np.allclose(np.triu(L, 1), 0.0)
     U = np.linalg.solve(L, x)
     assert np.allclose(np.tril(U, -1), 0.0)
+
+
+def test_pairwise_comes_from_the_full_model_within_each_context():
+    """Stage 5: one fit, every pair of the chosen factor within each level of
+    the others (emmeans-style), all subjects kept."""
+    data = _sessions(drop={("S01", "follow")})
+    data["speed"] = np.where(data.index % 2 == 0, "slow", "fast")
+    rec = lmm_pairwise(data, "y", within=["session", "speed"], subject="subject", factor="session",
+                       levels={"session": ["pre", "post", "follow"], "speed": ["slow", "fast"]})
+    pairs = {(e["context"]["speed"], e["a"], e["b"]) for e in rec["effects"]}
+    assert pairs == {(s, a, b) for s in ("slow", "fast")
+                     for a, b in [("pre", "post"), ("pre", "follow"), ("post", "follow")]}
+    assert rec["n"]["subjects"] == 16
+    assert all(e["df_method"] == "satterthwaite" for e in rec["effects"])
+
+
+def test_pairwise_needs_factor_with_several_factors():
+    data = _sessions()
+    data["speed"] = np.where(data.index % 2 == 0, "slow", "fast")
+    with pytest.raises(ValueError, match="factor="):
+        lmm_pairwise(data, "y", within=["session", "speed"], subject="subject")

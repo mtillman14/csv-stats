@@ -25,8 +25,8 @@ components, the REML log-likelihood and the singular-fit flag.
 lmerTest on the reference datasets:
 - ``lmm``'s coefficients get t(df) (stage 3).
 - ``lmm``'s terms get F(q, ddf), Fai–Cornelius (stage 4).
-- ``lmm_pairwise`` is still Wald z until it moves to full-model contrasts
-  (stage 5).
+- ``lmm_pairwise``: every pairwise contrast from the FULL model (emmeans-style),
+  t(df) (stage 5).
 
 Every effect states its ``df_method``. If a df cannot be computed, the Wald
 test is the result, labelled, with a ``satterthwaite_unavailable`` warning
@@ -628,6 +628,14 @@ def lmm(
                    details=details, extra_engines=["patsy"])
 
 
+def _p_t(stat: float, df: float | None, tails: str) -> float:
+    """p of a t (df) or, with df None, a z statistic, for ``tails``."""
+    dist = stats.norm if df is None else stats.t(df)
+    if tails == "two-sided":
+        return float(2 * dist.sf(abs(stat)))
+    return float(dist.sf(stat) if tails == "greater" else dist.cdf(stat))
+
+
 def lmm_pairwise(
     data: pd.DataFrame,
     dv: str,
@@ -636,56 +644,105 @@ def lmm_pairwise(
     within: Sequence[str] = (),
     subject: str | None = None,
     levels: dict[str, list[Any]] | None = None,
+    factor: str | None = None,
     alpha: float = 0.05,
     ci_level: float = 0.95,
     tails: str = "two-sided",
     reml: bool = True,
 ) -> dict[str, Any]:
-    """The difference ``a − b`` between two levels of ONE factor from
-    ``dv ~ factor + (1 | subject)``: a Wald z test, every observation used.
+    """Every pairwise difference ``a − b`` between the levels of ``factor``,
+    within each combination of the OTHER factors, from ONE full model
+    ``dv ~ factors (full factorial) + (1 | subject)`` (stage 5).
 
-    The pairwise counterpart of :func:`lmm`. A subject with only one of the
-    two levels is kept: it informs the estimate through the random
-    intercept, where a paired t-test would have to drop it.
+    This is what R's emmeans does with every other factor as a ``by``
+    variable: the estimate is the difference of the two cells' model
+    predictions (``l = x(a, context) − x(b, context)``). Its SE comes from
+    the full model's variance estimates, which use all the data, and its df
+    are Satterthwaite (:func:`satterthwaite_df`). Checked against emmeans
+    (``lmer.df = "satterthwaite"``) on the reference datasets.
+
+    A subject missing some cells is kept: it informs every estimate through
+    the random intercept, where a paired t-test would drop it.
+
+    One effect per (context, pair), each with ``a``, ``b`` and ``context``
+    (``{other factor: level}``, empty with one factor). ``factor`` may be
+    omitted when the model has one factor.
     """
-    from .core import _one_factor, _two_levels
+    import patsy
 
     _check_tails(tails)
-    factor, _ = _one_factor(between, within, "lmm_pairwise")
+    between, within = list(between), list(within)
+    factors = [*between, *within]
+    if not factors:
+        raise ValueError("lmm_pairwise needs at least one factor")
+    if factor is None:
+        if len(factors) != 1:
+            raise ValueError(f"lmm_pairwise needs factor= when the model has several factors: {factors}")
+        factor = factors[0]
+    if factor not in factors:
+        raise ValueError(f"factor {factor!r} is not one of {factors}")
     if not subject:
         raise ValueError("a linear mixed model needs subject=")
-    prep = _Prepared(data, dv, [factor], subject, levels)
-    a, b = _two_levels(prep, factor, "lmm_pairwise")
+    prep = _Prepared(data, dv, factors, subject, levels)
+    for f in factors:
+        if len(prep.levels[f]) < 2:
+            raise ValueError(f"factor {f!r} has fewer than 2 levels")
     _check_identifiable(prep)
-    _incomplete_note(prep, list(within), prep.warnings)
-    frame, names = _model_frame(prep, [factor])
-    safe = names[factor]
-    # Reference level b, so the one coefficient IS a − b (C7).
-    frame[safe] = pd.Categorical(frame[safe].astype(object), categories=[b, a])
-    result = _fit(f"{_Y} ~ C({safe})", frame, reml, prep.warnings)
-    est = float(result.beta[1])
-    se = float(np.sqrt(result.cov_beta[1, 1]))
-    z = est / se if se > 0 else float("nan")
-    if tails == "two-sided":
-        p = 2 * stats.norm.sf(abs(z))
-    elif tails == "greater":
-        p = stats.norm.sf(z)
-    else:
-        p = stats.norm.cdf(z)
-    z_crit = stats.norm.ppf(0.5 + ci_level / 2)
-    effect = {
-        "term": factor, "a": _text(a), "b": _text(b), "statistic_name": "z", "statistic": _num(z),
-        "df": [], "df_method": "wald", "p": _num(p),
-        "estimate": {"name": "mean_difference", "value": _num(est),
-                     "ci": [_num(est - z_crit * se), _num(est + z_crit * se)],
-                     "se": _num(se), "sd_of_differences": None, "method": "lmm"},
-        "effect_size": None, "effect_sizes": {},
-    }
+    _incomplete_note(prep, within, prep.warnings)
+    frame, names = _model_frame(prep, factors)
+    formula = f"{_Y} ~ " + " * ".join(f"C({names[f]}, Sum)" for f in factors)
+    result = _fit(formula, frame, reml, prep.warnings)
+
+    others = [f for f in factors if f != factor]
+    lv = prep.levels[factor]
+    contexts = [dict()]
+    for o in others:
+        contexts = [{**c, o: v} for c in contexts for v in prep.levels[o]]
+    pairs = [(lv[i], lv[j]) for i in range(len(lv)) for j in range(i + 1, len(lv))]
+
+    def row(level: Any, context: dict) -> np.ndarray:
+        cell = {factor: level, **context}
+        grid = pd.DataFrame({names[f]: pd.Categorical([cell[f]], categories=prep.levels[f]) for f in factors})
+        return np.asarray(patsy.build_design_matrices([result.design_info], grid)[0], dtype=float)[0]
+
+    crit_z = stats.norm.ppf(0.5 + ci_level / 2)
+    effects, unavailable = [], []
+    for context in contexts:
+        x = {level: row(level, context) for level in lv}
+        for a, b in pairs:
+            l = x[a] - x[b]
+            est = float(l @ result.beta)
+            se = float(np.sqrt(l @ result.cov_beta @ l))
+            stat = est / se if se > 0 else float("nan")
+            df, why = satterthwaite_df(result, l)
+            context_text = {k: _text(v) for k, v in context.items()}
+            if df is None:
+                unavailable.append(f"{_text(a)} - {_text(b)} {context_text or ''}: {why}")
+                crit = crit_z
+            else:
+                crit = stats.t.ppf(0.5 + ci_level / 2, df)
+            effects.append({
+                "term": factor, "a": _text(a), "b": _text(b), "context": context_text,
+                "statistic_name": "z" if df is None else "t", "statistic": _num(stat),
+                "df": [] if df is None else [_num(df)],
+                "df_method": "wald" if df is None else "satterthwaite",
+                "p": _num(_p_t(stat, df, tails)),
+                "estimate": {"name": "mean_difference", "value": _num(est),
+                             "ci": [_num(est - crit * se), _num(est + crit * se)],
+                             "se": _num(se), "sd_of_differences": None, "method": "lmm_emm"},
+                "effect_size": None, "effect_sizes": {},
+                "wald": {"z": _num(stat), "p": _num(_p_t(stat, None, tails))},
+            })
+    if unavailable:
+        prep.warnings.append({"code": "satterthwaite_unavailable",
+                              "message": "Wald z used for: " + "; ".join(unavailable)})
+        log.info("lmm_pairwise Satterthwaite unavailable: %s", unavailable)
     details = {
-        "formula": f"{dv} ~ {factor} + (1 | {subject})", "reml": reml,
+        "formula": f"{dv} ~ {' * '.join(factors)} + (1 | {subject})", "reml": reml,
+        "contrasts": f"pairwise {factor} within each combination of {others or 'nothing'} (full model)",
         "converged": bool(result.converged), "log_likelihood": _num(result.loglik),
         **_variance_details(result),
     }
-    return _record("lmm_pairwise", "Linear mixed model contrast (Wald z)", prep, between=list(between),
-                   within=list(within), alpha=alpha, ci_level=ci_level, tails=tails, effects=[effect],
+    return _record("lmm_pairwise", "Linear mixed model contrasts (Satterthwaite)", prep, between=between,
+                   within=within, alpha=alpha, ci_level=ci_level, tails=tails, effects=effects,
                    assumptions=[], details=details, extra_engines=["patsy"])

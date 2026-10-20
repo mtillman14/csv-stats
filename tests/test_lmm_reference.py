@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from csvstats.lmm import lmm
+from csvstats.lmm import lmm, lmm_pairwise
 
 REF = Path(__file__).parent / "reference"
 CASES = sorted(p.stem for p in (REF / "results").glob("*.json"))
@@ -222,6 +222,62 @@ def test_wald_chi2_alongside_matches_r(case):
     ours = {e["term"]: e for e in fit(case)["effects"]}
     for r in ref["wald_terms"]:
         assert ours[r["term"]]["wald"]["chi2"] == pytest.approx(r["chi2"], rel=F_RTOL * 10)
+
+
+@lru_cache(maxsize=None)
+def pairwise(case: str, factor: str) -> dict:
+    ref = reference(case)
+    return lmm_pairwise(data(case), "y", between=ref["between"], within=ref["within"], subject="subject",
+                        levels=ref["levels"], factor=factor)
+
+
+def _contrast_key(row: dict, factor: str, factors: list[str]) -> tuple:
+    context = tuple(sorted((f, str(row[f])) for f in factors if f != factor))
+    return context, str(row["a"]), str(row["b"])
+
+
+def _reference_contrasts(case: str, which: str) -> dict[str, list[dict]]:
+    """``{factor: rows}``; a factor emmeans could not do is a string (skip)."""
+    raw = reference(case)[which]
+    return {f: rows for f, rows in raw.items() if isinstance(rows, list)}
+
+
+@pytest.mark.parametrize("case", CASES)
+def test_pairwise_contrasts_match_emmeans(case):
+    """Stage 5: every full-model pairwise contrast of every factor, within
+    every combination of the others, against emmeans (lmer.df =
+    "satterthwaite"): estimate, SE, df, t, p."""
+    ref = _usable(case)
+    scale = _scale(case)
+    loosen = 10.0 if ref.get("singular") or lme4_stopped_short(case) else 1.0
+    for factor, rows in _reference_contrasts(case, "contrasts_satterthwaite").items():
+        ours = {(tuple(sorted(e["context"].items())), e["a"], e["b"]): e for e in pairwise(case, factor)["effects"]}
+        assert len(ours) == len(rows), f"{factor}: {len(ours)} contrasts vs emmeans {len(rows)}"
+        for row in rows:
+            key = _contrast_key(row, factor, ref["factors"])
+            mine = ours[key]
+            assert mine["df_method"] == "satterthwaite", f"{factor} {key}: fell back to Wald"
+            est = mine["estimate"]
+            assert est["value"] == pytest.approx(row["estimate"], rel=EST_RTOL * loosen, abs=EST_RTOL * loosen * scale), \
+                f"{factor} {key} estimate"
+            assert est["se"] == pytest.approx(row["SE"], rel=SE_RTOL * loosen, abs=SE_RTOL * loosen * scale), \
+                f"{factor} {key} SE"
+            assert mine["df"][0] == pytest.approx(row["df"], rel=DF_RTOL * loosen), f"{factor} {key} df"
+            assert mine["statistic"] == pytest.approx(row["statistic"], rel=T_RTOL * loosen, abs=1e-8), f"{factor} {key} t"
+            assert mine["p"] == pytest.approx(row["p.value"], abs=P_ATOL * loosen), f"{factor} {key} p"
+
+
+@pytest.mark.parametrize("case", CASES)
+def test_pairwise_wald_alongside_matches_emmeans_asymptotic(case):
+    """The Wald z kept with each contrast equals emmeans' asymptotic z."""
+    ref = _usable(case)
+    loosen = 10.0 if ref.get("singular") or lme4_stopped_short(case) else 1.0
+    for factor, rows in _reference_contrasts(case, "contrasts_wald").items():
+        ours = {(tuple(sorted(e["context"].items())), e["a"], e["b"]): e for e in pairwise(case, factor)["effects"]}
+        for row in rows:
+            mine = ours[_contrast_key(row, factor, ref["factors"])]
+            assert mine["wald"]["z"] == pytest.approx(row["statistic"], rel=T_RTOL * loosen, abs=1e-8)
+            assert mine["wald"]["p"] == pytest.approx(row["p.value"], abs=P_ATOL * loosen)
 
 
 def _rel(a, b, floor):

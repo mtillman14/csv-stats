@@ -34,6 +34,13 @@ as in lmerTest and SAS. So a factor crossed with a covariate is tested at
 covariate = 0, and a `type3_at_covariate_zero` warning says so. Centre the
 covariate to test the factor at the covariate's mean.
 
+`lmm_pairwise` takes the same `covariates=` and compares levels with each
+covariate at its mean (emmeans' reference grid), or at the value you give
+in `covariates_at={"age": 65}`. The record's `details["covariates_at"]`
+states the value used. So with a covariate, `lmm`'s F for a factor (at 0)
+and `lmm_pairwise`'s contrasts (at the mean) answer different questions,
+exactly as lmerTest's anova and emmeans do in R.
+
 The fit is checked against lme4 on 225 sampled scenarios over 9
 random-effect structures (tests/reference/scenarios). That covers the
 criterion itself at fixed θ, the estimates, θ and the Satterthwaite df.

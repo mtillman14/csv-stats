@@ -44,7 +44,8 @@ def as_list(value) -> list:
     empty one as null (fixtures of 2026-10-19); a list either way here."""
     if value is None:
         return []
-    return [value] if isinstance(value, str) else list(value)
+    # A one-element NUMBER is unboxed too (covariates_at, 2026-10-20).
+    return [value] if isinstance(value, (str, int, float)) else list(value)
 
 
 def as_dict(value) -> dict:

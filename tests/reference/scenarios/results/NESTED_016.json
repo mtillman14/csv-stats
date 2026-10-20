@@ -112,6 +112,9 @@
   ],
   "contrasts_satterthwaite": [],
   "contrasts_wald": [],
+  "covariates_at": {
+    "x": 0.0386841704192407
+  },
   "varcorr": [
     {
       "grp": "site:subject",

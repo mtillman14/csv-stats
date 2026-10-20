@@ -518,10 +518,18 @@ fit_scenario <- function(spec, data) {
   }
   fit <- q$fit
   X <- getME(fit, "X")
-  # emmeans contrasts only where they mean what csv-stats' lmm_pairwise
-  # computes: factors only (no covariate, no collinear column).
-  contrasts <- if (length(facs) && !fd$covariate && !spec$collinear) describe_contrasts(fit, facs, lv)
+  # emmeans contrasts wherever csv-stats' lmm_pairwise can compute the same
+  # thing: a design with a factor and no collinear column. A covariate sits
+  # at emmeans' reference-grid value (its mean), recorded in covariates_at so
+  # the tests check csv-stats' grid value too
+  # (.claude/plan-lmm-covariate-contrasts.md).
+  contrasts <- if (length(facs) && !spec$collinear) describe_contrasts(fit, facs, lv)
                else list(contrasts_satterthwaite = list(), contrasts_wald = list())
+  covariates_at <- if (fd$covariate && !spec$collinear) {
+    grid <- emmeans::ref_grid(fit)@grid
+    list(x = unique(grid$x))
+  } else NULL
+  contrasts$covariates_at <- covariates_at
   c(
     list(formula = paste(deparse(form, width.cutoff = 500), collapse = " "), coding = "contr.sum",
          fixed_terms = I(attr(terms(as.formula(fixed_part)), "term.labels")),

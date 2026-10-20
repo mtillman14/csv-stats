@@ -165,8 +165,37 @@
       "p": 0.0130171787152904
     }
   ],
-  "contrasts_satterthwaite": [],
-  "contrasts_wald": [],
+  "contrasts_satterthwaite": {
+    "group": [
+      {
+        "estimate": -0.709654310133671,
+        "SE": 0.197070529388498,
+        "df": 31.1172823218122,
+        "statistic": -3.60101691681501,
+        "p.value": 0.00108774553221059,
+        "a": "ctl",
+        "b": "trt",
+        "factor": "group"
+      }
+    ]
+  },
+  "contrasts_wald": {
+    "group": [
+      {
+        "estimate": -0.709654310133671,
+        "SE": 0.197070529388498,
+        "df": null,
+        "statistic": -3.60101691681501,
+        "p.value": 0.000316974949035585,
+        "a": "ctl",
+        "b": "trt",
+        "factor": "group"
+      }
+    ]
+  },
+  "covariates_at": {
+    "x": -0.0375079467370542
+  },
   "varcorr": [
     {
       "grp": "subject",

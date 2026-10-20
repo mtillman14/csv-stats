@@ -19,7 +19,7 @@ the parity table counts them.
   - always: fixed effects, SEs, variance components, the singular flag,
     Satterthwaite t
   - any design with a fixed term: the type-III F tests
-  - factors-only designs also: the emmeans contrasts
+  - any design with a factor: the emmeans contrasts (covariates at their mean)
 
 Run with ``-s`` for the parity table.
 """
@@ -111,9 +111,9 @@ class Route:
       it cannot express the model.
     - ``terms``: the type-III F tests are comparable (any design with a
       fixed term, covariates included since plan-lmm-covariate-type3).
-    - ``contrasts``: the emmeans contrasts are comparable (factors only:
-      the generator writes none for a covariate design, and
-      ``lmm_pairwise`` has no covariates).
+    - ``contrasts``: the emmeans contrasts are comparable (any design with
+      a factor; covariates at emmeans' reference-grid mean since
+      plan-lmm-covariate-contrasts).
     - ``reason``: why it is less than the full route ("" when full).
     """
 
@@ -133,8 +133,8 @@ def route(ref: dict) -> Route:
                   covariates=ref["covariates"], random=ref["random"])
     if not ref["factors"] and not ref["covariates"]:
         return Route(True, kwargs, False, False, "intercept-only fixed design: no term tests")
-    if ref["covariates"]:
-        return Route(True, kwargs, True, False, "covariate design: no emmeans contrasts generated")
+    if not ref["factors"]:
+        return Route(True, kwargs, True, False, "no factor: no pairwise contrasts")
     return Route(True, kwargs, True, True, "")
 
 
@@ -251,8 +251,7 @@ def fit(case: str) -> dict:
 
 @lru_cache(maxsize=None)
 def pairwise(case: str, factor: str) -> dict:
-    kwargs = {k: v for k, v in _route(case).lmm.items() if k != "covariates"}
-    return lmm_pairwise(data(case), "y", factor=factor, **kwargs)
+    return lmm_pairwise(data(case), "y", factor=factor, **_route(case).lmm)
 
 
 # --- tolerances from R's own optimizers ---------------------------------------
@@ -449,6 +448,22 @@ def test_term_f_tests_match_lmertest_anova(case):
 def test_pairwise_contrasts_match_emmeans(case):
     ref = _need_contrasts(case)
     assert_pairwise_contrasts(lambda f: pairwise(case, f), ref, _scale(case), _inference_loosen(case))
+
+
+@pytest.mark.parametrize("case", CASES)
+def test_covariate_grid_value_matches_emmeans(case):
+    """csv-stats' reference-grid value per covariate (its mean over the
+    fitted rows) is emmeans' ref_grid value."""
+    ref = _need_contrasts(case)
+    theirs = as_dict(ref.get("covariates_at"))
+    if not ref["covariates"]:
+        pytest.skip("no covariates")
+    assert theirs, "the fixture predates covariates_at: rerun make_lmm_scenarios.R"
+    ours = pairwise(case, ref["factors"][0])["details"]["covariates_at"]
+    for c, v in theirs.items():
+        (value,) = as_list(v)
+        assert ours[c]["source"] == "mean"
+        assert ours[c]["value"] == pytest.approx(value, rel=1e-12, abs=1e-12), c
 
 
 # --- the table ------------------------------------------------------------------

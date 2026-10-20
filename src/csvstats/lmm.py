@@ -46,7 +46,9 @@ varpar = (theta..., sigma):
   (Goodnight 1980), with or without covariates. A factor crossed with a
   covariate is tested at covariate = 0 (``type3_at_covariate_zero``).
 - ``lmm_pairwise``: every pairwise contrast from the FULL model (emmeans-style),
-  t(df).
+  t(df), with each covariate at its mean (or ``covariates_at``). So a
+  factor's contrasts sit at the covariate's mean while ``lmm``'s type-III F
+  sits at 0.
 
 Every effect states its ``df_method``. If a df cannot be computed, the Wald
 test is the result, labelled, with a ``satterthwaite_unavailable`` warning
@@ -732,6 +734,8 @@ def lmm_pairwise(
     subject: str | None = None,
     levels: dict[str, list[Any]] | None = None,
     factor: str | None = None,
+    covariates: Sequence[str] = (),
+    covariates_at: Mapping[str, float] | None = None,
     random: Sequence[Mapping[str, Any] | RandomTerm] | None = None,
     alpha: float = 0.05,
     ci_level: float = 0.95,
@@ -740,8 +744,18 @@ def lmm_pairwise(
 ) -> dict[str, Any]:
     """Every pairwise difference ``a − b`` between the levels of ``factor``,
     within each combination of the OTHER factors, from ONE full model
-    ``dv ~ factors (full factorial) + random`` (stage 5; ``random`` as in
-    :func:`lmm`, default ``(1 | subject)``).
+    ``dv ~ factors * covariates (full factorial) + random`` (stage 5;
+    ``covariates`` and ``random`` as in :func:`lmm`, ``random`` defaulting
+    to ``(1 | subject)``).
+
+    **Covariates** are held at one value each, emmeans' reference grid: by
+    default the covariate's mean over the fitted rows (emmeans'
+    ``cov.reduce = mean``), or ``covariates_at[c]`` when given (emmeans'
+    ``at=``). ``details["covariates_at"]`` records the value and where it
+    came from. Note the difference from :func:`lmm`: its type-III F for a
+    factor crossed with a covariate tests the factor at covariate = 0, as
+    lmerTest's anova does, while these contrasts sit at the mean, as
+    emmeans does (.claude/plan-lmm-covariate-contrasts.md).
 
     This is what R's emmeans does with every other factor as a ``by``
     variable: the estimate is the difference of the two cells' model
@@ -761,15 +775,27 @@ def lmm_pairwise(
 
     _check_tails(tails)
     factors = [*between, *within]
+    covariates = list(covariates)
     if not factors:
-        raise ValueError("lmm_pairwise needs at least one factor")
+        raise ValueError("lmm_pairwise needs at least one factor: pairwise contrasts compare factor levels"
+                         + (" (covariates alone have no pairs)" if covariates else ""))
+    unknown = sorted(set(covariates_at or {}) - set(covariates))
+    if unknown:
+        raise ValueError(f"covariates_at names {unknown}, which are not among covariates={covariates}")
     if factor is None:
         if len(factors) != 1:
             raise ValueError(f"lmm_pairwise needs factor= when the model has several factors: {factors}")
         factor = factors[0]
     if factor not in factors:
         raise ValueError(f"factor {factor!r} is not one of {factors}")
-    prep, frame, names, result, factors = _setup(data, dv, between, within, subject, levels, (), random, reml)
+    prep, frame, names, result, factors = _setup(data, dv, between, within, subject, levels, covariates,
+                                                 random, reml)
+    at = {}  # covariate -> (value, "mean" | "given"): emmeans' reference grid
+    for c in covariates:
+        given = (covariates_at or {}).get(c)
+        at[c] = (float(given), "given") if given is not None else (float(frame[names[c]].mean()), "mean")
+    if at:
+        log.debug("lmm_pairwise reference grid covariates: %s", at)
 
     others = [f for f in factors if f != factor]
     lv = prep.levels[factor]
@@ -781,6 +807,8 @@ def lmm_pairwise(
     def row(level: Any, context: dict) -> np.ndarray:
         cell = {factor: level, **context}
         grid = pd.DataFrame({names[f]: pd.Categorical([cell[f]], categories=prep.levels[f]) for f in factors})
+        for c, (value, _) in at.items():
+            grid[names[c]] = [value]
         return np.asarray(patsy.build_design_matrices([result.design_info], grid)[0], dtype=float)[0]
 
     crit_z = stats.norm.ppf(0.5 + ci_level / 2)
@@ -815,9 +843,11 @@ def lmm_pairwise(
         prep.warnings.append({"code": "satterthwaite_unavailable",
                               "message": "Wald z used for: " + "; ".join(unavailable)})
         log.info("lmm_pairwise Satterthwaite unavailable: %s", unavailable)
+    at_text = "".join(f", at {c} = {v:.6g} ({how})" for c, (v, how) in at.items())
     details = {
-        "formula": _formula_text(dv, factors, (), result.terms), "reml": reml,
-        "contrasts": f"pairwise {factor} within each combination of {others or 'nothing'} (full model)",
+        "formula": _formula_text(dv, factors, covariates, result.terms), "reml": reml,
+        "contrasts": f"pairwise {factor} within each combination of {others or 'nothing'} (full model){at_text}",
+        "covariates_at": {c: {"value": _num(v), "source": how} for c, (v, how) in at.items()},
         "converged": bool(result.converged), "log_likelihood": _num(result.loglik),
         **_variance_details(result, prep.subject),
     }

@@ -173,6 +173,8 @@
       "ml": 410.197424242129
     }
   ],
+  "start": "default",
+  "default_start_criterion": 349.657969453959,
   "optimizers": {
     "fits": [
       {

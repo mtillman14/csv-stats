@@ -56,20 +56,20 @@
   "fixed": [
     {
       "name": "(Intercept)",
-      "estimate": 10.0114740894871,
-      "se": 1.08304419504212,
-      "df": 28.1338700347928,
-      "t": 9.24382784683855,
-      "p": 5.0691979720392e-10,
+      "estimate": 10.0069477516222,
+      "se": 1.07829825395314,
+      "df": 28.5009630396566,
+      "t": 9.28031526985771,
+      "p": 4.11998052466261e-10,
       "_row": "(Intercept)"
     },
     {
       "name": "x",
-      "estimate": 0.0105952677070867,
-      "se": 0.0156036379231847,
-      "df": 19.8482237779211,
-      "t": 0.679025478497145,
-      "p": 0.504963429743896,
+      "estimate": 0.0106817912831012,
+      "se": 0.0157460735699476,
+      "df": 19.8733058938287,
+      "t": 0.678378088077024,
+      "p": 0.505355223162695,
       "_row": "x"
     }
   ],
@@ -77,9 +77,9 @@
     {
       "term": "x",
       "num_df": 1,
-      "den_df": 19.8482237779211,
-      "F": 0.461075600448276,
-      "p": 0.504963429743896,
+      "den_df": 19.8733058938287,
+      "F": 0.460196830383038,
+      "p": 0.505355223162695,
       "_row": "x"
     },
     {
@@ -95,9 +95,9 @@
     {
       "term": "x",
       "num_df": 1,
-      "den_df": 16.5694230826961,
-      "F": 0.422942843435604,
-      "p": 0.524387992064085,
+      "den_df": 16.9213589751854,
+      "F": 0.422627158648248,
+      "p": 0.524357673854349,
       "_row": "x"
     },
     {
@@ -112,9 +112,9 @@
   "wald_terms": [
     {
       "term": "x",
-      "chi2": 0.461075600448276,
+      "chi2": 0.460196830383038,
       "df": 1,
-      "p": 0.49712171849977
+      "p": 0.497531998611816
     },
     {
       "term": "z",
@@ -130,71 +130,68 @@
       "grp": "subject",
       "var1": "(Intercept)",
       "var2": null,
-      "vcov": 3.72904768845544,
-      "sdcor": 1.93107423173099
+      "vcov": 3.52429088824127,
+      "sdcor": 1.87730948121008
     },
     {
       "grp": "subject.1",
       "var1": "x",
       "var2": null,
-      "vcov": 7.44093956977256e-05,
-      "sdcor": 0.00862608808775598
+      "vcov": 9.42634752154471e-05,
+      "sdcor": 0.00970893790357355
     },
     {
       "grp": "Residual",
       "var1": null,
       "var2": null,
-      "vcov": 1.11546114070332,
-      "sdcor": 1.05615393797652
+      "vcov": 1.12588379385564,
+      "sdcor": 1.06107671440648
     }
   ],
-  "reml_criterion": 143.422350447561,
-  "loglik_reml": -71.7111752237806,
+  "reml_criterion": 143.412903947105,
+  "loglik_reml": -71.7064519735523,
   "singular": false,
-  "convergence_messages": [
-    "Model failed to converge with max|grad| = 0.168541 (tol = 0.002, component 1)\n  See ?lme4::convergence and ?lme4::troubleshooting."
-  ],
+  "convergence_messages": [],
   "notes": [
-    "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient",
-    "warning: Model failed to converge with max|grad| = 0.168541 (tol = 0.002, component 1)\n  See ?lme4::convergence and ?lme4::troubleshooting."
+    "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient"
   ],
-  "theta": [1.82840224544418, 0.00816745341524989],
+  "theta": [1.76924953278253, 0.00915008101841565],
   "theta_names": ["subject.(Intercept)", "subject.x"],
   "theta_lower": [0, 0],
   "vcov_beta": [
-    [1.17298472841442, -0.0137297148393033],
-    [-0.0137297148393033, 0.000243473516437849]
+    [1.16272712447839, -0.0138757672132974],
+    [-0.0138757672132974, 0.000247938832870202]
   ],
   "probes": [
     {
       "label": "estimate",
-      "theta": [1.82840224544418, 0.00816745341524989],
-      "reml": 143.422350447561,
-      "ml": 137.803633161692
+      "theta": [1.76924953278253, 0.00915008101841565],
+      "reml": 143.412903947105,
+      "ml": 137.780315887095
     },
     {
       "label": "theta1_up",
-      "theta": [2.0112424699886, 0.00816745341524989],
-      "reml": 143.573740013989,
-      "ml": 138.041933451389
+      "theta": [1.94617448606079, 0.00915008101841565],
+      "reml": 143.507305097142,
+      "ml": 137.956923817475
     },
     {
       "label": "theta1_down",
-      "theta": [1.64556202089976, 0.00816745341524989],
-      "reml": 143.480580376635,
-      "ml": 137.779825084113
+      "theta": [1.59232457950428, 0.00915008101841565],
+      "reml": 143.527092449619,
+      "ml": 137.817581297513
     },
     {
       "label": "theta2_up",
-      "theta": [1.82840224544418, 0.00898419875677488],
-      "reml": 143.423528651354,
-      "ml": 137.815644917433
+      "theta": [1.76924953278253, 0.0100650891202572],
+      "reml": 143.415109769597,
+      "ml": 137.796145005924
     },
     {
       "label": "theta2_down",
-      "theta": [1.82840224544418, 0.0073507080737249],
-      "reml": 143.423739142571,
-      "ml": 137.795135023731
+      "theta": [1.76924953278253, 0.00823507291657409],
+      "reml": 143.41481953772,
+      "ml": 137.769772833855
     },
     {
       "label": "boundary",
@@ -221,23 +218,25 @@
       "ml": 202.828518528244
     }
   ],
+  "start": "whitened",
+  "default_start_criterion": 143.422350447561,
   "optimizers": {
     "fits": [
       {
         "optimizer": "bobyqa",
         "ok": true,
         "converged": true,
-        "criterion": 143.412903947111,
-        "theta": [1.76924722883367, 0.0091500985513101],
+        "criterion": 143.412903947106,
+        "theta": [1.76924818179826, 0.00915006041156459],
         "fixef": {
-          "(Intercept)": 10.0069477595619,
-          "x": 0.0106817906505688
+          "(Intercept)": 10.0069480853051,
+          "x": 0.0106817838785843
         },
         "se": {
-          "(Intercept)": 1.07829811985134,
-          "x": 0.015746078454121
+          "(Intercept)": 1.07829824621777,
+          "x": 0.0157460752079084
         },
-        "vcov": [3.52428343357415, 9.42638825759473e-05, 1.1258843446506],
+        "vcov": [3.52428719289295, 9.42630957540502e-05, 1.12588433275639],
         "notes": [
           "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient"
         ]
@@ -246,77 +245,74 @@
         "optimizer": "Nelder_Mead",
         "ok": true,
         "converged": true,
-        "criterion": 143.45994759618,
-        "theta": [1.82868298536354, 0],
+        "criterion": 143.412903947844,
+        "theta": [1.76923852373911, 0.00915065418878502],
         "fixef": {
-          "(Intercept)": 10.0514717252508,
-          "x": 0.00973213089997997
+          "(Intercept)": 10.0069425761879,
+          "x": 0.0106818997067218
         },
         "se": {
-          "(Intercept)": 1.09211923199284,
-          "x": 0.0154554262323644
+          "(Intercept)": 1.07829648980175,
+          "x": 0.0157461163340264
         },
-        "vcov": [3.82196589133856, 0, 1.1429045422367],
+        "vcov": [3.52424455802149, 9.42752190045356e-05, 1.12588300444998],
         "notes": [
-          "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient",
-          "message: boundary (singular) fit: see help('isSingular')"
+          "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient"
         ]
       },
       {
         "optimizer": "nlopt_bobyqa",
         "ok": true,
-        "converged": false,
-        "criterion": 143.422350447561,
-        "theta": [1.82840224544418, 0.00816745341524989],
+        "converged": true,
+        "criterion": 143.412903947105,
+        "theta": [1.76924953278253, 0.00915008101841565],
         "fixef": {
-          "(Intercept)": 10.0114740894871,
-          "x": 0.0105952677070867
+          "(Intercept)": 10.0069477516222,
+          "x": 0.0106817912831012
         },
         "se": {
-          "(Intercept)": 1.08304419504212,
-          "x": 0.0156036379231847
+          "(Intercept)": 1.07829825395314,
+          "x": 0.0157460735699476
         },
-        "vcov": [3.72904768845544, 7.44093956977256e-05, 1.11546114070332],
+        "vcov": [3.52429088824127, 9.42634752154471e-05, 1.12588379385564],
         "notes": [
-          "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient",
-          "warning: Model failed to converge with max|grad| = 0.168541 (tol = 0.002, component 1)\n  See ?lme4::convergence and ?lme4::troubleshooting."
+          "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient"
         ]
       },
       {
         "optimizer": "nlopt_neldermead",
         "ok": true,
         "converged": true,
-        "criterion": 143.459947607311,
-        "theta": [1.82862627087161, 0],
+        "criterion": 143.412903978316,
+        "theta": [1.76920139526509, 0.00914761357076529],
         "fixef": {
-          "(Intercept)": 10.0514800131098,
-          "x": 0.00973194970414456
+          "(Intercept)": 10.0069781033039,
+          "x": 0.0106811327881327
         },
         "se": {
-          "(Intercept)": 1.09211711544646,
-          "x": 0.0154555317428978
+          "(Intercept)": 1.07830195679696,
+          "x": 0.0157460631592945
         },
-        "vcov": [3.82178795320969, 0, 1.14292222409764],
+        "vcov": [3.52419714253618, 9.42152638138939e-05, 1.12591511216327],
         "notes": [
-          "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient",
-          "message: boundary (singular) fit: see help('isSingular')"
+          "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient"
         ]
       }
     ],
-    "n_converged": 3,
-    "n_used": 3,
+    "n_converged": 4,
+    "n_used": 4,
     "spread": {
-      "criterion": 0.047043660199364,
-      "theta": [0.0594357565298733, 0.0091500985513101],
+      "criterion": 3.12113286327076e-08,
+      "theta": [4.81375174461451e-05, 3.04061801973017e-06],
       "fixef": {
-        "(Intercept)": 0.04453225354791,
-        "x": 0.000949840946424274
+        "(Intercept)": 3.55271160277226e-05,
+        "x": 7.66918589125906e-07
       },
       "se": {
-        "(Intercept)": 0.0138211121414971,
-        "x": 0.000290652221756591
+        "(Intercept)": 5.46699520898031e-06,
+        "x": 5.31747318677223e-08
       },
-      "vcov": [0.297682457764419, 9.42638825759473e-05, 0.0170378794470374]
+      "vcov": [9.37457050977919e-05, 5.9955190641678e-08, 3.21077132934278e-05]
     }
   }
 }

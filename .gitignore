@@ -3,3 +3,6 @@
 *.pyc
 /src/csv_stats.egg-info
 .DS_Store
+
+# scratch input for tests/reference/check_lmm_optimum.R
+tests/reference/scenarios/ours_check.json

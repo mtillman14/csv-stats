@@ -25,6 +25,9 @@ LOGLIK_ATOL = 1e-3
 # A singular fit sits on a boundary; two optimizers approach it differently.
 SINGULAR_LOOSEN = 100
 DF_RTOL = 1e-3
+# t and F are also compared with an ABSOLUTE floor of the same size: a
+# relative difference of a statistic near 0 is meaningless (NESTED_006:
+# F = 0.0034, abs diff 2e-6 was a 6e-4 relative miss; 2026-10-20).
 T_RTOL = 1e-5
 P_ATOL = 1e-4
 F_RTOL = 1e-5
@@ -85,7 +88,7 @@ def assert_fixed_effects(coefficients: list[dict], ref: dict, scale: float, loos
         se_abs = max(SE_RTOL * loosen * scale, floors.get("se", {}).get(r["name"], 0.0))
         assert mine["estimate"] == pytest.approx(r["estimate"], rel=EST_RTOL * loosen, abs=est_abs), \
             f"{r['name']} estimate"
-        assert mine["se"] == pytest.approx(r["se"], rel=SE_RTOL * loosen, abs=se_abs), f"{r['name']} SE"
+        assert mine["se"] == pytest.approx(r["se"], rel=SE_RTOL * loosen, abs=se_abs), _vs(f"{r['name']} SE", mine["se"], r["se"], SE_RTOL * loosen)
 
 
 def assert_variance_components(details: dict, ref: dict, scale: float, loosen: float,
@@ -98,6 +101,44 @@ def assert_variance_components(details: dict, ref: dict, scale: float, loosen: f
         residual, rel=VAR_RTOL * loosen, abs=floors[1] or None)
     assert details["subject_intercept_variance"] == pytest.approx(
         subject, rel=VAR_RTOL * loosen, abs=max(VAR_RTOL * loosen * var, floors[0]))
+
+
+def _component_key(group, var1, var2) -> tuple:
+    """(group, {var1, var2}) for matching csv-stats' variance components with
+    R's VarCorr rows. lme4 suffixes a repeated group name (``||`` makes two
+    blocks of one group) with ``.1``; stripped here."""
+    import re
+
+    group = re.sub(r"\.\d+$", "", str(group))
+    return group, frozenset(v for v in (var1, var2) if v is not None), var2 is None
+
+
+def assert_variance_rows(components: list[dict], ref: dict, scale: float, loosen: float,
+                         floors: list[float] | None = None) -> None:
+    """Every variance and covariance (and the residual) against R's
+    ``as.data.frame(VarCorr)`` rows, matched on (group, variables).
+    Absolute tolerance VAR_RTOL x the data's variance, or ``floors[i]`` for
+    R's row i (10 x the optimizer spread), whichever is larger."""
+    ours = {_component_key(c["group"], c["var1"], c["var2"]): c for c in components}
+    theirs = ref["varcorr"]
+    assert len(ours) == len(theirs), f"{len(ours)} components vs R's {len(theirs)}"
+    for i, r in enumerate(theirs):
+        key = _component_key(r["grp"], r["var1"], r["var2"])
+        assert key in ours, f"R's {r['grp']} {r['var1']} {r['var2']} has no csv-stats counterpart: {sorted(ours, key=str)}"
+        floor = floors[i] if floors and i < len(floors) else 0.0
+        tol = max(VAR_RTOL * loosen * scale ** 2, floor)
+        assert ours[key]["vcov"] == pytest.approx(r["vcov"], rel=VAR_RTOL * loosen, abs=tol), \
+            f"{r['grp']} {r['var1']} {r['var2']} vcov"
+
+
+def _vs(label: str, ours, theirs, tol: float) -> str:
+    """An assertion message with both values: a custom message replaces
+    pytest.approx's own detail, so without this a failure shows no numbers."""
+    try:
+        r = abs(ours - theirs) / abs(theirs) if theirs else float("nan")
+    except TypeError:
+        r = float("nan")
+    return f"{label}: csv-stats {ours!r} vs R {theirs!r} (rel diff {r:.2e}, tol {tol:.2e})"
 
 
 def assert_singular_agrees(record: dict, ref: dict) -> None:
@@ -120,9 +161,9 @@ def assert_coefficient_satterthwaite(record: dict, ref: dict, loosen: float) -> 
         mine = ours[r["name"]]
         if mine["df_method"] != "satterthwaite" or r["df"] is None:
             continue
-        assert mine["df"] == pytest.approx(r["df"], rel=DF_RTOL * loosen), f"{r['name']} df"
-        assert mine["t"] == pytest.approx(r["t"], rel=T_RTOL * loosen, abs=1e-8), f"{r['name']} t"
-        assert mine["p"] == pytest.approx(r["p"], abs=P_ATOL * loosen), f"{r['name']} p"
+        assert mine["df"] == pytest.approx(r["df"], rel=DF_RTOL * loosen), _vs(f"{r['name']} df", mine["df"], r["df"], DF_RTOL * loosen)
+        assert mine["t"] == pytest.approx(r["t"], rel=T_RTOL * loosen, abs=T_RTOL * loosen), _vs(f"{r['name']} t", mine["t"], r["t"], T_RTOL * loosen)
+        assert mine["p"] == pytest.approx(r["p"], abs=P_ATOL * loosen), _vs(f"{r['name']} p", mine["p"], r["p"], P_ATOL * loosen)
     assert not fallbacks, f"Wald fallback where lmerTest has a df: {fallbacks}"
 
 
@@ -137,9 +178,9 @@ def assert_term_f_tests(record: dict, ref: dict, loosen: float) -> None:
         mine = ours[r["term"]]
         assert mine["df_method"] == "satterthwaite", f"{r['term']}: fell back to Wald ({record['warnings']})"
         assert mine["df"][0] == r["num_df"], f"{r['term']} NumDF"
-        assert mine["statistic"] == pytest.approx(r["F"], rel=F_RTOL * loosen), f"{r['term']} F"
-        assert mine["df"][1] == pytest.approx(r["den_df"], rel=DF_RTOL * loosen), f"{r['term']} DenDF"
-        assert mine["p"] == pytest.approx(r["p"], abs=P_ATOL * loosen), f"{r['term']} p"
+        assert mine["statistic"] == pytest.approx(r["F"], rel=F_RTOL * loosen, abs=F_RTOL * loosen), _vs(f"{r['term']} F", mine["statistic"], r["F"], F_RTOL * loosen)
+        assert mine["df"][1] == pytest.approx(r["den_df"], rel=DF_RTOL * loosen), _vs(f"{r['term']} DenDF", mine["df"][1], r["den_df"], DF_RTOL * loosen)
+        assert mine["p"] == pytest.approx(r["p"], abs=P_ATOL * loosen), _vs(f"{r['term']} p", mine["p"], r["p"], P_ATOL * loosen)
 
 
 def assert_wald_alongside(record: dict, ref: dict) -> None:
@@ -182,9 +223,9 @@ def assert_pairwise_contrasts(pairwise_for: Callable[[str], dict], ref: dict, sc
                 f"{factor} {key} estimate"
             assert est["se"] == pytest.approx(row["SE"], rel=SE_RTOL * loosen, abs=SE_RTOL * loosen * scale), \
                 f"{factor} {key} SE"
-            assert mine["df"][0] == pytest.approx(row["df"], rel=DF_RTOL * loosen), f"{factor} {key} df"
-            assert mine["statistic"] == pytest.approx(row["statistic"], rel=T_RTOL * loosen, abs=1e-8), f"{factor} {key} t"
-            assert mine["p"] == pytest.approx(row["p.value"], abs=P_ATOL * loosen), f"{factor} {key} p"
+            assert mine["df"][0] == pytest.approx(row["df"], rel=DF_RTOL * loosen), _vs(f"{factor} {key} df", mine["df"][0], row["df"], DF_RTOL * loosen)
+            assert mine["statistic"] == pytest.approx(row["statistic"], rel=T_RTOL * loosen, abs=T_RTOL * loosen), _vs(f"{factor} {key} t", mine["statistic"], row["statistic"], T_RTOL * loosen)
+            assert mine["p"] == pytest.approx(row["p.value"], abs=P_ATOL * loosen), _vs(f"{factor} {key} p", mine["p"], row["p.value"], P_ATOL * loosen)
 
 
 def assert_pairwise_wald(pairwise_for: Callable[[str], dict], ref: dict, loosen: float) -> None:
@@ -193,5 +234,5 @@ def assert_pairwise_wald(pairwise_for: Callable[[str], dict], ref: dict, loosen:
         ours = _ours_by_key(pairwise_for(factor))
         for row in rows:
             mine = ours[contrast_key(row, factor, ref["factors"])]
-            assert mine["wald"]["z"] == pytest.approx(row["statistic"], rel=T_RTOL * loosen, abs=1e-8)
+            assert mine["wald"]["z"] == pytest.approx(row["statistic"], rel=T_RTOL * loosen, abs=T_RTOL * loosen)
             assert mine["wald"]["p"] == pytest.approx(row["p.value"], abs=P_ATOL * loosen)

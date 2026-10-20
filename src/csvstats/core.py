@@ -166,10 +166,17 @@ class _Prepared:
         factors: list[str],
         subject: str | None,
         levels: dict[str, list[Any]] | None,
+        extra: Sequence[str] = (),
     ) -> None:
+        """``extra``: further columns a test reads (an LMM's covariates,
+        random-effect groups and slopes), carried along; a row missing one
+        is dropped like a row missing the dv."""
         if not isinstance(data, pd.DataFrame):
             raise ValueError(f"data must be a pandas DataFrame, got {type(data).__name__}")
         needed = [dv, *factors, *([subject] if subject else [])]
+        # dict.fromkeys: a column named twice (a covariate that is also a
+        # random slope) must be selected once, or frame[c] is a DataFrame
+        needed += [c for c in dict.fromkeys(extra) if c not in needed]
         missing = [c for c in needed if c not in data.columns]
         if missing:
             raise ValueError(f"column(s) {missing!r} are not in the data")
@@ -182,9 +189,13 @@ class _Prepared:
         bad = frame[dv].isna() | frame[factors].isna().any(axis=1)
         if subject:
             bad |= frame[subject].isna()
+        carried = [c for c in dict.fromkeys(extra) if c not in (dv, subject, *factors)]
+        if carried:
+            bad |= frame[carried].isna().any(axis=1)
         if bad.any():
             self.excluded_detail.append(
-                {"rows": int(bad.sum()), "reason": f"missing {dv} or a factor/subject value"}
+                {"rows": int(bad.sum()), "reason": f"missing {dv} or a factor/subject value"
+                                                  + (f" or one of {carried}" if carried else "")}
             )
             self.warnings.append(
                 {"code": "rows_dropped_missing", "message": f"{int(bad.sum())} row(s) with a missing value dropped"}

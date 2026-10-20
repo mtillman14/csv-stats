@@ -9,28 +9,48 @@ sessions are still being recorded loses no one.
 
 Two tests, both returning the common core record (C3):
 
-- :func:`lmm`: one Wald test per fixed-effect TERM (main effects and
+- :func:`lmm`: one test per fixed-effect TERM (main effects and
   interactions, sum-to-zero coding), for the omnibus.
 - :func:`lmm_pairwise`: the difference between two levels of one factor, for
   the pairwise comparisons. Every subject with at least one of the two levels
   contributes; unpaired observations inform the estimate through the random
   intercept.
 
-**The fit** is csv-stats' own REML (``_RandomIntercept``), matched to lme4 on
-the reference datasets in tests/reference (test_lmm_reference.py): the fixed
-effects, their SEs (sigma^2 (X' V^-1 X)^-1, as lme4), the variance
-components, the REML log-likelihood and the singular-fit flag.
+**The random effects** default to ``(1 | subject)``. ``random=`` takes any
+lme4-style structure as a list of ``{"group", "terms", "correlated"}``:
+- random slopes, correlated or uncorrelated (``||``)
+- several terms per group
+- crossed groupings, e.g. ``(1 | subject) + (1 | item)``
+- nested and interaction groupings, e.g. ``(1 | site) + (1 | site:subject)``
 
-**Degrees of freedom: Satterthwaite** (lmerTest's default), checked against
-lmerTest on the reference datasets:
-- ``lmm``'s coefficients get t(df) (stage 3).
-- ``lmm``'s terms get F(q, ddf), Fai–Cornelius (stage 4).
+``lmm`` also takes numeric ``covariates=``, crossed with the factors like
+``group * x``.
+
+**The fit** is csv-stats' own REML, ``csvstats.lmm_fit.MixedModel``
+(penalized least squares, Bates et al. 2015). It is matched to lme4 on two
+fixture sets:
+- the curated reference datasets (tests/test_lmm_reference.py)
+- the sampled scenario set, 8 random-effect structures
+  (tests/test_lmm_scenarios.py)
+
+What is checked against lme4:
+- the criterion at fixed theta
+- the fixed effects and their SEs (sigma^2 (X' V^-1 X)^-1, as lme4)
+- the variance components and theta
+- the REML log-likelihood and the singular-fit flag
+
+**Degrees of freedom: Satterthwaite** (lmerTest's default), over
+varpar = (theta..., sigma):
+- ``lmm``'s coefficients get t(df).
+- ``lmm``'s terms get F(q, ddf), Fai–Cornelius. In factor-only designs this
+  uses lmerTest's type-III contrasts. With covariates the term's own
+  coefficients are tested instead (``details["term_tests"]``).
 - ``lmm_pairwise``: every pairwise contrast from the FULL model (emmeans-style),
-  t(df) (stage 5).
+  t(df).
 
 Every effect states its ``df_method``. If a df cannot be computed, the Wald
 test is the result, labelled, with a ``satterthwaite_unavailable`` warning
-(.claude/plan-lmm-satterthwaite.md).
+(.claude/plan-lmm-satterthwaite.md, .claude/plan-lmm-general-fit.md).
 
 Fitting problems (non-convergence, a singular fit) become ``warnings``, never
 exceptions (§3.5).
@@ -39,28 +59,50 @@ exceptions (§3.5).
 from __future__ import annotations
 
 import re
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
 from scipy import stats
 
 from .core import _Prepared, _num, _record, _text, _check_tails, log
+from .lmm_fit import (
+    INTERCEPT,
+    SINGULAR_TOL,  # noqa: F401  (re-exported: lme4's isSingular tolerance)
+    MixedModel,
+    RandomTerm,
+    build_blocks,
+    parse_random,
+    random_columns,
+    random_formula,
+)
 
 #: Safe column names inside the model frame, so a factor called "speed (m/s)"
 #: never meets the formula parser.
 _Y, _G = "y__", "g__"
 
 
-def _model_frame(prep: _Prepared, factors: list[str]) -> tuple[pd.DataFrame, dict[str, str]]:
+def _model_frame(prep: _Prepared, factors: list[str],
+                 covariates: Sequence[str] = ()) -> tuple[pd.DataFrame, dict[str, str]]:
     """The prepared rows with safe names; factors as ordered Categoricals so
-    patsy uses ``prep.levels`` order."""
+    patsy uses ``prep.levels`` order; covariates as floats. ``names`` maps
+    every factor (``f<i>__``) and covariate (``c<i>__``) to its safe name."""
     names = {f: f"f{i}__" for i, f in enumerate(factors)}
+    names.update({c: f"c{i}__" for i, c in enumerate(covariates)})
     frame = pd.DataFrame({_Y: prep.frame[prep.dv].astype(float).to_numpy(),
                           _G: prep.frame[prep.subject].astype(str).to_numpy()})
-    for f, safe in names.items():
-        frame[safe] = pd.Categorical(prep.frame[f].to_numpy(), categories=prep.levels[f])
+    for f in factors:
+        frame[names[f]] = pd.Categorical(prep.frame[f].to_numpy(), categories=prep.levels[f])
+    for c in covariates:
+        frame[names[c]] = prep.frame[c].astype(float).to_numpy()
     return frame, names
+
+
+def _fixed_formula(factors: list[str], covariates: Sequence[str], names: dict[str, str]) -> str:
+    """Full factorial of the factors (sum coding) and covariates; intercept
+    only when there are neither."""
+    pieces = [f"C({names[f]}, Sum)" for f in factors] + [names[c] for c in covariates]
+    return f"{_Y} ~ " + (" * ".join(pieces) if pieces else "1")
 
 
 def _check_identifiable(prep: _Prepared) -> None:
@@ -74,127 +116,29 @@ def _check_identifiable(prep: _Prepared) -> None:
         )
 
 
-#: lme4's isSingular tolerance: theta = sigma_subject / sigma_residual below
-#: this is "on the boundary".
-SINGULAR_TOL = 1e-4
+# --- Satterthwaite -------------------------------------------------------------
+# As lmerTest: the variance parameters are varpar = (theta..., sigma); their
+# asymptotic covariance is 2 * inverse Hessian of the UNprofiled REML
+# deviance at the estimate; a contrast's df is 2 v^2 / (g' A g) with
+# v = l' C(varpar) l and g its gradient in varpar.
 
-
-class _RandomIntercept:
-    """REML (or ML) for ``y = X beta + u[subject] + e``, done here rather than
-    by statsmodels (stage 2 of .claude/plan-lmm-satterthwaite.md).
-
-    Checked against lme4 on 75 reference datasets, statsmodels' MixedLM fell
-    short in two ways:
-    - Its ``cov_params()`` comes from the joint likelihood over fixed effects
-      AND variance parameters. On unbalanced data the two interact, and its
-      SEs differed from lme4's by 0.1-4%. lme4 (and lmerTest's Satterthwaite,
-      built on it) uses sigma^2 (X' V^-1 X)^-1 at the estimated variances.
-    - Its optimizer stopped short of the boundary: a positive subject variance
-      with a WORSE likelihood where lme4 found exactly 0, so singular fits
-      went unflagged.
-
-    With one random intercept, the profiled REML criterion depends on ONE
-    parameter, theta = sigma_subject / sigma_residual >= 0 (lme4's own
-    parameterisation). So it is minimised directly: a grid, then bounded
-    Brent, with theta = 0 always compared explicitly. Every quantity is a
-    closed form over per-subject sums:
-    V_i / sigma^2 = I + theta^2 J, whose inverse is I - c_i J with
-    c_i = theta^2 / (1 + n_i theta^2).
-
-    ``deviance(theta)`` is lme4's REML criterion exactly:
-    sum log(1 + n_i theta^2) + log|X' W X| + (n - p)(1 + log(2 pi q / (n - p))),
-    where q is the weighted residual sum of squares.
-    """
-
-    def __init__(self, X: np.ndarray, y: np.ndarray, codes: np.ndarray, reml: bool = True) -> None:
-        self.reml = reml
-        self.n, self.p = X.shape
-        # Centre y for numerical stability (data around 1e4 make y'y huge and
-        # q a difference of large numbers); the intercept is restored below.
-        self.y_shift = float(np.mean(y))
-        yc = y - self.y_shift
-        g = int(codes.max()) + 1
-        self.ng = np.bincount(codes, minlength=g).astype(float)
-        self.S = np.zeros((g, self.p))
-        np.add.at(self.S, codes, X)
-        self.T = np.bincount(codes, weights=yc, minlength=g)
-        self.XtX = X.T @ X
-        self.Xty = X.T @ yc
-        self.yty = float(yc @ yc)
-
-    def parts(self, theta: float) -> tuple[np.ndarray, np.ndarray, float]:
-        """``(A = X'WX, beta_centred, q = r'Wr)`` at ``theta``."""
-        c = theta ** 2 / (1.0 + self.ng * theta ** 2)
-        A = self.XtX - (self.S * c[:, None]).T @ self.S
-        b = self.Xty - self.S.T @ (c * self.T)
-        beta = np.linalg.solve(A, b)
-        q = self.yty - float((c * self.T ** 2).sum()) - float(b @ beta)
-        return A, beta, q
-
-    def deviance(self, theta: float) -> float:
-        A, _, q = self.parts(theta)
-        dof = self.n - self.p if self.reml else self.n
-        out = float(np.log1p(self.ng * theta ** 2).sum()) + dof * (1.0 + np.log(2.0 * np.pi * q / dof))
-        if self.reml:
-            out += float(np.linalg.slogdet(A)[1])
-        return out
-
-    def fit(self) -> "_Fit":
-        from scipy.optimize import minimize_scalar
-
-        grid = np.concatenate([[0.0], np.logspace(-4, 3, 57)])
-        values = np.array([self.deviance(t) for t in grid])
-        i = int(np.argmin(values))
-        lo = grid[max(i - 1, 0)]
-        hi = grid[min(i + 1, len(grid) - 1)] if i < len(grid) - 1 else grid[-1] * 100
-        res = minimize_scalar(self.deviance, bounds=(lo, hi), method="bounded", options={"xatol": 1e-12})
-        theta, best = float(res.x), float(res.fun)
-        if self.deviance(0.0) <= best:  # the boundary is a candidate in its own right
-            theta, best = 0.0, self.deviance(0.0)
-        A, beta, q = self.parts(theta)
-        sigma2 = q / (self.n - self.p if self.reml else self.n)
-        beta = beta.copy()
-        beta[0] += self.y_shift  # column 0 is the intercept (all ones)
-        return _Fit(theta=theta, beta=beta, sigma2=sigma2, var_subject=theta ** 2 * sigma2,
-                    cov_beta=sigma2 * np.linalg.inv(A), loglik=-best / 2.0, converged=bool(res.success),
-                    singular=theta < SINGULAR_TOL, model=self)
-
-    # --- Satterthwaite (stage 3) -------------------------------------------
-    # As lmerTest: the variance parameters are varpar = (theta, sigma); their
-    # asymptotic covariance is 2 * inverse Hessian of the UNprofiled REML
-    # deviance at the estimate; a contrast's df is 2 v^2 / (g' A g) with
-    # v = l' C(varpar) l and g its gradient in varpar.
-
-    def deviance_at(self, varpar: np.ndarray) -> float:
-        """The REML (or ML) deviance at (theta, sigma), not profiled in sigma:
-        sum log(1 + n_i theta^2) + log|A| + (n - p) log(2 pi sigma^2) + q / sigma^2.
-        At sigma^2 = q / (n - p) it equals :meth:`deviance`."""
-        theta, sigma = float(varpar[0]), float(varpar[1])
-        A, _, q = self.parts(theta)
-        dof = self.n - self.p if self.reml else self.n
-        out = float(np.log1p(self.ng * theta ** 2).sum()) + dof * np.log(2.0 * np.pi * sigma ** 2) + q / sigma ** 2
-        if self.reml:
-            out += float(np.linalg.slogdet(A)[1])
-        return out
-
-    def vcov_at(self, varpar: np.ndarray) -> np.ndarray:
-        """Cov(beta-hat) = sigma^2 (X' W(theta) X)^-1 at (theta, sigma)."""
-        A, _, _ = self.parts(float(varpar[0]))
-        return float(varpar[1]) ** 2 * np.linalg.inv(A)
+def _varpar(fit) -> np.ndarray:
+    return np.r_[np.atleast_1d(np.asarray(fit.theta, dtype=float)), np.sqrt(fit.sigma2)]
 
 
 def _steps(x: np.ndarray) -> np.ndarray:
-    """Finite-difference steps for varpar = (theta, sigma).
+    """Finite-difference steps for varpar = (theta..., sigma).
 
     - theta is dimensionless and can sit exactly at 0. Its step has a floor
-      (0.1 * 1e-3). At 0 a step to -h is fine: everything depends on theta^2,
-      so -h is a mirror image.
+      (0.1 * 1e-3). At 0 a step to -h is fine: a diagonal theta enters only
+      through Lambda Lambda', so -h is a mirror image.
     - sigma carries the data's units and is never 0, so its step is purely
       relative. A shared 0.1 floor made the step 14% of sigma for data around
       1e-3, and the df there were off by 1.5e-4 (reference run 2026-10-19).
     """
-    h = 1e-3 * np.abs(np.asarray(x, dtype=float))
-    h[0] = 1e-3 * max(abs(float(x[0])), 0.1)
+    x = np.asarray(x, dtype=float)
+    h = 1e-3 * np.abs(x)
+    h[:-1] = 1e-3 * np.maximum(np.abs(x[:-1]), 0.1)
     return h
 
 
@@ -230,20 +174,32 @@ def _hessian(f, x: np.ndarray) -> np.ndarray:
     return (4 * at(0.5) - at(1.0)) / 3
 
 
+#: Hessian eigenvalues at or below this fraction of the largest are treated
+#: as zero (dropped from the pseudo-inverse).
+_EIGEN_RTOL = 1e-10
+
+
 def _varpar_cov(fit) -> np.ndarray | None:
-    """Asymptotic covariance of (theta, sigma): 2 * inverse Hessian of the
-    REML deviance (lmerTest's vcov_varpar). None when the Hessian is not
-    positive definite (it can't give a df)."""
+    """Asymptotic covariance of (theta..., sigma): 2 * the inverse Hessian
+    of the REML deviance (lmerTest's vcov_varpar).
+
+    At a boundary the Hessian can be singular or slightly indefinite. As
+    lmerTest documents, only its positive eigenvalues are inverted (a
+    pseudo-inverse), and the others are logged. None only when no
+    eigenvalue is positive (no df can be formed)."""
     if getattr(fit, "_varpar_cov_cache", None) is not None:
         return fit._varpar_cov_cache
-    varpar = np.array([fit.theta, np.sqrt(fit.sigma2)])
-    H = _hessian(fit.model.deviance_at, varpar)
-    try:
-        np.linalg.cholesky(H)
-    except np.linalg.LinAlgError:
-        log.info("lmm Satterthwaite: varpar Hessian not positive definite: %s", H.tolist())
+    H = _hessian(fit.model.deviance_at, _varpar(fit))
+    H = (H + H.T) / 2.0
+    evals, V = np.linalg.eigh(H)
+    pos = evals > _EIGEN_RTOL * max(float(np.abs(evals).max()), 0.0)
+    if not pos.any():
+        log.info("lmm Satterthwaite: varpar Hessian has no positive eigenvalue: %s", evals.tolist())
         return None
-    fit._varpar_cov_cache = 2.0 * np.linalg.inv(H)
+    if not pos.all():
+        log.info("lmm Satterthwaite: varpar Hessian eigenvalues %s; %d non-positive dropped (pseudo-inverse)",
+                 np.round(evals, 8).tolist(), int((~pos).sum()))
+    fit._varpar_cov_cache = 2.0 * (V[:, pos] / evals[pos]) @ V[:, pos].T
     return fit._varpar_cov_cache
 
 
@@ -251,62 +207,121 @@ def satterthwaite_df(fit, l: np.ndarray) -> tuple[float | None, str | None]:
     """``(df, None)`` for the contrast ``l' beta``, or ``(None, why)``.
 
     df = 2 v^2 / (g' A g): v = l' C l, g = d v / d varpar, A = Cov(varpar).
-    Checked against lmerTest on the reference datasets (test_lmm_reference.py).
+    Checked against lmerTest on the reference datasets (test_lmm_reference.py)
+    and the scenario set (test_lmm_scenarios.py).
     """
     A = _varpar_cov(fit)
     if A is None:
-        return None, "the variance parameters' Hessian is not positive definite"
-    varpar = np.array([fit.theta, np.sqrt(fit.sigma2)])
+        return None, "the variance parameters' Hessian has no positive eigenvalue"
     v = float(l @ fit.cov_beta @ l)
-    g = _gradient(lambda vp: float(l @ fit.model.vcov_at(vp) @ l), varpar)
+    g = _gradient(lambda vp: float(l @ fit.model.vcov_at(vp) @ l), _varpar(fit))
     denom = float(g @ A @ g)
     if not (np.isfinite(v) and np.isfinite(denom)) or denom <= 0 or v <= 0:
         return None, f"non-finite or non-positive terms (v={v:.3g}, g'Ag={denom:.3g})"
     return 2.0 * v * v / denom, None
 
 
-class _Fit:
-    def __init__(self, **kw: Any) -> None:
-        self.__dict__.update(kw)
+# --- the fit -----------------------------------------------------------------
+
+def _is_subject_intercept(terms: Sequence[RandomTerm], subject: str) -> bool:
+    return len(terms) == 1 and terms[0].group == (subject,) and terms[0].terms == (INTERCEPT,)
 
 
-def _fit(formula: str, frame: pd.DataFrame, reml: bool, warnings: list[dict[str, str]]):
-    """Design matrix (patsy, the coding in ``formula``) + the REML fit.
+def _fit(formula: str, frame: pd.DataFrame, reml: bool, prep: _Prepared, terms: Sequence[RandomTerm]):
+    """Design matrix (patsy, the coding in ``formula``), the random-effect
+    blocks (from ``prep.frame``, row for row) and the REML fit.
 
-    Returns the fit with ``columns`` and ``design_info`` attached.
+    Returns the fit with ``columns``, ``X``, ``design_info`` and ``terms``
+    attached. Warnings go to ``prep.warnings``.
     """
     import patsy
 
+    warnings = prep.warnings
     y, X = patsy.dmatrices(formula, frame, return_type="dataframe")
     if X.columns[0] != "Intercept":
         raise ValueError("internal: the design must start with the intercept")
-    codes = pd.factorize(frame.loc[X.index, _G])[0]
-    result = _RandomIntercept(X.to_numpy(float), y.to_numpy(float).ravel(), codes, reml=reml).fit()
+    Xn = X.to_numpy(float)
+    rank = int(np.linalg.matrix_rank(Xn))
+    if rank < Xn.shape[1]:
+        raise ValueError(
+            f"the fixed-effect design is rank deficient ({rank} of {Xn.shape[1]} columns): a combination of "
+            f"factor levels has no rows, or a covariate is collinear with the other columns")
+    rows = prep.frame.iloc[X.index.to_numpy()].reset_index(drop=True)
+    blocks = build_blocks(rows, terms, prep.levels)
+    model = MixedModel(Xn, y.to_numpy(float).ravel(), blocks, reml=reml)
+    result = model.fit()
     result.columns = list(X.columns)
-    result.X = X.to_numpy(float)
+    result.X = Xn
     result.design_info = X.design_info
-    log.debug("lmm fit: theta=%.6g sigma2=%.6g loglik=%.6f singular=%s",
-              result.theta, result.sigma2, result.loglik, result.singular)
+    result.terms = list(terms)
+    log.debug("lmm fit: %s; theta=%s sigma2=%.6g loglik=%.6f singular=%s", random_formula(terms),
+              np.round(result.theta, 6).tolist(), result.sigma2, result.loglik, result.singular)
     if not result.converged:
         warnings.append({"code": "convergence_failure", "message": "the mixed model did not converge"})
     if result.singular:
-        warnings.append({
-            "code": "singular_fit",
-            "message": "the subject variance is estimated at zero (singular fit, as lme4's isSingular): "
-                       "the model reduces to ordinary regression",
-        })
+        if _is_subject_intercept(terms, prep.subject):
+            message = ("the subject variance is estimated at zero (singular fit, as lme4's isSingular): "
+                       "the model reduces to ordinary regression")
+        else:
+            at = [n for n, t, lo in zip(model.theta_names, result.theta, model.theta_lower)
+                  if lo == 0 and t < SINGULAR_TOL]
+            message = ("a random-effect standard deviation is estimated at zero, or a correlation at +-1 "
+                       f"(singular fit, as lme4's isSingular): {', '.join(at)}")
+        warnings.append({"code": "singular_fit", "message": message})
     return result
 
 
-def _variance_details(result) -> dict[str, Any]:
-    group_var, resid = float(result.var_subject), float(result.sigma2)
-    total = group_var + resid
-    return {
-        "subject_intercept_variance": _num(group_var),
-        "residual_variance": _num(resid),
-        "icc": _num(group_var / total) if total > 0 else None,
-        "theta": _num(result.theta),
+def _variance_details(result, subject: str) -> dict[str, Any]:
+    """The variance components (R's VarCorr shape), theta, and for a lone
+    subject intercept the subject variance and ICC as well."""
+    model = result.model
+    sigma2 = float(result.sigma2)
+    out: dict[str, Any] = {
+        "random": random_formula(result.terms),
+        "residual_variance": _num(sigma2),
+        "variance_components": [{k: (_num(v) if isinstance(v, float) else v) for k, v in row.items()}
+                                for row in model.variance_components(result.theta, sigma2)],
+        "theta": [_num(t) for t in np.atleast_1d(result.theta)],
+        "theta_names": list(model.theta_names),
     }
+    if _is_subject_intercept(result.terms, subject):
+        group_var = float(result.theta[0]) ** 2 * sigma2
+        total = group_var + sigma2
+        out["subject_intercept_variance"] = _num(group_var)
+        out["icc"] = _num(group_var / total) if total > 0 else None
+    return out
+
+
+def _setup(data: pd.DataFrame, dv: str, between: Sequence[str], within: Sequence[str], subject: str | None,
+           levels: dict[str, list[Any]] | None, covariates: Sequence[str], random: Any, reml: bool):
+    """Shared by :func:`lmm` and :func:`lmm_pairwise`: validate, prepare,
+    fit. Returns ``(prep, frame, names, result, factors)``."""
+    between, within, covariates = list(between), list(within), list(covariates)
+    factors = [*between, *within]
+    if not subject:
+        raise ValueError("a linear mixed model needs subject=")
+    clash = [c for c in covariates if c in factors or c == subject or c == dv]
+    if clash:
+        raise ValueError(f"covariate(s) {clash} are also the dv, the subject or a factor")
+    terms = parse_random(random, subject)
+    extra = list(dict.fromkeys([*covariates, *[c for c in random_columns(terms) if c not in factors]]))
+    prep = _Prepared(data, dv, factors, subject, levels, extra=extra)
+    for f in factors:
+        if len(prep.levels[f]) < 2:
+            raise ValueError(f"factor {f!r} has fewer than 2 levels")
+    for c in covariates:
+        if not pd.api.types.is_numeric_dtype(prep.frame[c]):
+            raise ValueError(f"covariate {c!r} must be numeric")
+    _check_identifiable(prep)
+    _incomplete_note(prep, within, prep.warnings)
+    frame, names = _model_frame(prep, factors, covariates)
+    result = _fit(_fixed_formula(factors, covariates, names), frame, reml, prep, terms)
+    return prep, frame, names, result, factors
+
+
+def _formula_text(dv: str, factors: list[str], covariates: Sequence[str], terms: Sequence[RandomTerm]) -> str:
+    fixed = " * ".join([*factors, *covariates]) or "1"
+    return f"{dv} ~ {fixed} + {random_formula(terms)}"
 
 
 #: patsy's name for one Sum-coded column: ``C(f0__, Sum)[S.<level>]``.
@@ -317,9 +332,10 @@ def _column_names(column: str, names: dict[str, str], levels: dict[str, list[Any
     """``(r_name, label)`` for one fixed-effect column.
 
     ``r_name`` is lme4's name under ``contr.sum``: the factor followed by the
-    1-based index of the level the column codes (``group1:time2``), so a fit
-    can be compared with R's coefficient for coefficient. ``label`` is for
-    people: ``group[ctl] : time[t2]``.
+    1-based index of the level the column codes (``group1:time2``), and a
+    covariate by its own name (``group1:x``), so a fit can be compared with
+    R's coefficient for coefficient. ``label`` is for people:
+    ``group[ctl] : time[t2]``.
     """
     if column == "Intercept":
         return "(Intercept)", "(Intercept)"
@@ -328,6 +344,10 @@ def _column_names(column: str, names: dict[str, str], levels: dict[str, list[Any
     for part in column.split(":"):
         match = _SUM_COLUMN.match(part)
         if match is None:
+            if part in back:  # a covariate
+                r_parts.append(back[part])
+                labels.append(back[part])
+                continue
             return column, column
         factor = back[match.group(1)]
         level = match.group(2)
@@ -561,56 +581,57 @@ def lmm(
     within: Sequence[str] = (),
     subject: str | None = None,
     levels: dict[str, list[Any]] | None = None,
+    covariates: Sequence[str] = (),
+    random: Sequence[Mapping[str, Any] | RandomTerm] | None = None,
     alpha: float = 0.05,
     ci_level: float = 0.95,
     reml: bool = True,
 ) -> dict[str, Any]:
-    """Linear mixed model ``dv ~ factors (full factorial) + (1 | subject)``.
+    """Linear mixed model ``dv ~ factors * covariates (full factorial) + random``;
+    ``random`` defaults to ``(1 | subject)`` (see the module docstring for
+    its shape).
 
-    One effect per fixed term: a type-III F test of all its coefficients with
-    Satterthwaite denominator df (lmerTest's contestMD; sum-to-zero coding, so a
-    main effect is tested at the average of the other factors). The Wald chi2
-    of the same hypothesis is kept under each effect's ``"wald"``, and is the
-    result (``df_method: "wald"``, a ``satterthwaite_unavailable`` warning)
-    when a df cannot be computed. Coefficients (with t tests), variance
-    components, ICC, log-likelihood
-    and convergence are in ``details``. No subject is dropped for missing a
-    within level; the ones that do are named in an ``incomplete_within_used``
-    warning.
+    One effect per fixed term: an F test of all its coefficients with
+    Satterthwaite denominator df. With factors only, it is lmerTest's
+    type-III contestMD (sum-to-zero coding, so a main effect is tested at
+    the average of the other factors). With covariates, it tests the term's
+    own coefficients (a main effect at covariate = 0), which
+    ``details["term_tests"]`` says.
+
+    The Wald chi2 of the same hypothesis is kept under each effect's
+    ``"wald"``. It becomes the result (``df_method: "wald"``, plus a
+    ``satterthwaite_unavailable`` warning) when a df cannot be computed.
+
+    ``details`` has the coefficients (with t tests), the variance components,
+    theta, the log-likelihood and convergence. No subject is dropped for
+    missing a within level; the ones that do are named in an
+    ``incomplete_within_used`` warning. With neither factors nor covariates
+    the model is intercept-only and there are no term effects.
     """
-    between, within = list(between), list(within)
-    factors = [*between, *within]
-    if not factors:
-        raise ValueError("lmm needs at least one factor")
-    if not subject:
-        raise ValueError("a linear mixed model needs subject=")
-    prep = _Prepared(data, dv, factors, subject, levels)
-    for f in factors:
-        if len(prep.levels[f]) < 2:
-            raise ValueError(f"factor {f!r} has fewer than 2 levels")
-    _check_identifiable(prep)
-    _incomplete_note(prep, within, prep.warnings)
-    frame, names = _model_frame(prep, factors)
-    formula = f"{_Y} ~ " + " * ".join(f"C({names[f]}, Sum)" for f in factors)
-    result = _fit(formula, frame, reml, prep.warnings)
-
+    prep, frame, names, result, factors = _setup(data, dv, between, within, subject, levels, covariates,
+                                                 random, reml)
+    covariates = list(covariates)
     k = len(result.columns)
     cov = result.cov_beta
     beta = result.beta
     # Map each formula term to its fixed-effect columns via patsy's design info.
-    design_info = result.design_info
     back = {safe: f for f, safe in names.items()}
     effects = []
     unavailable: list[str] = []
     term_cols = {}
-    for term, columns in design_info.term_name_slices.items():
+    for term, columns in result.design_info.term_name_slices.items():
         if term == "Intercept":
             continue
         label = ":".join(back[part.split(",")[0].replace("C(", "").strip()] for part in term.split(":"))
         term_cols[label] = np.arange(k)[columns]
-    # lmerTest's type-III contrast bases, so the Fai–Cornelius ddf match it
-    # (the F is the same for any basis; the ddf is not).
-    contrasts = type3_contrasts(frame, names, factors, result.X, term_cols)
+    if covariates:
+        term_tests = "coefficient_selection"
+        contrasts = {label: np.eye(k)[cols] for label, cols in term_cols.items()}
+    else:
+        # lmerTest's type-III contrast bases, so the Fai–Cornelius ddf match it
+        # (the F is the same for any basis; the ddf is not).
+        term_tests = "lmertest_type3"
+        contrasts = type3_contrasts(frame, names, factors, result.X, term_cols) if term_cols else {}
     for label in term_cols:
         effects.append(_term_test(result, contrasts[label], beta, cov, label, unavailable))
     if unavailable:
@@ -618,12 +639,13 @@ def lmm(
                               "message": "Wald chi2 used for: " + "; ".join(unavailable)})
         log.info("lmm term Satterthwaite unavailable: %s", unavailable)
     details = {
-        "formula": f"{dv} ~ {' * '.join(factors)} + (1 | {subject})",
-        "reml": reml, "converged": bool(result.converged),
-        "log_likelihood": _num(result.loglik), "coefficients": _coefficients(result, ci_level, names, prep.levels, prep.warnings),
-        "coding": "sum-to-zero", **_variance_details(result),
+        "formula": _formula_text(dv, factors, covariates, result.terms),
+        "reml": reml, "converged": bool(result.converged), "optimizer": result.optimizer_path,
+        "log_likelihood": _num(result.loglik),
+        "coefficients": _coefficients(result, ci_level, names, prep.levels, prep.warnings),
+        "coding": "sum-to-zero", "term_tests": term_tests, **_variance_details(result, prep.subject),
     }
-    return _record("lmm", "Linear mixed model (Satterthwaite)", prep, between=between, within=within,
+    return _record("lmm", "Linear mixed model (Satterthwaite)", prep, between=list(between), within=list(within),
                    alpha=alpha, ci_level=ci_level, tails="two-sided", effects=effects, assumptions=[],
                    details=details, extra_engines=["patsy"])
 
@@ -645,6 +667,7 @@ def lmm_pairwise(
     subject: str | None = None,
     levels: dict[str, list[Any]] | None = None,
     factor: str | None = None,
+    random: Sequence[Mapping[str, Any] | RandomTerm] | None = None,
     alpha: float = 0.05,
     ci_level: float = 0.95,
     tails: str = "two-sided",
@@ -652,7 +675,8 @@ def lmm_pairwise(
 ) -> dict[str, Any]:
     """Every pairwise difference ``a − b`` between the levels of ``factor``,
     within each combination of the OTHER factors, from ONE full model
-    ``dv ~ factors (full factorial) + (1 | subject)`` (stage 5).
+    ``dv ~ factors (full factorial) + random`` (stage 5; ``random`` as in
+    :func:`lmm`, default ``(1 | subject)``).
 
     This is what R's emmeans does with every other factor as a ``by``
     variable: the estimate is the difference of the two cells' model
@@ -662,7 +686,7 @@ def lmm_pairwise(
     (``lmer.df = "satterthwaite"``) on the reference datasets.
 
     A subject missing some cells is kept: it informs every estimate through
-    the random intercept, where a paired t-test would drop it.
+    the random effects, where a paired t-test would drop it.
 
     One effect per (context, pair), each with ``a``, ``b`` and ``context``
     (``{other factor: level}``, empty with one factor). ``factor`` may be
@@ -671,7 +695,6 @@ def lmm_pairwise(
     import patsy
 
     _check_tails(tails)
-    between, within = list(between), list(within)
     factors = [*between, *within]
     if not factors:
         raise ValueError("lmm_pairwise needs at least one factor")
@@ -681,17 +704,7 @@ def lmm_pairwise(
         factor = factors[0]
     if factor not in factors:
         raise ValueError(f"factor {factor!r} is not one of {factors}")
-    if not subject:
-        raise ValueError("a linear mixed model needs subject=")
-    prep = _Prepared(data, dv, factors, subject, levels)
-    for f in factors:
-        if len(prep.levels[f]) < 2:
-            raise ValueError(f"factor {f!r} has fewer than 2 levels")
-    _check_identifiable(prep)
-    _incomplete_note(prep, within, prep.warnings)
-    frame, names = _model_frame(prep, factors)
-    formula = f"{_Y} ~ " + " * ".join(f"C({names[f]}, Sum)" for f in factors)
-    result = _fit(formula, frame, reml, prep.warnings)
+    prep, frame, names, result, factors = _setup(data, dv, between, within, subject, levels, (), random, reml)
 
     others = [f for f in factors if f != factor]
     lv = prep.levels[factor]
@@ -738,11 +751,11 @@ def lmm_pairwise(
                               "message": "Wald z used for: " + "; ".join(unavailable)})
         log.info("lmm_pairwise Satterthwaite unavailable: %s", unavailable)
     details = {
-        "formula": f"{dv} ~ {' * '.join(factors)} + (1 | {subject})", "reml": reml,
+        "formula": _formula_text(dv, factors, (), result.terms), "reml": reml,
         "contrasts": f"pairwise {factor} within each combination of {others or 'nothing'} (full model)",
         "converged": bool(result.converged), "log_likelihood": _num(result.loglik),
-        **_variance_details(result),
+        **_variance_details(result, prep.subject),
     }
-    return _record("lmm_pairwise", "Linear mixed model contrasts (Satterthwaite)", prep, between=between,
-                   within=within, alpha=alpha, ci_level=ci_level, tails=tails, effects=effects,
+    return _record("lmm_pairwise", "Linear mixed model contrasts (Satterthwaite)", prep, between=list(between),
+                   within=list(within), alpha=alpha, ci_level=ci_level, tails=tails, effects=effects,
                    assumptions=[], details=details, extra_engines=["patsy"])

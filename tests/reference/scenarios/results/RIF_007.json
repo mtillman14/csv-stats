@@ -376,6 +376,8 @@
       "ml": 702.42200310645
     }
   ],
+  "start": "default",
+  "default_start_criterion": 653.974517013643,
   "optimizers": {
     "fits": [
       {

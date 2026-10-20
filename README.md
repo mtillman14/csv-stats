@@ -23,7 +23,17 @@ ci_half_width(sd=1.2, n=5)         # t(0.975, 4) * 1.2 / sqrt(5)
 ## Linear mixed models (0.4.0)
 `csvstats.lmm` uses every observation: a subject missing some within-subject
 levels is kept, not dropped (a repeated-measures ANOVA or paired t-test would
-have to drop it). Random intercept per subject, REML, sum-to-zero coding.
+have to drop it). REML, sum-to-zero coding. The random effects default to an
+intercept per subject. `random=` takes any lme4-style structure:
+- random slopes, correlated or uncorrelated (`||`)
+- crossed groupings, e.g. subject + item
+- nested and interaction groupings, e.g. `site:subject`
+
+Numeric `covariates=` are crossed with the factors.
+
+The fit is checked against lme4 on 200 sampled scenarios over 8
+random-effect structures (tests/reference/scenarios). That covers the
+criterion itself at fixed θ, the estimates, θ and the Satterthwaite df.
 Tests use **Satterthwaite** degrees of freedom, as R's lmerTest does: t(df) per
 coefficient, a type-III F(q, ddf) per term, and t(df) per pairwise contrast. The
 pairwise contrasts come from the full model (emmeans-style). Everything is checked
@@ -38,6 +48,11 @@ lmm(df, "step_length", within=["session", "speed"], subject="subject")       # o
 lmm_pairwise(df, "step_length", within=["session", "speed"], subject="subject", factor="session",
              levels={"session": ["post", "pre"]})   # post − pre within each speed, t(df)
 assumption_checks(df, "step_length", within=["session"], subject="subject")  # Shapiro–Wilk on residuals (+ Levene)
+
+# Random slopes and crossed effects: y ~ cond * x + (1 + x | subject) + (1 | item)
+lmm(df, "rt", within=["cond"], subject="subject", covariates=["x"],
+    random=[{"group": "subject", "terms": ["(Intercept)", "x"]},
+            {"group": "item"}])
 ```
 
 ## Examples

@@ -28,6 +28,9 @@
 #               the OBJECTIVE is compared exactly, with no optimizer involved
 #   optimizers  refits with 4 optimizers; their spread sets the per-scenario
 #               tolerance on estimates (measured, not guessed)
+#   start       "default", or "whitened" when lme4 reached a lower criterion
+#               from the whitened_start() theta (the reference is lme4 at its
+#               best optimum); default_start_criterion keeps the other
 #   theta, theta_lower, fixed_terms, fixed_columns, dropped_columns, vcov_beta
 #
 # Plan: .claude/plan-lmm-scenario-generator.md in the scistack repo.
@@ -386,10 +389,11 @@ spread_of <- function(m) if (is.null(m) || nrow(m) < 2) rep(0, ncol(m)) else app
 # Refit with every optimizer (lme4::lmer: no Satterthwaite needed). The
 # spread between the converged ones (all of them, if fewer than 2 converged)
 # is how far two good optimizers legitimately disagree on this dataset.
-optimizer_spread <- function(form, data) {
+# `start`: the reference fit's start (NULL = lme4's default).
+optimizer_spread <- function(form, data, start = NULL) {
   fits <- lapply(names(OPTIMIZERS), function(nm) {
     r <- tryCatch({
-      q <- fit_quietly(form, data, fitter = lme4::lmer, control = OPTIMIZERS[[nm]])
+      q <- fit_quietly(form, data, fitter = lme4::lmer, control = OPTIMIZERS[[nm]], start = start)
       m <- q$fit
       list(optimizer = nm, ok = TRUE,
            converged = !any(startsWith(q$notes, "warning:")),
@@ -418,6 +422,66 @@ optimizer_spread <- function(form, data) {
        n_used = length(use), spread = spread)
 }
 
+# A second start for lme4: the same model with every numeric random-slope
+# column centred and scaled (only scaled in a block without an intercept,
+# where centring would change the model), fitted, and its theta mapped back
+# to the raw columns. lme4 from its default start stopped at a worse optimum
+# on the uncentred x of the RIS scenarios: lme4's own devFun was up to 0.58
+# lower at csv-stats' theta, and lme4 restarted there stayed there
+# (check_lmm_optimum.R, 2026-10-20). NULL when no block has a numeric slope.
+#
+# Mapping: x = m + s * xw, so b_raw = A b_w (intercept_raw = intercept_w -
+# slope_w m / s, slope_raw = slope_w / s), Sigma_raw = A Sigma_w A', and
+# theta_raw is the lower Cholesky factor of A T_w (A T_w)'.
+whitened_start <- function(st, data, fixed_part) {
+  slopes <- unique(unlist(lapply(st$random, function(b) b$terms)))
+  slopes <- slopes[slopes != "(Intercept)" & slopes %in% names(data)]
+  slopes <- slopes[vapply(slopes, function(v) is.numeric(data[[v]]), TRUE)]
+  if (!length(slopes)) return(NULL)
+  shift <- list()
+  for (v in slopes) {
+    x <- data[[v]]
+    data[[paste0(v, "__c")]] <- (x - mean(x)) / sd(x)
+    data[[paste0(v, "__s")]] <- x / sqrt(mean(x^2))
+    shift[[paste0(v, "__c")]] <- c(mean(x), sd(x))
+    shift[[paste0(v, "__s")]] <- c(0, sqrt(mean(x^2)))
+  }
+  wrandom <- lapply(st$random, function(b) {
+    centre <- b$correlated && "(Intercept)" %in% b$terms
+    b$terms <- vapply(b$terms, function(t) if (t %in% slopes) paste0(t, if (centre) "__c" else "__s") else t, "")
+    b
+  })
+  wform <- as.formula(paste(fixed_part, "+", random_rhs(wrandom)))
+  wfit <- fit_quietly(wform, data, fitter = lme4::lmer)$fit
+  lower_chol <- function(S) {  # tolerates a singular S (a zero variance, a correlation of +-1)
+    p <- nrow(S); L <- matrix(0, p, p)
+    for (j in seq_len(p)) {
+      k <- seq_len(j - 1)
+      d <- S[j, j] - sum(L[j, k]^2)
+      if (d <= 1e-12 * max(abs(diag(S)), 1e-300)) next
+      L[j, j] <- sqrt(d)
+      for (i in seq_len(p)[-seq_len(j)]) L[i, j] <- (S[i, j] - sum(L[i, k] * L[j, k])) / L[j, j]
+    }
+    L
+  }
+  Tl <- getME(wfit, "Tlist")
+  cn <- getME(wfit, "cnms")
+  unlist(lapply(seq_along(Tl), function(k) {
+    cols <- cn[[k]]
+    A <- diag(length(cols))
+    i0 <- match("(Intercept)", cols)
+    for (j in seq_along(cols)) {
+      ms <- shift[[cols[j]]]
+      if (is.null(ms)) next
+      A[j, j] <- 1 / ms[2]
+      if (!is.na(i0)) A[i0, j] <- -ms[1] / ms[2]
+    }
+    M <- A %*% Tl[[k]]
+    L <- lower_chol(M %*% t(M))
+    L[lower.tri(L, diag = TRUE)]
+  }))
+}
+
 fit_scenario <- function(spec, data) {
   st <- STRUCTURES[[spec$structure]]
   fd <- FIXED[[spec$fixed]]
@@ -428,6 +492,20 @@ fit_scenario <- function(spec, data) {
   fixed_part <- paste("y ~", fixed_rhs(fd, spec$collinear))
   form <- as.formula(paste(fixed_part, "+", random_rhs(st$random)))
   q <- fit_quietly(form, data)
+  # The reference is lme4 at its BEST optimum: the default start, or the
+  # whitened one when that reaches a lower criterion. The optimizer spread
+  # then starts where the reference did, so it measures agreement at that
+  # optimum, not at the one lme4 left behind.
+  default_criterion <- as.numeric(REMLcrit(q$fit))
+  start <- NULL
+  ws <- tryCatch(whitened_start(st, data, fixed_part), error = function(e) NULL)
+  if (!is.null(ws)) {
+    q2 <- tryCatch(fit_quietly(form, data, start = list(theta = ws)), error = function(e) NULL)
+    if (!is.null(q2) && as.numeric(REMLcrit(q2$fit)) < default_criterion - 1e-8) {
+      q <- q2
+      start <- list(theta = ws)
+    }
+  }
   fit <- q$fit
   X <- getME(fit, "X")
   # emmeans contrasts only where they mean what csv-stats' lmm_pairwise
@@ -447,7 +525,9 @@ fit_scenario <- function(spec, data) {
          theta_lower = I(unname(getME(fit, "lower"))),
          vcov_beta = unname(as.matrix(vcov(fit))),
          probes = probe_deviances(form, data, getME(fit, "theta"), getME(fit, "lower")),
-         optimizers = optimizer_spread(form, data))
+         start = if (is.null(start)) "default" else "whitened",
+         default_start_criterion = default_criterion,
+         optimizers = optimizer_spread(form, data, start))
   )
 }
 

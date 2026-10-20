@@ -151,7 +151,112 @@ class _RandomIntercept:
         beta[0] += self.y_shift  # column 0 is the intercept (all ones)
         return _Fit(theta=theta, beta=beta, sigma2=sigma2, var_subject=theta ** 2 * sigma2,
                     cov_beta=sigma2 * np.linalg.inv(A), loglik=-best / 2.0, converged=bool(res.success),
-                    singular=theta < SINGULAR_TOL)
+                    singular=theta < SINGULAR_TOL, model=self)
+
+    # --- Satterthwaite (stage 3) -------------------------------------------
+    # As lmerTest: the variance parameters are varpar = (theta, sigma); their
+    # asymptotic covariance is 2 * inverse Hessian of the UNprofiled REML
+    # deviance at the estimate; a contrast's df is 2 v^2 / (g' A g) with
+    # v = l' C(varpar) l and g its gradient in varpar.
+
+    def deviance_at(self, varpar: np.ndarray) -> float:
+        """The REML (or ML) deviance at (theta, sigma), not profiled in sigma:
+        sum log(1 + n_i theta^2) + log|A| + (n - p) log(2 pi sigma^2) + q / sigma^2.
+        At sigma^2 = q / (n - p) it equals :meth:`deviance`."""
+        theta, sigma = float(varpar[0]), float(varpar[1])
+        A, _, q = self.parts(theta)
+        dof = self.n - self.p if self.reml else self.n
+        out = float(np.log1p(self.ng * theta ** 2).sum()) + dof * np.log(2.0 * np.pi * sigma ** 2) + q / sigma ** 2
+        if self.reml:
+            out += float(np.linalg.slogdet(A)[1])
+        return out
+
+    def vcov_at(self, varpar: np.ndarray) -> np.ndarray:
+        """Cov(beta-hat) = sigma^2 (X' W(theta) X)^-1 at (theta, sigma)."""
+        A, _, _ = self.parts(float(varpar[0]))
+        return float(varpar[1]) ** 2 * np.linalg.inv(A)
+
+
+def _steps(x: np.ndarray) -> np.ndarray:
+    """Finite-difference steps for varpar = (theta, sigma).
+
+    - theta is dimensionless and can sit exactly at 0. Its step has a floor
+      (0.1 * 1e-3). At 0 a step to -h is fine: everything depends on theta^2,
+      so -h is a mirror image.
+    - sigma carries the data's units and is never 0, so its step is purely
+      relative. A shared 0.1 floor made the step 14% of sigma for data around
+      1e-3, and the df there were off by 1.5e-4 (reference run 2026-10-19).
+    """
+    h = 1e-3 * np.abs(np.asarray(x, dtype=float))
+    h[0] = 1e-3 * max(abs(float(x[0])), 0.1)
+    return h
+
+
+def _gradient(f, x: np.ndarray) -> np.ndarray:
+    """Central differences with one Richardson extrapolation (error O(h^4))."""
+    h = _steps(x)
+    out = np.zeros(len(x))
+    for i in range(len(x)):
+        def d(step: float) -> float:
+            e = np.zeros(len(x)); e[i] = step
+            return (f(x + e) - f(x - e)) / (2 * step)
+        out[i] = (4 * d(h[i] / 2) - d(h[i])) / 3
+    return out
+
+
+def _hessian(f, x: np.ndarray) -> np.ndarray:
+    """Central-difference Hessian with one Richardson extrapolation."""
+    m = len(x)
+    h = _steps(x)
+
+    def at(scale: float) -> np.ndarray:
+        H = np.zeros((m, m))
+        f0 = f(x)
+        for i in range(m):
+            ei = np.zeros(m); ei[i] = h[i] * scale
+            H[i, i] = (f(x + ei) - 2 * f0 + f(x - ei)) / (h[i] * scale) ** 2
+            for j in range(i + 1, m):
+                ej = np.zeros(m); ej[j] = h[j] * scale
+                H[i, j] = H[j, i] = (f(x + ei + ej) - f(x + ei - ej) - f(x - ei + ej) + f(x - ei - ej)) / (
+                    4 * h[i] * h[j] * scale ** 2)
+        return H
+
+    return (4 * at(0.5) - at(1.0)) / 3
+
+
+def _varpar_cov(fit) -> np.ndarray | None:
+    """Asymptotic covariance of (theta, sigma): 2 * inverse Hessian of the
+    REML deviance (lmerTest's vcov_varpar). None when the Hessian is not
+    positive definite (it can't give a df)."""
+    if getattr(fit, "_varpar_cov_cache", None) is not None:
+        return fit._varpar_cov_cache
+    varpar = np.array([fit.theta, np.sqrt(fit.sigma2)])
+    H = _hessian(fit.model.deviance_at, varpar)
+    try:
+        np.linalg.cholesky(H)
+    except np.linalg.LinAlgError:
+        log.info("lmm Satterthwaite: varpar Hessian not positive definite: %s", H.tolist())
+        return None
+    fit._varpar_cov_cache = 2.0 * np.linalg.inv(H)
+    return fit._varpar_cov_cache
+
+
+def satterthwaite_df(fit, l: np.ndarray) -> tuple[float | None, str | None]:
+    """``(df, None)`` for the contrast ``l' beta``, or ``(None, why)``.
+
+    df = 2 v^2 / (g' A g): v = l' C l, g = d v / d varpar, A = Cov(varpar).
+    Checked against lmerTest on the reference datasets (test_lmm_reference.py).
+    """
+    A = _varpar_cov(fit)
+    if A is None:
+        return None, "the variance parameters' Hessian is not positive definite"
+    varpar = np.array([fit.theta, np.sqrt(fit.sigma2)])
+    v = float(l @ fit.cov_beta @ l)
+    g = _gradient(lambda vp: float(l @ fit.model.vcov_at(vp) @ l), varpar)
+    denom = float(g @ A @ g)
+    if not (np.isfinite(v) and np.isfinite(denom)) or denom <= 0 or v <= 0:
+        return None, f"non-finite or non-positive terms (v={v:.3g}, g'Ag={denom:.3g})"
+    return 2.0 * v * v / denom, None
 
 
 class _Fit:
@@ -225,19 +330,36 @@ def _column_names(column: str, names: dict[str, str], levels: dict[str, list[Any
     return ":".join(r_parts), " : ".join(labels)
 
 
-def _coefficients(result, ci_level: float, names: dict[str, str], levels: dict[str, list[Any]]) -> list[dict[str, Any]]:
+def _coefficients(result, ci_level: float, names: dict[str, str], levels: dict[str, list[Any]],
+                  warnings: list[dict[str, str]]) -> list[dict[str, Any]]:
+    """Every fixed-effect coefficient with a Satterthwaite t test (stage 3),
+    or the Wald z test with ``df_method: "wald"`` and a
+    ``satterthwaite_unavailable`` warning when the df can't be computed."""
     cov = result.cov_beta
-    z_crit = stats.norm.ppf(0.5 + ci_level / 2)
     out = []
+    unavailable = []
     for i, column in enumerate(result.columns):
         se = float(np.sqrt(cov[i, i]))
         est = float(result.beta[i])
-        z = est / se if se > 0 else float("nan")
+        stat = est / se if se > 0 else float("nan")
         r_name, label = _column_names(str(column), names, levels)
-        out.append({
-            "name": r_name, "label": label, "estimate": _num(est), "se": _num(se), "z": _num(z),
-            "p": _num(2 * stats.norm.sf(abs(z))), "ci": [_num(est - z_crit * se), _num(est + z_crit * se)],
-        })
+        l = np.zeros(len(result.columns)); l[i] = 1.0
+        df, why = satterthwaite_df(result, l)
+        entry = {"name": r_name, "label": label, "estimate": _num(est), "se": _num(se),
+                 "z": _num(stat), "p_wald": _num(2 * stats.norm.sf(abs(stat)))}
+        if df is None:
+            unavailable.append(f"{r_name}: {why}")
+            crit = stats.norm.ppf(0.5 + ci_level / 2)
+            entry.update(df=None, df_method="wald", t=None, p=_num(2 * stats.norm.sf(abs(stat))))
+        else:
+            crit = stats.t.ppf(0.5 + ci_level / 2, df)
+            entry.update(df=_num(df), df_method="satterthwaite", t=_num(stat), p=_num(2 * stats.t.sf(abs(stat), df)))
+        entry["ci"] = [_num(est - crit * se), _num(est + crit * se)]
+        out.append(entry)
+    if unavailable:
+        warnings.append({"code": "satterthwaite_unavailable",
+                         "message": "Wald z used for: " + "; ".join(unavailable)})
+        log.info("lmm Satterthwaite unavailable: %s", unavailable)
     return out
 
 
@@ -322,7 +444,7 @@ def lmm(
     details = {
         "formula": f"{dv} ~ {' * '.join(factors)} + (1 | {subject})",
         "reml": reml, "converged": bool(result.converged),
-        "log_likelihood": _num(result.loglik), "coefficients": _coefficients(result, ci_level, names, prep.levels),
+        "log_likelihood": _num(result.loglik), "coefficients": _coefficients(result, ci_level, names, prep.levels, prep.warnings),
         "coding": "sum-to-zero", **_variance_details(result),
     }
     return _record("lmm", "Linear mixed model (Wald tests)", prep, between=between, within=within,

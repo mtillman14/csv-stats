@@ -146,13 +146,60 @@ def test_reml_log_likelihood_matches_lme4(case):
     assert ours == pytest.approx(ref["loglik_reml"], abs=LOGLIK_ATOL * _loosen(ref))
 
 
+def lme4_stopped_short(case: str) -> bool:
+    """csv-stats' REML log-likelihood is HIGHER than lme4's: lme4's optimizer
+    stopped before the optimum, so its estimates (and everything computed
+    from them) carry that error. W3rep_mcar15 (2026-10-19): loglik 1e-8
+    apart, SEs 4e-6, so the intercept's t = 50.4 differed by 2.4e-5.
+    Tolerances are relaxed ONLY for such datasets, never across the board."""
+    better = fit(case)["details"]["log_likelihood"] - reference(case)["loglik_reml"]
+    return better > 1e-10
+
+
+def test_lme4_stopping_short_is_rare():
+    """The relaxation must stay an exception: if it spreads, csv-stats (not
+    lme4) is probably the one that changed."""
+    usable = [c for c in CASES if not _skip_reason(c)]
+    short = [c for c in usable if lme4_stopped_short(c)]
+    assert len(short) <= 3, short
+
+
+DF_RTOL = 1e-3
+T_RTOL = 1e-5
+P_ATOL = 1e-4
+
+
+@pytest.mark.parametrize("case", CASES)
+def test_coefficient_satterthwaite_matches_lmertest(case):
+    """Stage 3: every coefficient's Satterthwaite df, t and p (lmerTest's
+    summary()). A fallback to Wald is allowed only with its warning, and
+    then the comparison is skipped for that coefficient, never silent."""
+    ref = _usable(case)
+    rec = fit(case)
+    ours = {c["name"]: c for c in rec["details"]["coefficients"]}
+    if any(c["df_method"] != "satterthwaite" for c in ours.values()):
+        assert any(w["code"] == "satterthwaite_unavailable" for w in rec["warnings"])
+    # A fallback is a failure only where lmerTest itself produced a df.
+    fallbacks = [r["name"] for r in ref["fixed"]
+                 if r["df"] is not None and ours[r["name"]]["df_method"] != "satterthwaite"]
+    loosen = 10.0 if ref.get("singular") or lme4_stopped_short(case) else 1.0
+    for r in ref["fixed"]:
+        mine = ours[r["name"]]
+        if mine["df_method"] != "satterthwaite" or r["df"] is None:
+            continue
+        assert mine["df"] == pytest.approx(r["df"], rel=DF_RTOL * loosen), f"{r['name']} df"
+        assert mine["t"] == pytest.approx(r["t"], rel=T_RTOL * loosen, abs=1e-8), f"{r['name']} t"
+        assert mine["p"] == pytest.approx(r["p"], abs=P_ATOL * loosen), f"{r['name']} p"
+    assert not fallbacks, f"Wald fallback where lmerTest has a df: {fallbacks}"
+
+
 def _rel(a, b, floor):
     return abs(a - b) / max(abs(b), floor)
 
 
 def test_print_parity_table():
     """Not an assertion: the largest relative error per scenario (run with -s)."""
-    lines = [f"{'scenario':58} {'beta':>9} {'se':>9} {'var_s':>9} {'var_e':>9} {'loglik':>9} sing"]
+    lines = [f"{'scenario':58} {'beta':>9} {'se':>9} {'var_s':>9} {'var_e':>9} {'loglik':>9} {'df':>9} sing"]
     for case in CASES:
         if _skip_reason(case):
             continue
@@ -172,7 +219,9 @@ def test_print_parity_table():
         var_e = _rel(rec["details"]["residual_variance"], residual, scale ** 2)
         loglik = abs(rec["details"]["log_likelihood"] - ref["loglik_reml"])
         flagged = any(w["code"] == "singular_fit" for w in rec["warnings"])
-        lines.append(f"{case:58} {beta:9.1e} {se:9.1e} {var_s:9.1e} {var_e:9.1e} {loglik:9.1e} "
+        df = max((_rel(ours[r["name"]]["df"], r["df"], 1.0) for r in ref["fixed"]
+                  if r["name"] in ours and ours[r["name"]]["df"] is not None and r["df"] is not None), default=np.nan)
+        lines.append(f"{case:58} {beta:9.1e} {se:9.1e} {var_s:9.1e} {var_e:9.1e} {loglik:9.1e} {df:9.1e} "
                      f"{'R' if ref['singular'] else '-'}{'P' if flagged else '-'}")
     print("\nLMM fit parity vs lme4 (relative error; sing: R = lme4 singular, P = csv-stats flagged)")
     print("\n".join(lines))

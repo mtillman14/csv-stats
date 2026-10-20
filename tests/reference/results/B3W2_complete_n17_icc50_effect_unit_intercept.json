@@ -12,8 +12,8 @@
     "seed": 104695
   },
   "factors": ["group", "time"],
-  "between": "group",
-  "within": "time",
+  "between": ["group"],
+  "within": ["time"],
   "levels": {
     "group": ["g1", "g2", "g3"],
     "time": ["pre", "post"]

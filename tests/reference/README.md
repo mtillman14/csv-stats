@@ -47,3 +47,60 @@ The outputs always land next to the script.
 Commit the generated `datasets/` and `results/`. Regenerate only on purpose,
 and say why in the commit: the Python tests (`tests/test_lmm_reference.py`)
 treat these files as ground truth.
+
+## The sampled scenario set (`make_lmm_scenarios.R`)
+
+`make_lmm_scenarios.R` writes a second, larger set into `scenarios/`. It is
+the test bed for random-effect structures beyond `(1 | subject)`. The curated
+set above stays as it is.
+
+It covers 8 random-effect structures, 25 scenarios each (200 in all):
+
+| id | lme4 formula |
+|---|---|
+| RI | `(1 \| subject)` |
+| RIS | `(1 + x \| subject)` |
+| RIS_UNCORR | `(1 + x \|\| subject)` |
+| RIF | `(1 + cond \| subject)` |
+| RM | `(1 \| subject) + (1 \| subject:time)` |
+| CROSSED | `(1 \| subject) + (1 \| item)` |
+| NESTED | `(1 \| site) + (1 \| site:subject)` |
+| CROSSED_SLOPES | `(1 + cond \| subject) + (1 \| item)` |
+
+Each scenario's dimensions are drawn from its own seed. The draws are
+stratified, so every structure always includes:
+- balanced data
+- a true variance of exactly 0
+- a correlation near ±1 (correlated structures only)
+- n ≤ 8
+- heavy missing data
+- a non-unit scale
+- an exactly collinear column, which lme4 drops
+
+Beyond what the curated JSON holds, each result records:
+- `probes`: lme4's REML and ML deviance at fixed θ (`devFunOnly`). The
+  Python tests compare the objective itself at these points, with no
+  optimizer involved.
+- `optimizers`: refits with bobyqa, Nelder_Mead and two nloptwrap
+  algorithms. Their spread sets each scenario's tolerance.
+- `random`: the structure in a language-neutral form. Python reads this,
+  never the formula.
+- `theta`, `theta_lower`, `fixed_terms`, `fixed_columns`, `dropped_columns`
+  and `vcov_beta`.
+
+`scenarios/manifest.csv` has one row per scenario: every sampled dimension
+plus R's verdict. `tests/test_lmm_scenarios.py` checks its coverage quotas.
+
+Run it the same way as the curated script, from a terminal in the csv-stats
+folder:
+
+```
+Rscript tests/reference/make_lmm_scenarios.R
+```
+
+Expect a few minutes; the four refits per scenario are the slow part. Then
+commit `scenarios/`. Expect about 3–5 MB.
+
+Both scripts share `lmm_reference_common.R`, the one place that turns a fit
+into JSON. If you change it, rerun both scripts: the curated results must
+come out byte-identical unless the change was meant to alter them.

@@ -1,0 +1,248 @@
+{
+  "id": "CROSSED_010",
+  "scenario": {
+    "structure": "CROSSED",
+    "index": 10,
+    "stratum": "free",
+    "seed": 40464,
+    "fixed": "none",
+    "n_subjects": 9,
+    "n_items": 8,
+    "n_sites": null,
+    "reps": 1,
+    "missing": "mcar",
+    "missing_p": 0.209399074316025,
+    "scale": "unit",
+    "x_offset": false,
+    "collinear": false,
+    "effect": "effect"
+  },
+  "truth": [
+    {
+      "sd": 0.973475961212763,
+      "corr": null
+    },
+    {
+      "sd": 0.761667790163288,
+      "corr": null
+    }
+  ],
+  "random": [
+    {
+      "group": ["subject"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    },
+    {
+      "group": ["item"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    }
+  ],
+  "factors": [],
+  "between": [],
+  "within": [],
+  "covariates": [],
+  "collinear": null,
+  "levels": [],
+  "subject": "subject",
+  "dv": "y",
+  "n_rows": 57,
+  "n_subjects": 9,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ 1 + (1 | subject) + (1 | item)",
+  "coding": "contr.sum",
+  "fixed_terms": [],
+  "fixed_columns": ["(Intercept)"],
+  "dropped_columns": [],
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 9.87194604214898,
+      "se": 0.512462998098772,
+      "df": 13.4016388541018,
+      "t": 19.2637245591852,
+      "p": 3.70655695803612e-11,
+      "_row": "(Intercept)"
+    }
+  ],
+  "anova_satterthwaite": [],
+  "anova_kenward_roger": [],
+  "wald_terms": [],
+  "contrasts_satterthwaite": [],
+  "contrasts_wald": [],
+  "varcorr": [
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 1.27802166045564,
+      "sdcor": 1.13049620099125
+    },
+    {
+      "grp": "item",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0.846097250957615,
+      "sdcor": 0.919835447760965
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 0.811233856020667,
+      "sdcor": 0.900685214723028
+    }
+  ],
+  "reml_criterion": 184.981358665099,
+  "loglik_reml": -92.4906793325496,
+  "singular": false,
+  "convergence_messages": [],
+  "notes": [],
+  "theta": [1.25515128094879, 1.02126184900662],
+  "theta_names": ["subject.(Intercept)", "item.(Intercept)"],
+  "theta_lower": [0, 0],
+  "vcov_beta": [
+    [0.262618324420382]
+  ],
+  "probes": [
+    {
+      "label": "estimate",
+      "theta": [1.25515128094879, 1.02126184900662],
+      "reml": 184.981358665099,
+      "ml": 185.473306298027
+    },
+    {
+      "label": "theta1_up",
+      "theta": [1.38066640904367, 1.02126184900662],
+      "reml": 185.080188060122,
+      "ml": 185.656624865408
+    },
+    {
+      "label": "theta1_down",
+      "theta": [1.12963615285391, 1.02126184900662],
+      "reml": 185.107792080446,
+      "ml": 185.520506142735
+    },
+    {
+      "label": "theta2_up",
+      "theta": [1.25515128094879, 1.12338803390728],
+      "reml": 185.065760678069,
+      "ml": 185.619332490812
+    },
+    {
+      "label": "theta2_down",
+      "theta": [1.25515128094879, 0.919135664105959],
+      "reml": 185.088583753311,
+      "ml": 185.525543233074
+    },
+    {
+      "label": "boundary",
+      "theta": [0, 0],
+      "reml": 219.165849645614,
+      "ml": 217.955401025574
+    },
+    {
+      "label": "random1",
+      "theta": [1.76755624543875, 1.00520029338077],
+      "reml": 186.18266402122,
+      "ml": 187.026743670678
+    },
+    {
+      "label": "random2",
+      "theta": [1.62260569399223, 0.515704032965004],
+      "reml": 190.755379856479,
+      "ml": 191.475420755998
+    },
+    {
+      "label": "random3",
+      "theta": [0.742343423888087, 1.06131498515606],
+      "reml": 188.329614933303,
+      "ml": 188.614675788374
+    }
+  ],
+  "optimizers": {
+    "fits": [
+      {
+        "optimizer": "bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 184.981358658904,
+        "theta": [1.25513987157682, 1.02123621015761],
+        "fixef": {
+          "(Intercept)": 9.87194599054497
+        },
+        "se": {
+          "(Intercept)": 0.512457305281544
+        },
+        "vcov": [1.27800845102257, 0.846061405530528, 0.811240219574418],
+        "notes": []
+      },
+      {
+        "optimizer": "Nelder_Mead",
+        "ok": true,
+        "converged": true,
+        "criterion": 184.981358659143,
+        "theta": [1.25513696935009, 1.02123140021178],
+        "fixef": {
+          "(Intercept)": 9.87194598223642
+        },
+        "se": {
+          "(Intercept)": 0.512456109275623
+        },
+        "vcov": [1.27800462209472, 0.846054813608097, 0.811241540709884],
+        "notes": []
+      },
+      {
+        "optimizer": "nlopt_bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 184.981358665099,
+        "theta": [1.25515128094879, 1.02126184900662],
+        "fixef": {
+          "(Intercept)": 9.87194604214898
+        },
+        "se": {
+          "(Intercept)": 0.512462998098772
+        },
+        "vcov": [1.27802166045564, 0.846097250957615, 0.811233856020667],
+        "notes": []
+      },
+      {
+        "optimizer": "nlopt_neldermead",
+        "ok": true,
+        "converged": true,
+        "criterion": 184.981358679286,
+        "theta": [1.25508560422224, 1.02122891944953],
+        "fixef": {
+          "(Intercept)": 9.87194606784732
+        },
+        "se": {
+          "(Intercept)": 0.512447112115791
+        },
+        "vcov": [1.27791422055513, 0.846060103298174, 0.81125055409513],
+        "notes": []
+      }
+    ],
+    "n_converged": 4,
+    "n_used": 4,
+    "spread": {
+      "criterion": 2.03820889055351e-08,
+      "theta": [6.56767265510005e-05, 3.29295570880017e-05],
+      "fixef": {
+        "(Intercept)": 8.56109085844992e-08
+      },
+      "se": {
+        "(Intercept)": 1.58859829804125e-05
+      },
+      "vcov": [0.000107439900504547, 4.2437349518476e-05, 1.66980744633616e-05]
+    }
+  }
+}

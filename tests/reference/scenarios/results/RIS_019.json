@@ -1,0 +1,340 @@
+{
+  "id": "RIS_019",
+  "scenario": {
+    "structure": "RIS",
+    "index": 19,
+    "stratum": "collinear",
+    "seed": 31274,
+    "fixed": "x",
+    "n_subjects": 20,
+    "n_items": null,
+    "n_sites": null,
+    "reps": 5,
+    "missing": "singletons",
+    "missing_p": null,
+    "scale": "unit",
+    "x_offset": true,
+    "collinear": true,
+    "effect": "effect"
+  },
+  "truth": [
+    {
+      "sd": [0.407784312808373, 0.994808336560061],
+      "corr": 0.727348666638136
+    }
+  ],
+  "random": [
+    {
+      "group": ["subject"],
+      "terms": ["(Intercept)", "x"],
+      "correlated": true
+    }
+  ],
+  "factors": [],
+  "between": [],
+  "within": [],
+  "covariates": ["x"],
+  "collinear": "z",
+  "levels": [],
+  "subject": "subject",
+  "dv": "y",
+  "n_rows": 84,
+  "n_subjects": 20,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ x + z + (1 + x | subject)",
+  "coding": "contr.sum",
+  "fixed_terms": ["x", "z"],
+  "fixed_columns": ["(Intercept)", "x"],
+  "dropped_columns": ["z"],
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 9.13108960129222,
+      "se": 0.659644983021202,
+      "df": 15.9944281185655,
+      "t": 13.8424301500353,
+      "p": 2.54388057797868e-10,
+      "_row": "(Intercept)"
+    },
+    {
+      "name": "x",
+      "estimate": 0.0107972462867271,
+      "se": 0.011421702037933,
+      "df": 15.4954457099235,
+      "t": 0.94532725953347,
+      "p": 0.359000479252134,
+      "_row": "x"
+    }
+  ],
+  "anova_satterthwaite": [
+    {
+      "term": "x",
+      "num_df": 1,
+      "den_df": 15.4954457099235,
+      "F": 0.893643627617061,
+      "p": 0.359000479252134,
+      "_row": "x"
+    },
+    {
+      "term": "z",
+      "num_df": null,
+      "den_df": null,
+      "F": null,
+      "p": null,
+      "_row": "z"
+    }
+  ],
+  "anova_kenward_roger": [
+    {
+      "term": "x",
+      "num_df": 1,
+      "den_df": 13.8925230000194,
+      "F": 0.817526010586864,
+      "p": 0.381316429801864,
+      "_row": "x"
+    },
+    {
+      "term": "z",
+      "num_df": null,
+      "den_df": null,
+      "F": null,
+      "p": null,
+      "_row": "z"
+    }
+  ],
+  "wald_terms": [
+    {
+      "term": "x",
+      "chi2": 0.893643627617061,
+      "df": 1,
+      "p": 0.344491825713194
+    },
+    {
+      "term": "z",
+      "chi2": null,
+      "df": null,
+      "p": null
+    }
+  ],
+  "contrasts_satterthwaite": [],
+  "contrasts_wald": [],
+  "varcorr": [
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 1.06397427434817,
+      "sdcor": 1.03149128660797
+    },
+    {
+      "grp": "subject",
+      "var1": "x",
+      "var2": null,
+      "vcov": 0.000429195312666121,
+      "sdcor": 0.0207170295328776
+    },
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": "x",
+      "vcov": -0.0208687698618787,
+      "sdcor": -0.976570949339625
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 0.930603141607857,
+      "sdcor": 0.964677739770052
+    }
+  ],
+  "reml_criterion": 249.771342474863,
+  "loglik_reml": -124.885671237431,
+  "singular": false,
+  "convergence_messages": [
+    "Model failed to converge with max|grad| = 0.142667 (tol = 0.002, component 1)\n  See ?lme4::convergence and ?lme4::troubleshooting."
+  ],
+  "notes": [
+    "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient",
+    "warning: Model failed to converge with max|grad| = 0.142667 (tol = 0.002, component 1)\n  See ?lme4::convergence and ?lme4::troubleshooting."
+  ],
+  "theta": [1.0692599653578, -0.0209724432982582, 0.00462145552288896],
+  "theta_names": ["subject.(Intercept)", "subject.x.(Intercept)", "subject.x"],
+  "theta_lower": [0, null, 0],
+  "vcov_beta": [
+    [0.435131503625042, -0.00739362560028795],
+    [-0.00739362560028795, 0.000130455277443323]
+  ],
+  "probes": [
+    {
+      "label": "estimate",
+      "theta": [1.0692599653578, -0.0209724432982582, 0.00462145552288896],
+      "reml": 249.771342474863,
+      "ml": 240.349091658628
+    },
+    {
+      "label": "theta1_up",
+      "theta": [1.17618596189359, -0.0209724432982582, 0.00462145552288896],
+      "reml": 249.996980408022,
+      "ml": 240.552793684331
+    },
+    {
+      "label": "theta1_down",
+      "theta": [0.962333968822024, -0.0209724432982582, 0.00462145552288896],
+      "reml": 250.003605943419,
+      "ml": 240.648901406908
+    },
+    {
+      "label": "theta2_up",
+      "theta": [1.0692599653578, -0.023069687628084, 0.00462145552288896],
+      "reml": 250.124066107918,
+      "ml": 240.806993285221
+    },
+    {
+      "label": "theta2_down",
+      "theta": [1.0692599653578, -0.0188751989684324, 0.00462145552288896],
+      "reml": 250.048247541867,
+      "ml": 240.573977786873
+    },
+    {
+      "label": "theta3_up",
+      "theta": [1.0692599653578, -0.0209724432982582, 0.00508360107517785],
+      "reml": 249.786457037829,
+      "ml": 240.397316300317
+    },
+    {
+      "label": "theta3_down",
+      "theta": [1.0692599653578, -0.0209724432982582, 0.00415930997060006],
+      "reml": 249.786996584952,
+      "ml": 240.333772544756
+    },
+    {
+      "label": "boundary",
+      "theta": [0, -0.0209724432982582, 0],
+      "reml": 264.713605888479,
+      "ml": 256.559583833019
+    },
+    {
+      "label": "random1",
+      "theta": [1.77698278939351, -0.907274710014462, 0.0983492014929652],
+      "reml": 399.241229863966,
+      "ml": 398.323673432103
+    },
+    {
+      "label": "random2",
+      "theta": [0.403558773454279, 0.521664857398719, 1.34875136287883],
+      "reml": 417.865478795782,
+      "ml": 417.944411204422
+    },
+    {
+      "label": "random3",
+      "theta": [1.72022671299055, -0.321459827478975, 1.10387074109167],
+      "reml": 407.188574350912,
+      "ml": 406.982885016429
+    }
+  ],
+  "optimizers": {
+    "fits": [
+      {
+        "optimizer": "bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 249.767126044231,
+        "theta": [0.984625121821758, -0.019741180227343, 0.00446498850346644],
+        "fixef": {
+          "(Intercept)": 9.13390153275561,
+          "x": 0.010738971014614
+        },
+        "se": {
+          "(Intercept)": 0.652798883635025,
+          "x": 0.0113066864801337
+        },
+        "vcov": [0.906446020996516, 0.000383012916384541, -0.0181737332008572, 0.934975266763587],
+        "notes": [
+          "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient"
+        ]
+      },
+      {
+        "optimizer": "Nelder_Mead",
+        "ok": true,
+        "converged": true,
+        "criterion": 249.767126000947,
+        "theta": [0.984349672439048, -0.0197371459472624, 0.00446445473652266],
+        "fixef": {
+          "(Intercept)": 9.13391079427549,
+          "x": 0.0107387813503802
+        },
+        "se": {
+          "(Intercept)": 0.652777504900324,
+          "x": 0.0113063191350883
+        },
+        "vcov": [0.905952873248845, 0.000382865440394956, -0.0181652156558841, 0.934989652308971],
+        "notes": [
+          "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient"
+        ]
+      },
+      {
+        "optimizer": "nlopt_bobyqa",
+        "ok": true,
+        "converged": false,
+        "criterion": 249.771342474863,
+        "theta": [1.0692599653578, -0.0209724432982582, 0.00462145552288896],
+        "fixef": {
+          "(Intercept)": 9.13108960129222,
+          "x": 0.0107972462867271
+        },
+        "se": {
+          "(Intercept)": 0.659644983021202,
+          "x": 0.011421702037933
+        },
+        "vcov": [1.06397427434817, 0.000429195312666121, -0.0208687698618787, 0.930603141607857],
+        "notes": [
+          "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient",
+          "warning: Model failed to converge with max|grad| = 0.142667 (tol = 0.002, component 1)\n  See ?lme4::convergence and ?lme4::troubleshooting."
+        ]
+      },
+      {
+        "optimizer": "nlopt_neldermead",
+        "ok": true,
+        "converged": false,
+        "criterion": 250.501146066592,
+        "theta": [1.46840802546087, -0.025069815361879, 0.00806763840795687],
+        "fixef": {
+          "(Intercept)": 9.14024054987715,
+          "x": 0.0107150046114916
+        },
+        "se": {
+          "(Intercept)": 0.689687969659496,
+          "x": 0.0117571928042285
+        },
+        "vcov": [1.85435338871972, 0.000596481649664573, -0.0316589777941913, 0.860001093382311],
+        "notes": [
+          "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient",
+          "warning: Model failed to converge with max|grad| = 1.01202 (tol = 0.002, component 1)\n  See ?lme4::convergence and ?lme4::troubleshooting."
+        ]
+      }
+    ],
+    "n_converged": 2,
+    "n_used": 2,
+    "spread": {
+      "criterion": 4.32843876296829e-08,
+      "theta": [0.00027544938271018, 4.03428008055248e-06, 5.33766943782397e-07],
+      "fixef": {
+        "(Intercept)": 9.26151987989954e-06,
+        "x": 1.89664233764611e-07
+      },
+      "se": {
+        "(Intercept)": 2.1378734700872e-05,
+        "x": 3.67345045425641e-07
+      },
+      "vcov": [0.000493147747671396, 1.47475989585079e-07, 8.51754497308357e-06, 1.43855453835773e-05]
+    }
+  }
+}

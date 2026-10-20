@@ -1,0 +1,248 @@
+{
+  "id": "CROSSED_018",
+  "scenario": {
+    "structure": "CROSSED",
+    "index": 18,
+    "stratum": "scale",
+    "seed": 40744,
+    "fixed": "none",
+    "n_subjects": 25,
+    "n_items": 20,
+    "n_sites": null,
+    "reps": 1,
+    "missing": "mcar",
+    "missing_p": 0.1672614288982,
+    "scale": "small",
+    "x_offset": false,
+    "collinear": false,
+    "effect": "effect"
+  },
+  "truth": [
+    {
+      "sd": 0.402185358602251,
+      "corr": null
+    },
+    {
+      "sd": 1.08964696546929,
+      "corr": null
+    }
+  ],
+  "random": [
+    {
+      "group": ["subject"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    },
+    {
+      "group": ["item"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    }
+  ],
+  "factors": [],
+  "between": [],
+  "within": [],
+  "covariates": [],
+  "collinear": null,
+  "levels": [],
+  "subject": "subject",
+  "dv": "y",
+  "n_rows": 416,
+  "n_subjects": 25,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ 1 + (1 | subject) + (1 | item)",
+  "coding": "contr.sum",
+  "fixed_terms": [],
+  "fixed_columns": ["(Intercept)"],
+  "dropped_columns": [],
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 0.00972931465699015,
+      "se": 0.000240039770346807,
+      "df": 21.8809936251147,
+      "t": 40.532094506395,
+      "p": 4.44089154856448e-22,
+      "_row": "(Intercept)"
+    }
+  ],
+  "anova_satterthwaite": [],
+  "anova_kenward_roger": [],
+  "wald_terms": [],
+  "contrasts_satterthwaite": [],
+  "contrasts_wald": [],
+  "varcorr": [
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 1.04967840394789e-07,
+      "sdcor": 0.000323987407771952
+    },
+    {
+      "grp": "item",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 1.02357551064722e-06,
+      "sdcor": 0.0010117190868256
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 9.23236397414721e-07,
+      "sdcor": 0.000960851912322977
+    }
+  ],
+  "reml_criterion": -4497.13122461384,
+  "loglik_reml": 2248.56561230692,
+  "singular": false,
+  "convergence_messages": [],
+  "notes": [],
+  "theta": [0.3371876598431, 1.05293966099276],
+  "theta_names": ["subject.(Intercept)", "item.(Intercept)"],
+  "theta_lower": [0, 0],
+  "vcov_beta": [
+    [5.7619091348148e-08]
+  ],
+  "probes": [
+    {
+      "label": "estimate",
+      "theta": [0.3371876598431, 1.05293966099276],
+      "reml": -4497.13122461384,
+      "ml": -4511.96396327729
+    },
+    {
+      "label": "theta1_up",
+      "theta": [0.37090642582741, 1.05293966099276],
+      "reml": -4496.95498189859,
+      "ml": -4511.77951174155
+    },
+    {
+      "label": "theta1_down",
+      "theta": [0.30346889385879, 1.05293966099276],
+      "reml": -4496.92961683804,
+      "ml": -4511.76818444994
+    },
+    {
+      "label": "theta2_up",
+      "theta": [0.3371876598431, 1.15823362709203],
+      "reml": -4496.84242228648,
+      "ml": -4511.51182435429
+    },
+    {
+      "label": "theta2_down",
+      "theta": [0.3371876598431, 0.947645694893482],
+      "reml": -4496.74119677313,
+      "ml": -4511.74864067193
+    },
+    {
+      "label": "boundary",
+      "theta": [0, 0],
+      "reml": -4258.19335476417,
+      "ml": -4275.50048252781
+    },
+    {
+      "label": "random1",
+      "theta": [1.56970039568841, 1.11566284345463],
+      "reml": -4456.17716577707,
+      "ml": -4470.10937403284
+    },
+    {
+      "label": "random2",
+      "theta": [1.6072302730754, 1.36598145728931],
+      "reml": -4453.60862456144,
+      "ml": -4467.3568210005
+    },
+    {
+      "label": "random3",
+      "theta": [0.946274415124208, 1.92615469824523],
+      "reml": -4468.22152640344,
+      "ml": -4481.86004898567
+    }
+  ],
+  "optimizers": {
+    "fits": [
+      {
+        "optimizer": "bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": -4497.13122461415,
+        "theta": [0.337186388016737, 1.0529408855753],
+        "fixef": {
+          "(Intercept)": 0.00972931463938649
+        },
+        "se": {
+          "(Intercept)": 0.000240039974144997
+        },
+        "vcov": [1.04967067667119e-07, 1.02357807795813e-06, 9.23236565583586e-07],
+        "notes": []
+      },
+      {
+        "optimizer": "Nelder_Mead",
+        "ok": true,
+        "converged": true,
+        "criterion": -4497.13122461234,
+        "theta": [0.337187504151918, 1.05294833499908],
+        "fixef": {
+          "(Intercept)": 0.00972931466708889
+        },
+        "se": {
+          "(Intercept)": 0.000240041436132802
+        },
+        "vcov": [1.04967671264916e-07, 1.02359167091924e-06, 9.23235762425646e-07],
+        "notes": []
+      },
+      {
+        "optimizer": "nlopt_bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": -4497.13122461384,
+        "theta": [0.3371876598431, 1.05293966099276],
+        "fixef": {
+          "(Intercept)": 0.00972931465699015
+        },
+        "se": {
+          "(Intercept)": 0.000240039770346807
+        },
+        "vcov": [1.04967840394789e-07, 1.02357551064722e-06, 9.23236397414721e-07],
+        "notes": []
+      },
+      {
+        "optimizer": "nlopt_neldermead",
+        "ok": true,
+        "converged": true,
+        "criterion": -4497.13122452485,
+        "theta": [0.337194944786758, 1.05299265625923],
+        "fixef": {
+          "(Intercept)": 0.00972931484408323
+        },
+        "se": {
+          "(Intercept)": 0.000240050154509028
+        },
+        "vcov": [1.04971741858429e-07, 1.02367236281485e-06, 9.23230819173785e-07],
+        "notes": []
+      }
+    ],
+    "n_converged": 4,
+    "n_used": 4,
+    "spread": {
+      "criterion": 8.93032847670838e-08,
+      "theta": [8.55677002181698e-06, 5.2995266468514e-05],
+      "fixef": {
+        "(Intercept)": 2.04696735256471e-10
+      },
+      "se": {
+        "(Intercept)": 1.03841622203402e-08
+      },
+      "vcov": [4.67419130989633e-12, 9.6852167624667e-11, 5.74640980161918e-12]
+    }
+  }
+}

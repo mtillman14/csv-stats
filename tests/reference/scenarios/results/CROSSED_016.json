@@ -1,0 +1,248 @@
+{
+  "id": "CROSSED_016",
+  "scenario": {
+    "structure": "CROSSED",
+    "index": 16,
+    "stratum": "heavy_missing",
+    "seed": 40674,
+    "fixed": "none",
+    "n_subjects": 36,
+    "n_items": 20,
+    "n_sites": null,
+    "reps": 1,
+    "missing": "mcar",
+    "missing_p": 0.320536433998495,
+    "scale": "unit",
+    "x_offset": false,
+    "collinear": false,
+    "effect": "null"
+  },
+  "truth": [
+    {
+      "sd": 0.476466493622745,
+      "corr": null
+    },
+    {
+      "sd": 1.88695529100118,
+      "corr": null
+    }
+  ],
+  "random": [
+    {
+      "group": ["subject"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    },
+    {
+      "group": ["item"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    }
+  ],
+  "factors": [],
+  "between": [],
+  "within": [],
+  "covariates": [],
+  "collinear": null,
+  "levels": [],
+  "subject": "subject",
+  "dv": "y",
+  "n_rows": 489,
+  "n_subjects": 36,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ 1 + (1 | subject) + (1 | item)",
+  "coding": "contr.sum",
+  "fixed_terms": [],
+  "fixed_columns": ["(Intercept)"],
+  "dropped_columns": [],
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 9.97164957766808,
+      "se": 0.602712678374626,
+      "df": 19.8930297424691,
+      "t": 16.5446155945471,
+      "p": 4.29198266399233e-13,
+      "_row": "(Intercept)"
+    }
+  ],
+  "anova_satterthwaite": [],
+  "anova_kenward_roger": [],
+  "wald_terms": [],
+  "contrasts_satterthwaite": [],
+  "contrasts_wald": [],
+  "varcorr": [
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0.297199988458727,
+      "sdcor": 0.545160516232355
+    },
+    {
+      "grp": "item",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 7.06237752630777,
+      "sdcor": 2.65751341037214
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 0.896225026080829,
+      "sdcor": 0.946691621427394
+    }
+  ],
+  "reml_criterion": 1496.59612765667,
+  "loglik_reml": -748.298063828333,
+  "singular": false,
+  "convergence_messages": [],
+  "notes": [],
+  "theta": [0.575858604738022, 2.80715847718734],
+  "theta_names": ["subject.(Intercept)", "item.(Intercept)"],
+  "theta_lower": [0, 0],
+  "vcov_beta": [
+    [0.363262572673515]
+  ],
+  "probes": [
+    {
+      "label": "estimate",
+      "theta": [0.575858604738022, 2.80715847718734],
+      "reml": 1496.59612765667,
+      "ml": 1497.42035146655
+    },
+    {
+      "label": "theta1_up",
+      "theta": [0.633444465211824, 2.80715847718734],
+      "reml": 1496.98378297584,
+      "ml": 1497.80226225508
+    },
+    {
+      "label": "theta1_down",
+      "theta": [0.51827274426422, 2.80715847718734],
+      "reml": 1497.0789688211,
+      "ml": 1497.91188485726
+    },
+    {
+      "label": "theta2_up",
+      "theta": [0.575858604738022, 3.08787432490608],
+      "reml": 1496.90638178743,
+      "ml": 1497.90961792684
+    },
+    {
+      "label": "theta2_down",
+      "theta": [0.575858604738022, 2.52644262946861],
+      "reml": 1497.02392209627,
+      "ml": 1497.65298590384
+    },
+    {
+      "label": "boundary",
+      "theta": [0, 0],
+      "reml": 2411.8914703882,
+      "ml": 2409.62779529438
+    },
+    {
+      "label": "random1",
+      "theta": [1.06778918392956, 0.0973601806908846],
+      "reml": 2395.58060577981,
+      "ml": 2395.89353182305
+    },
+    {
+      "label": "random2",
+      "theta": [1.36428574705496, 1.38486880576238],
+      "reml": 1553.94537864218,
+      "ml": 1553.8337910908
+    },
+    {
+      "label": "random3",
+      "theta": [0.373902338556945, 1.69502533832565],
+      "reml": 1515.31430573283,
+      "ml": 1515.26492154158
+    }
+  ],
+  "optimizers": {
+    "fits": [
+      {
+        "optimizer": "bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 1496.59612765667,
+        "theta": [0.57585858278432, 2.80715620715536],
+        "fixef": {
+          "(Intercept)": 9.97164957862576
+        },
+        "se": {
+          "(Intercept)": 0.602712224287973
+        },
+        "vcov": [0.297199985734498, 7.06236657795936, 0.896225086200081],
+        "notes": []
+      },
+      {
+        "optimizer": "Nelder_Mead",
+        "ok": true,
+        "converged": true,
+        "criterion": 1496.59612765697,
+        "theta": [0.575858926067731, 2.80714954272494],
+        "fixef": {
+          "(Intercept)": 9.97164958131796
+        },
+        "se": {
+          "(Intercept)": 0.602710875992056
+        },
+        "vcov": [0.297200374060696, 7.06233385236, 0.896225188698033],
+        "notes": []
+      },
+      {
+        "optimizer": "nlopt_bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 1496.59612765667,
+        "theta": [0.575858604738022, 2.80715847718734],
+        "fixef": {
+          "(Intercept)": 9.97164957766808
+        },
+        "se": {
+          "(Intercept)": 0.602712678374626
+        },
+        "vcov": [0.297199988458727, 7.06237752630777, 0.896225026080829],
+        "notes": []
+      },
+      {
+        "optimizer": "nlopt_neldermead",
+        "ok": true,
+        "converged": true,
+        "criterion": 1496.59612785864,
+        "theta": [0.57589374426539, 2.80726319924647],
+        "fixef": {
+          "(Intercept)": 9.97164952273416
+        },
+        "se": {
+          "(Intercept)": 0.602732356463294
+        },
+        "vcov": [0.297233286648272, 7.0628338006037, 0.896216059317271],
+        "notes": []
+      }
+    ],
+    "n_converged": 4,
+    "n_used": 4,
+    "spread": {
+      "criterion": 2.01968532564933e-07,
+      "theta": [3.51614810697454e-05, 0.000113656521534278],
+      "fixef": {
+        "(Intercept)": 5.85837991451399e-08
+      },
+      "se": {
+        "(Intercept)": 2.14804712380667e-05
+      },
+      "vcov": [3.33009137739038e-05, 0.000499948243700921, 9.12938076169656e-06]
+    }
+  }
+}

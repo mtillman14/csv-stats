@@ -1,0 +1,52 @@
+{
+  "id": "RIS_015",
+  "scenario": {
+    "structure": "RIS",
+    "index": 15,
+    "stratum": "heavy_missing",
+    "seed": 31150,
+    "fixed": "x",
+    "n_subjects": 18,
+    "n_items": null,
+    "n_sites": null,
+    "reps": 3,
+    "missing": "mcar",
+    "missing_p": 0.353586666774936,
+    "scale": "unit",
+    "x_offset": false,
+    "collinear": false,
+    "effect": "null"
+  },
+  "truth": [
+    {
+      "sd": [0.92153328232046, 0.692514898469504],
+      "corr": 0.747210080549121
+    }
+  ],
+  "random": [
+    {
+      "group": ["subject"],
+      "terms": ["(Intercept)", "x"],
+      "correlated": true
+    }
+  ],
+  "factors": [],
+  "between": [],
+  "within": [],
+  "covariates": ["x"],
+  "collinear": null,
+  "levels": [],
+  "subject": "subject",
+  "dv": "y",
+  "n_rows": 35,
+  "n_subjects": 18,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "error": "number of observations (=35) <= number of random effects (=36) for term (1 + x | subject); the random-effects parameters and the residual variance (or scale parameter) are probably unidentifiable"
+}

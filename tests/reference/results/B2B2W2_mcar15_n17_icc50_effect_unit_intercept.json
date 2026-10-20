@@ -13,7 +13,7 @@
   },
   "factors": ["group", "site", "time"],
   "between": ["group", "site"],
-  "within": "time",
+  "within": ["time"],
   "levels": {
     "group": ["ctl", "trt"],
     "site": ["A", "B"],

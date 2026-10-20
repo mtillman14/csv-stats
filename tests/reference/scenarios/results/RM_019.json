@@ -1,0 +1,452 @@
+{
+  "id": "RM_019",
+  "scenario": {
+    "structure": "RM",
+    "index": 19,
+    "stratum": "collinear",
+    "seed": 28920,
+    "fixed": "B2W3",
+    "n_subjects": 59,
+    "n_items": null,
+    "n_sites": null,
+    "reps": 3,
+    "missing": "complete",
+    "missing_p": null,
+    "scale": "unit",
+    "x_offset": false,
+    "collinear": true,
+    "effect": "effect"
+  },
+  "truth": [
+    {
+      "sd": 0.851026648744752,
+      "corr": null
+    },
+    {
+      "sd": 1.3557238963313,
+      "corr": null
+    }
+  ],
+  "random": [
+    {
+      "group": ["subject"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    },
+    {
+      "group": ["subject", "time"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    }
+  ],
+  "factors": ["group", "time"],
+  "between": ["group"],
+  "within": ["time"],
+  "covariates": [],
+  "collinear": "z",
+  "levels": {
+    "group": ["ctl", "trt"],
+    "time": ["t1", "t2", "t3"]
+  },
+  "subject": "subject",
+  "dv": "y",
+  "n_rows": 531,
+  "n_subjects": 59,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ group * time + z + (1 | subject) + (1 | subject:time)",
+  "coding": "contr.sum",
+  "fixed_terms": ["group", "time", "z", "group:time"],
+  "fixed_columns": ["(Intercept)", "group1", "time1", "time2", "group1:time1", "group1:time2"],
+  "dropped_columns": ["z"],
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 10.8295045540629,
+      "se": 0.153704683489749,
+      "df": 57.0000082081964,
+      "t": 70.4565684544361,
+      "p": 3.92719811356042e-57,
+      "_row": "(Intercept)"
+    },
+    {
+      "name": "group1",
+      "estimate": -0.16870560822189,
+      "se": 0.153704683489749,
+      "df": 57.0000082086937,
+      "t": -1.0975957556501,
+      "p": 0.276996178102213,
+      "_row": "group1"
+    },
+    {
+      "name": "time1",
+      "estimate": -0.759072079210066,
+      "se": 0.155400590561194,
+      "df": 113.999850630939,
+      "t": -4.88461515151808,
+      "p": 3.40997729279899e-06,
+      "_row": "time1"
+    },
+    {
+      "name": "time2",
+      "estimate": 0.0224439577745377,
+      "se": 0.155400590561194,
+      "df": 113.999850640194,
+      "t": 0.144426463847315,
+      "p": 0.885418738435401,
+      "_row": "time2"
+    },
+    {
+      "name": "group1:time1",
+      "estimate": 0.0465546478693485,
+      "se": 0.155400590561194,
+      "df": 113.999850633689,
+      "t": 0.299578320141687,
+      "p": 0.765044339932917,
+      "_row": "group1:time1"
+    },
+    {
+      "name": "group1:time2",
+      "estimate": 0.202656115551876,
+      "se": 0.155400590561194,
+      "df": 113.999850632374,
+      "t": 1.30408845178792,
+      "p": 0.194830416080573,
+      "_row": "group1:time2"
+    }
+  ],
+  "anova_satterthwaite": [
+    {
+      "term": "group",
+      "num_df": 1,
+      "den_df": 57.0000082086948,
+      "F": 1.20471637633232,
+      "p": 0.276996191221042,
+      "_row": "group"
+    },
+    {
+      "term": "time",
+      "num_df": 2,
+      "den_df": 113.999850637114,
+      "F": 15.4499043255405,
+      "p": 1.15534611163743e-06,
+      "_row": "time"
+    },
+    {
+      "term": "group:time",
+      "num_df": 2,
+      "den_df": 113.999850635783,
+      "F": 1.45404699179222,
+      "p": 0.237922478115365,
+      "_row": "group:time"
+    },
+    {
+      "term": "z",
+      "num_df": null,
+      "den_df": null,
+      "F": null,
+      "p": null,
+      "_row": "z"
+    }
+  ],
+  "anova_kenward_roger": [
+    {
+      "term": "group",
+      "num_df": 1,
+      "den_df": 56.9999999999981,
+      "F": 1.20471637633232,
+      "p": 0.27699619188258,
+      "_row": "group"
+    },
+    {
+      "term": "time",
+      "num_df": 2,
+      "den_df": 114.000000000001,
+      "F": 15.4499043255405,
+      "p": 1.15534381697738e-06,
+      "_row": "time"
+    },
+    {
+      "term": "group:time",
+      "num_df": 2,
+      "den_df": 114.000000000002,
+      "F": 1.45404699179222,
+      "p": 0.237922472525154,
+      "_row": "group:time"
+    },
+    {
+      "term": "z",
+      "num_df": null,
+      "den_df": null,
+      "F": null,
+      "p": null,
+      "_row": "z"
+    }
+  ],
+  "wald_terms": [
+    {
+      "term": "group",
+      "chi2": 1.20471637633232,
+      "df": 1,
+      "p": 0.272381060264492
+    },
+    {
+      "term": "time",
+      "chi2": 30.8998086510809,
+      "df": 2,
+      "p": 1.9507059357923e-07
+    },
+    {
+      "term": "group:time",
+      "chi2": 2.90809398358445,
+      "df": 2,
+      "p": 0.233622902387306
+    },
+    {
+      "term": "z",
+      "chi2": null,
+      "df": null,
+      "p": null
+    }
+  ],
+  "contrasts_satterthwaite": [],
+  "contrasts_wald": [],
+  "varcorr": [
+    {
+      "grp": "subject:time",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 1.81372287381198,
+      "sdcor": 1.34674528913673
+    },
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0.681281248770915,
+      "sdcor": 0.825397630703478
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 0.96864019114686,
+      "sdcor": 0.984195199717444
+    }
+  ],
+  "reml_criterion": 1870.004066659,
+  "loglik_reml": -935.002033329498,
+  "singular": false,
+  "convergence_messages": [],
+  "notes": [
+    "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient"
+  ],
+  "theta": [1.36837213748185, 0.838652363820148],
+  "theta_names": ["subject:time.(Intercept)", "subject.(Intercept)"],
+  "theta_lower": [0, 0],
+  "vcov_beta": [
+    [0.0236251297266839, -0.000400425927570922, 0, 0, 0, 0],
+    [-0.000400425927570922, 0.0236251297266839, 0, 0, 0, 0],
+    [0, 0, 0.0241493435467678, -0.0120746717733839, -0.000409310907572345, 0.000204655453786175],
+    [0, 0, -0.0120746717733839, 0.0241493435467679, 0.000204655453786175, -0.000409310907572346],
+    [0, 0, -0.000409310907572345, 0.000204655453786175, 0.0241493435467678, -0.0120746717733839],
+    [0, 0, 0.000204655453786175, -0.000409310907572346, -0.0120746717733839, 0.0241493435467678]
+  ],
+  "probes": [
+    {
+      "label": "estimate",
+      "theta": [1.36837213748185, 0.838652363820148],
+      "reml": 1870.004066659,
+      "ml": 1858.03606616869
+    },
+    {
+      "label": "theta1_up",
+      "theta": [1.50520935123003, 0.838652363820148],
+      "reml": 1871.193377526,
+      "ml": 1859.79900669582
+    },
+    {
+      "label": "theta1_down",
+      "theta": [1.23153492373366, 0.838652363820148],
+      "reml": 1871.41913957926,
+      "ml": 1858.87690080333
+    },
+    {
+      "label": "theta2_up",
+      "theta": [1.36837213748185, 0.922517600202163],
+      "reml": 1870.24063509287,
+      "ml": 1858.40714042386
+    },
+    {
+      "label": "theta2_down",
+      "theta": [1.36837213748185, 0.754787127438134],
+      "reml": 1870.25177330532,
+      "ml": 1858.15512635419
+    },
+    {
+      "label": "boundary",
+      "theta": [0, 0],
+      "reml": 2168.83845287335,
+      "ml": 2151.73538819383
+    },
+    {
+      "label": "random1",
+      "theta": [0.782089814078063, 0.206359064672142],
+      "reml": 1946.62584775545,
+      "ml": 1931.37000133874
+    },
+    {
+      "label": "random2",
+      "theta": [0.150099255144596, 1.17143466789275],
+      "reml": 2059.79603872555,
+      "ml": 2045.1248655294
+    },
+    {
+      "label": "random3",
+      "theta": [0.0335644097067416, 0.00989068672060966],
+      "reml": 2167.85024485117,
+      "ml": 2150.75071945397
+    }
+  ],
+  "optimizers": {
+    "fits": [
+      {
+        "optimizer": "bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 1870.00406665894,
+        "theta": [1.36837124446822, 0.8386528050953],
+        "fixef": {
+          "(Intercept)": 10.8295045540629,
+          "group1": -0.168705608221913,
+          "time1": -0.759072079210066,
+          "time2": 0.0224439577745349,
+          "group1:time1": 0.0465546478693495,
+          "group1:time2": 0.20265611555188
+        },
+        "se": {
+          "(Intercept)": 0.153704698431951,
+          "group1": 0.153704698431951,
+          "time1": 0.155400523601722,
+          "time2": 0.155400523601723,
+          "group1:time1": 0.155400523601722,
+          "group1:time2": 0.155400523601722
+        },
+        "vcov": [1.81372095306379, 0.681282133452524, 0.968640429637387],
+        "notes": [
+          "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient"
+        ]
+      },
+      {
+        "optimizer": "Nelder_Mead",
+        "ok": true,
+        "converged": true,
+        "criterion": 1870.00406665937,
+        "theta": [1.36837099456148, 0.83865636656948],
+        "fixef": {
+          "(Intercept)": 10.8295045540631,
+          "group1": -0.168705608221908,
+          "time1": -0.75907207921008,
+          "time2": 0.0224439577745435,
+          "group1:time1": 0.0465546478693471,
+          "group1:time2": 0.202656115551881
+        },
+        "se": {
+          "(Intercept)": 0.153704977226759,
+          "group1": 0.153704977226759,
+          "time1": 0.155400471047958,
+          "time2": 0.155400471047958,
+          "group1:time1": 0.155400471047958,
+          "group1:time2": 0.155400471047958
+        },
+        "vcov": [1.81371962621259, 0.681287670256522, 0.968640074822851],
+        "notes": [
+          "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient"
+        ]
+      },
+      {
+        "optimizer": "nlopt_bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 1870.004066659,
+        "theta": [1.36837213748185, 0.838652363820148],
+        "fixef": {
+          "(Intercept)": 10.8295045540629,
+          "group1": -0.16870560822189,
+          "time1": -0.759072079210066,
+          "time2": 0.0224439577745377,
+          "group1:time1": 0.0465546478693485,
+          "group1:time2": 0.202656115551876
+        },
+        "se": {
+          "(Intercept)": 0.153704683489749,
+          "group1": 0.153704683489749,
+          "time1": 0.155400590561194,
+          "time2": 0.155400590561194,
+          "group1:time1": 0.155400590561194,
+          "group1:time2": 0.155400590561194
+        },
+        "vcov": [1.81372287381198, 0.681281248770915, 0.96864019114686],
+        "notes": [
+          "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient"
+        ]
+      },
+      {
+        "optimizer": "nlopt_neldermead",
+        "ok": true,
+        "converged": true,
+        "criterion": 1870.00406687001,
+        "theta": [1.36841929473, 0.838679898107938],
+        "fixef": {
+          "(Intercept)": 10.8295045540629,
+          "group1": -0.168705608221899,
+          "time1": -0.75907207921008,
+          "time2": 0.0224439577745428,
+          "group1:time1": 0.0465546478693484,
+          "group1:time2": 0.20265611555188
+        },
+        "se": {
+          "(Intercept)": 0.15370795508828,
+          "group1": 0.15370795508828,
+          "time1": 0.155403626484854,
+          "time2": 0.155403626484854,
+          "group1:time1": 0.155403626484854,
+          "group1:time2": 0.155403626484854
+        },
+        "vcov": [1.81381263198775, 0.681312742287164, 0.968621364577853],
+        "notes": [
+          "message: fixed-effect model matrix is rank deficient so dropping 1 column / coefficient"
+        ]
+      }
+    ],
+    "n_converged": 4,
+    "n_used": 4,
+    "spread": {
+      "criterion": 2.11071210287628e-07,
+      "theta": [4.83001685203099e-05, 2.75342877897877e-05],
+      "fixef": {
+        "(Intercept)": 1.84741111297626e-13,
+        "group1": 2.29538610341251e-14,
+        "time1": 1.47659662275146e-14,
+        "time2": 8.57300341827738e-15,
+        "group1:time1": 2.41473507855972e-15,
+        "group1:time2": 4.69069227904129e-15
+      },
+      "se": {
+        "(Intercept)": 3.2715985308629e-06,
+        "group1": 3.2715985308629e-06,
+        "time1": 3.15543689644038e-06,
+        "time2": 3.15543689674569e-06,
+        "group1:time1": 3.1554368963016e-06,
+        "group1:time2": 3.15543689627384e-06
+      },
+      "vcov": [9.30057751573621e-05, 3.14935162496477e-05, 1.90650595339736e-05]
+    }
+  }
+}

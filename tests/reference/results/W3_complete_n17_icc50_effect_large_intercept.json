@@ -11,9 +11,9 @@
     "future": false,
     "seed": 99768
   },
-  "factors": "time",
-  "between": null,
-  "within": "time",
+  "factors": ["time"],
+  "between": [],
+  "within": ["time"],
   "levels": {
     "time": ["t1", "t2", "t3"]
   },

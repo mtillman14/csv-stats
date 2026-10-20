@@ -1,0 +1,327 @@
+{
+  "id": "CROSSED_006",
+  "scenario": {
+    "structure": "CROSSED",
+    "index": 6,
+    "stratum": "zero_variance",
+    "seed": 38954,
+    "fixed": "cond",
+    "n_subjects": 9,
+    "n_items": 10,
+    "n_sites": null,
+    "reps": 1,
+    "missing": "mcar",
+    "missing_p": 0.0819710263051093,
+    "scale": "unit",
+    "x_offset": false,
+    "collinear": false,
+    "effect": "null"
+  },
+  "truth": [
+    {
+      "sd": 0,
+      "corr": null
+    },
+    {
+      "sd": 1.04896643673257,
+      "corr": null
+    }
+  ],
+  "random": [
+    {
+      "group": ["subject"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    },
+    {
+      "group": ["item"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    }
+  ],
+  "factors": ["cond"],
+  "between": [],
+  "within": ["cond"],
+  "covariates": [],
+  "collinear": null,
+  "levels": {
+    "cond": ["A", "B"]
+  },
+  "subject": "subject",
+  "dv": "y",
+  "n_rows": 83,
+  "n_subjects": 9,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ cond + (1 | subject) + (1 | item)",
+  "coding": "contr.sum",
+  "fixed_terms": ["cond"],
+  "fixed_columns": ["(Intercept)", "cond1"],
+  "dropped_columns": [],
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 10.2246729445833,
+      "se": 0.331201719485,
+      "df": 8.91401114017023,
+      "t": 30.871436780226,
+      "p": 2.26429675068013e-10,
+      "_row": "(Intercept)"
+    },
+    {
+      "name": "cond1",
+      "estimate": 0.0907230442219194,
+      "se": 0.0969600778788377,
+      "df": 72.2149327257329,
+      "t": 0.935674209495663,
+      "p": 0.352559425056298,
+      "_row": "cond1"
+    }
+  ],
+  "anova_satterthwaite": [
+    {
+      "term": "cond",
+      "num_df": 1,
+      "den_df": 72.2149327257329,
+      "F": 0.875486226315334,
+      "p": 0.352559425056298,
+      "_row": "cond"
+    }
+  ],
+  "anova_kenward_roger": [
+    {
+      "term": "cond",
+      "num_df": 1,
+      "den_df": 64.8508706851609,
+      "F": 0.872902471201716,
+      "p": 0.353618892339527,
+      "_row": "cond"
+    }
+  ],
+  "wald_terms": [
+    {
+      "term": "cond",
+      "chi2": 0.875486226315334,
+      "df": 1,
+      "p": 0.34944095329412
+    }
+  ],
+  "contrasts_satterthwaite": {
+    "cond": [
+      {
+        "estimate": 0.181446088443839,
+        "SE": 0.193920155757675,
+        "df": 72.2149327257329,
+        "statistic": 0.935674209495663,
+        "p.value": 0.352559425056298,
+        "a": "A",
+        "b": "B",
+        "factor": "cond"
+      }
+    ]
+  },
+  "contrasts_wald": {
+    "cond": [
+      {
+        "estimate": 0.181446088443839,
+        "SE": 0.193920155757675,
+        "df": null,
+        "statistic": 0.935674209495663,
+        "p.value": 0.34944095329412,
+        "a": "A",
+        "b": "B",
+        "factor": "cond"
+      }
+    ]
+  },
+  "varcorr": [
+    {
+      "grp": "item",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 1.0044438891891,
+      "sdcor": 1.00221948154538
+    },
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0,
+      "sdcor": 0
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 0.762259733268992,
+      "sdcor": 0.873074872659265
+    }
+  ],
+  "reml_criterion": 238.984218905118,
+  "loglik_reml": -119.492109452559,
+  "singular": true,
+  "convergence_messages": [
+    "boundary (singular) fit: see help('isSingular')"
+  ],
+  "notes": [
+    "message: boundary (singular) fit: see help('isSingular')"
+  ],
+  "theta": [1.14791928267591, 0],
+  "theta_names": ["item.(Intercept)", "subject.(Intercept)"],
+  "theta_lower": [0, 0],
+  "vcov_beta": [
+    [0.10969457898982, -0.000366715566778494],
+    [-0.000366715566778494, 0.00940125670227028]
+  ],
+  "probes": [
+    {
+      "label": "estimate",
+      "theta": [1.14791928267591, 0],
+      "reml": 238.984218905118,
+      "ml": 235.758384780602
+    },
+    {
+      "label": "theta1_up",
+      "theta": [1.2627112109435, 0],
+      "reml": 239.101312190451,
+      "ml": 236.015527354748
+    },
+    {
+      "label": "theta1_down",
+      "theta": [1.03312735440832, 0],
+      "reml": 239.135935860293,
+      "ml": 235.764708829118
+    },
+    {
+      "label": "theta2_up",
+      "theta": [1.14791928267591, 0.05],
+      "reml": 239.087193258161,
+      "ml": 235.861483347016
+    },
+    {
+      "label": "boundary",
+      "theta": [0, 0],
+      "reml": 278.986079250776,
+      "ml": 274.795577804861
+    },
+    {
+      "label": "random1",
+      "theta": [1.43948686728254, 0.953124453313649],
+      "reml": 254.176684518879,
+      "ml": 251.59815598348
+    },
+    {
+      "label": "random2",
+      "theta": [0.0328928865492344, 1.96682700468227],
+      "reml": 304.721887377793,
+      "ml": 304.060831806426
+    },
+    {
+      "label": "random3",
+      "theta": [0.945692158769816, 0.927590688690543],
+      "reml": 253.954372920792,
+      "ml": 251.064312138374
+    }
+  ],
+  "optimizers": {
+    "fits": [
+      {
+        "optimizer": "bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 238.984218905119,
+        "theta": [1.14791926680039, 0],
+        "fixef": {
+          "(Intercept)": 10.2246729446453,
+          "cond1": 0.0907230441759239
+        },
+        "se": {
+          "(Intercept)": 0.331201715756569,
+          "cond1": 0.0969600780127118
+        },
+        "vcov": [1.00444386423288, 0, 0.762259735413867],
+        "notes": [
+          "message: boundary (singular) fit: see help('isSingular')"
+        ]
+      },
+      {
+        "optimizer": "Nelder_Mead",
+        "ok": true,
+        "converged": true,
+        "criterion": 238.984218905205,
+        "theta": [1.14791634346323, 0],
+        "fixef": {
+          "(Intercept)": 10.2246729560586,
+          "cond1": 0.0907230357061923
+        },
+        "se": {
+          "(Intercept)": 0.331201029199061,
+          "cond1": 0.0969601026645332
+        },
+        "vcov": [1.00443926877077, 0, 0.762260130375222],
+        "notes": [
+          "message: boundary (singular) fit: see help('isSingular')"
+        ]
+      },
+      {
+        "optimizer": "nlopt_bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 238.984218905118,
+        "theta": [1.14791928267591, 0],
+        "fixef": {
+          "(Intercept)": 10.2246729445833,
+          "cond1": 0.0907230442219194
+        },
+        "se": {
+          "(Intercept)": 0.331201719485,
+          "cond1": 0.0969600778788377
+        },
+        "vcov": [1.0044438891891, 0, 0.762259733268992],
+        "notes": [
+          "message: boundary (singular) fit: see help('isSingular')"
+        ]
+      },
+      {
+        "optimizer": "nlopt_neldermead",
+        "ok": true,
+        "converged": true,
+        "criterion": 238.984218910661,
+        "theta": [1.14789582018535, 0],
+        "fixef": {
+          "(Intercept)": 10.2246730361877,
+          "cond1": 0.0907229762428884
+        },
+        "se": {
+          "(Intercept)": 0.331196209233621,
+          "cond1": 0.0969602757370404
+        },
+        "vcov": [1.00440700666203, 0, 0.762262903274882],
+        "notes": [
+          "message: boundary (singular) fit: see help('isSingular')"
+        ]
+      }
+    ],
+    "n_converged": 4,
+    "n_used": 4,
+    "spread": {
+      "criterion": 5.54277335140796e-09,
+      "theta": [2.34624905601777e-05, 0],
+      "fixef": {
+        "(Intercept)": 9.16043720877724e-08,
+        "cond1": 6.79790309737749e-08
+      },
+      "se": {
+        "(Intercept)": 5.51025137812688e-06,
+        "cond1": 1.97858202641288e-07
+      },
+      "vcov": [3.68825270675721e-05, 0, 3.17000589011851e-06]
+    }
+  }
+}

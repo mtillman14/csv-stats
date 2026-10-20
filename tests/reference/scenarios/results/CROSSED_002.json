@@ -1,0 +1,248 @@
+{
+  "id": "CROSSED_002",
+  "scenario": {
+    "structure": "CROSSED",
+    "index": 2,
+    "stratum": "balanced",
+    "seed": 38818,
+    "fixed": "none",
+    "n_subjects": 11,
+    "n_items": 20,
+    "n_sites": null,
+    "reps": 1,
+    "missing": "complete",
+    "missing_p": null,
+    "scale": "unit",
+    "x_offset": false,
+    "collinear": false,
+    "effect": "effect"
+  },
+  "truth": [
+    {
+      "sd": 0.444496967960822,
+      "corr": null
+    },
+    {
+      "sd": 0.320295907038202,
+      "corr": null
+    }
+  ],
+  "random": [
+    {
+      "group": ["subject"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    },
+    {
+      "group": ["item"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    }
+  ],
+  "factors": [],
+  "between": [],
+  "within": [],
+  "covariates": [],
+  "collinear": null,
+  "levels": [],
+  "subject": "subject",
+  "dv": "y",
+  "n_rows": 220,
+  "n_subjects": 11,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ 1 + (1 | subject) + (1 | item)",
+  "coding": "contr.sum",
+  "fixed_terms": [],
+  "fixed_columns": ["(Intercept)"],
+  "dropped_columns": [],
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 9.83053936601824,
+      "se": 0.206761741629331,
+      "df": 10.8281434143057,
+      "t": 47.5452532395562,
+      "p": 6.38972977706163e-14,
+      "_row": "(Intercept)"
+    }
+  ],
+  "anova_satterthwaite": [],
+  "anova_kenward_roger": [],
+  "wald_terms": [],
+  "contrasts_satterthwaite": [],
+  "contrasts_wald": [],
+  "varcorr": [
+    {
+      "grp": "item",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0.0404075072235848,
+      "sdcor": 0.201016186471599
+    },
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0.390798078154343,
+      "sdcor": 0.625138447189375
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 1.14464777380437,
+      "sdcor": 1.06988213079964
+    }
+  ],
+  "reml_criterion": 683.286062885065,
+  "loglik_reml": -341.643031442533,
+  "singular": false,
+  "convergence_messages": [],
+  "notes": [],
+  "theta": [0.187886292036076, 0.584305905475907],
+  "theta_names": ["item.(Intercept)", "subject.(Intercept)"],
+  "theta_lower": [0, 0],
+  "vcov_beta": [
+    [0.0427504178015942]
+  ],
+  "probes": [
+    {
+      "label": "estimate",
+      "theta": [0.187886292036076, 0.584305905475907],
+      "reml": 683.286062885065,
+      "ml": 681.969284003075
+    },
+    {
+      "label": "theta1_up",
+      "theta": [0.206674921239683, 0.584305905475907],
+      "reml": 683.313886452512,
+      "ml": 682.002158358398
+    },
+    {
+      "label": "theta1_down",
+      "theta": [0.169097662832468, 0.584305905475907],
+      "reml": 683.312326510827,
+      "ml": 681.991385280249
+    },
+    {
+      "label": "theta2_up",
+      "theta": [0.187886292036076, 0.642736496023498],
+      "reml": 683.414413808809,
+      "ml": 682.251397919581
+    },
+    {
+      "label": "theta2_down",
+      "theta": [0.187886292036076, 0.525875314928317],
+      "reml": 683.451650219448,
+      "ml": 681.972048725506
+    },
+    {
+      "label": "boundary",
+      "theta": [0, 0],
+      "reml": 721.463760243972,
+      "ml": 718.337579693052
+    },
+    {
+      "label": "random1",
+      "theta": [1.99889509379864, 0.144816160667688],
+      "reml": 757.510599010639,
+      "ml": 758.017727154028
+    },
+    {
+      "label": "random2",
+      "theta": [1.60958924749866, 1.11648333258927],
+      "reml": 726.687843873411,
+      "ml": 727.140151038821
+    },
+    {
+      "label": "random3",
+      "theta": [0.0811620415188372, 1.73629963770509],
+      "reml": 695.811391273857,
+      "ml": 696.490951532711
+    }
+  ],
+  "optimizers": {
+    "fits": [
+      {
+        "optimizer": "bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 683.286062885065,
+        "theta": [0.187886266395044, 0.584305938820863],
+        "fixef": {
+          "(Intercept)": 9.83053936601827
+        },
+        "se": {
+          "(Intercept)": 0.206761750316285
+        },
+        "vcov": [0.0404074962786217, 0.390798123570034, 1.14464777618227],
+        "notes": []
+      },
+      {
+        "optimizer": "Nelder_Mead",
+        "ok": true,
+        "converged": true,
+        "criterion": 683.28606288631,
+        "theta": [0.18788867809824, 0.58431046689023],
+        "fixef": {
+          "(Intercept)": 9.83053936601813
+        },
+        "se": {
+          "(Intercept)": 0.20676307908794
+        },
+        "vcov": [0.0404084835069749, 0.390803695858774, 1.14464635651164],
+        "notes": []
+      },
+      {
+        "optimizer": "nlopt_bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 683.286062885065,
+        "theta": [0.187886292036076, 0.584305905475907],
+        "fixef": {
+          "(Intercept)": 9.83053936601824
+        },
+        "se": {
+          "(Intercept)": 0.206761741629331
+        },
+        "vcov": [0.0404075072235848, 0.390798078154343, 1.14464777380437],
+        "notes": []
+      },
+      {
+        "optimizer": "nlopt_neldermead",
+        "ok": true,
+        "converged": true,
+        "criterion": 683.286062922462,
+        "theta": [0.18789099356737, 0.5843353054181],
+        "fixef": {
+          "(Intercept)": 9.83053936601828
+        },
+        "se": {
+          "(Intercept)": 0.206770091878526
+        },
+        "vcov": [0.0404093184757221, 0.390835364881712, 1.14464179613258],
+        "notes": []
+      }
+    ],
+    "n_converged": 4,
+    "n_used": 4,
+    "spread": {
+      "criterion": 3.7397512642201e-08,
+      "theta": [4.72717232644082e-06, 2.93999421928648e-05],
+      "fixef": {
+        "(Intercept)": 1.54543045027822e-13
+      },
+      "se": {
+        "(Intercept)": 8.35024919490501e-06
+      },
+      "vcov": [1.82219710036235e-06, 3.72867273689681e-05, 5.98004969010191e-06]
+    }
+  }
+}

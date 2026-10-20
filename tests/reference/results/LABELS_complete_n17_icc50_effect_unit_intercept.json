@@ -12,8 +12,8 @@
     "seed": 113800
   },
   "factors": ["arm", "time_point"],
-  "between": "arm",
-  "within": "time_point",
+  "between": ["arm"],
+  "within": ["time_point"],
   "levels": {
     "arm": ["Z-arm", "A-arm"],
     "time_point": ["pre op", "6 wk", "12 wk"]

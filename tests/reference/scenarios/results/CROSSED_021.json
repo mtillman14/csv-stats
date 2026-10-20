@@ -1,0 +1,248 @@
+{
+  "id": "CROSSED_021",
+  "scenario": {
+    "structure": "CROSSED",
+    "index": 21,
+    "stratum": "free",
+    "seed": 40533,
+    "fixed": "none",
+    "n_subjects": 24,
+    "n_items": 7,
+    "n_sites": null,
+    "reps": 1,
+    "missing": "mcar",
+    "missing_p": 0.184667884279043,
+    "scale": "unit",
+    "x_offset": false,
+    "collinear": false,
+    "effect": "effect"
+  },
+  "truth": [
+    {
+      "sd": 1.90657048745773,
+      "corr": null
+    },
+    {
+      "sd": 0.786331281961706,
+      "corr": null
+    }
+  ],
+  "random": [
+    {
+      "group": ["subject"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    },
+    {
+      "group": ["item"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    }
+  ],
+  "factors": [],
+  "between": [],
+  "within": [],
+  "covariates": [],
+  "collinear": null,
+  "levels": [],
+  "subject": "subject",
+  "dv": "y",
+  "n_rows": 137,
+  "n_subjects": 24,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ 1 + (1 | subject) + (1 | item)",
+  "coding": "contr.sum",
+  "fixed_terms": [],
+  "fixed_columns": ["(Intercept)"],
+  "dropped_columns": [],
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 10.2340227752943,
+      "se": 0.461493626957904,
+      "df": 25.7680342701688,
+      "t": 22.1758702124566,
+      "p": 2.60847290277726e-18,
+      "_row": "(Intercept)"
+    }
+  ],
+  "anova_satterthwaite": [],
+  "anova_kenward_roger": [],
+  "wald_terms": [],
+  "contrasts_satterthwaite": [],
+  "contrasts_wald": [],
+  "varcorr": [
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 3.67058965682937,
+      "sdcor": 1.91587829906531
+    },
+    {
+      "grp": "item",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0.349124796280663,
+      "sdcor": 0.590867833174783
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 1.32715516618198,
+      "sdcor": 1.15202220733022
+    }
+  ],
+  "reml_criterion": 504.545356221863,
+  "loglik_reml": -252.272678110931,
+  "singular": false,
+  "convergence_messages": [],
+  "notes": [],
+  "theta": [1.66305674220058, 0.512896217985333],
+  "theta_names": ["subject.(Intercept)", "item.(Intercept)"],
+  "theta_lower": [0, 0],
+  "vcov_beta": [
+    [0.212976367722761]
+  ],
+  "probes": [
+    {
+      "label": "estimate",
+      "theta": [1.66305674220058, 0.512896217985333],
+      "reml": 504.545356221863,
+      "ml": 504.832991726572
+    },
+    {
+      "label": "theta1_up",
+      "theta": [1.82936241642063, 0.512896217985333],
+      "reml": 504.844335355877,
+      "ml": 505.244255260125
+    },
+    {
+      "label": "theta1_down",
+      "theta": [1.49675106798052, 0.512896217985333],
+      "reml": 504.933219670843,
+      "ml": 505.110156150421
+    },
+    {
+      "label": "theta2_up",
+      "theta": [1.66305674220058, 0.564185839783866],
+      "reml": 504.617037495017,
+      "ml": 504.94612097604
+    },
+    {
+      "label": "theta2_down",
+      "theta": [1.66305674220058, 0.4616065961868],
+      "reml": 504.636287062442,
+      "ml": 504.88664364003
+    },
+    {
+      "label": "boundary",
+      "theta": [0, 0],
+      "reml": 617.396396299699,
+      "ml": 615.976250935476
+    },
+    {
+      "label": "random1",
+      "theta": [0.303427675273269, 1.69436311163008],
+      "reml": 598.241218899815,
+      "ml": 600.487231923425
+    },
+    {
+      "label": "random2",
+      "theta": [1.75798158161342, 0.791173655539751],
+      "reml": 505.937771549132,
+      "ml": 506.526045667086
+    },
+    {
+      "label": "random3",
+      "theta": [1.74695537053049, 1.03148774150759],
+      "reml": 507.772306043077,
+      "ml": 508.593083559155
+    }
+  ],
+  "optimizers": {
+    "fits": [
+      {
+        "optimizer": "bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 504.545356217784,
+        "theta": [1.66305805530575, 0.51290782549581],
+        "fixef": {
+          "(Intercept)": 10.2340228040791
+        },
+        "se": {
+          "(Intercept)": 0.461495894473738
+        },
+        "vcov": [3.67058844003491, 0.349139931675732, 1.32715263046287],
+        "notes": []
+      },
+      {
+        "optimizer": "Nelder_Mead",
+        "ok": true,
+        "converged": true,
+        "criterion": 504.545356218508,
+        "theta": [1.66305776289035, 0.512912666233203],
+        "fixef": {
+          "(Intercept)": 10.2340228140658
+        },
+        "se": {
+          "(Intercept)": 0.461496709659217
+        },
+        "vcov": [3.67058481263088, 0.34914629969611, 1.32715178563016],
+        "notes": []
+      },
+      {
+        "optimizer": "nlopt_bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 504.545356221863,
+        "theta": [1.66305674220058, 0.512896217985333],
+        "fixef": {
+          "(Intercept)": 10.2340227752943
+        },
+        "se": {
+          "(Intercept)": 0.461493626957904
+        },
+        "vcov": [3.67058965682937, 0.349124796280663, 1.32715516618198],
+        "notes": []
+      },
+      {
+        "optimizer": "nlopt_neldermead",
+        "ok": true,
+        "converged": true,
+        "criterion": 504.545356260759,
+        "theta": [1.66311732701897, 0.512915548021917],
+        "fixef": {
+          "(Intercept)": 10.2340229634559
+        },
+        "se": {
+          "(Intercept)": 0.461506472956609
+        },
+        "vcov": [3.67080453819429, 0.349146113091742, 1.32713616330849],
+        "notes": []
+      }
+    ],
+    "n_converged": 4,
+    "n_used": 4,
+    "spread": {
+      "criterion": 4.29745909968915e-08,
+      "theta": [6.05848183909963e-05, 1.93300365841642e-05],
+      "fixef": {
+        "(Intercept)": 1.88161555669808e-07
+      },
+      "se": {
+        "(Intercept)": 1.28459987047136e-05
+      },
+      "vcov": [0.000219725563406215, 2.15034154473215e-05, 1.90028734956549e-05]
+    }
+  }
+}

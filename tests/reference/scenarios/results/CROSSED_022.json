@@ -1,0 +1,248 @@
+{
+  "id": "CROSSED_022",
+  "scenario": {
+    "structure": "CROSSED",
+    "index": 22,
+    "stratum": "free",
+    "seed": 40568,
+    "fixed": "none",
+    "n_subjects": 13,
+    "n_items": 6,
+    "n_sites": null,
+    "reps": 1,
+    "missing": "mcar",
+    "missing_p": 0.0516242613550276,
+    "scale": "unit",
+    "x_offset": false,
+    "collinear": false,
+    "effect": "effect"
+  },
+  "truth": [
+    {
+      "sd": 0.400873083788074,
+      "corr": null
+    },
+    {
+      "sd": 0.462787336694411,
+      "corr": null
+    }
+  ],
+  "random": [
+    {
+      "group": ["subject"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    },
+    {
+      "group": ["item"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    }
+  ],
+  "factors": [],
+  "between": [],
+  "within": [],
+  "covariates": [],
+  "collinear": null,
+  "levels": [],
+  "subject": "subject",
+  "dv": "y",
+  "n_rows": 74,
+  "n_subjects": 13,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ 1 + (1 | subject) + (1 | item)",
+  "coding": "contr.sum",
+  "fixed_terms": [],
+  "fixed_columns": ["(Intercept)"],
+  "dropped_columns": [],
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 9.87402122142462,
+      "se": 0.285934379430119,
+      "df": 9.07068463395967,
+      "t": 34.5324729439812,
+      "p": 6.13823372026169e-11,
+      "_row": "(Intercept)"
+    }
+  ],
+  "anova_satterthwaite": [],
+  "anova_kenward_roger": [],
+  "wald_terms": [],
+  "contrasts_satterthwaite": [],
+  "contrasts_wald": [],
+  "varcorr": [
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0.355046598185035,
+      "sdcor": 0.595857867435712
+    },
+    {
+      "grp": "item",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0.243680129773039,
+      "sdcor": 0.493639676052319
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 1.01330326597971,
+      "sdcor": 1.00662965681511
+    }
+  ],
+  "reml_criterion": 232.41776819885,
+  "loglik_reml": -116.208884099425,
+  "singular": false,
+  "convergence_messages": [],
+  "notes": [],
+  "theta": [0.591933551134341, 0.4903885681395],
+  "theta_names": ["subject.(Intercept)", "item.(Intercept)"],
+  "theta_lower": [0, 0],
+  "vcov_beta": [
+    [0.0817584693400871]
+  ],
+  "probes": [
+    {
+      "label": "estimate",
+      "theta": [0.591933551134341, 0.4903885681395],
+      "reml": 232.41776819885,
+      "ml": 231.744841139051
+    },
+    {
+      "label": "theta1_up",
+      "theta": [0.651126906247775, 0.4903885681395],
+      "reml": 232.504148292138,
+      "ml": 231.878876482494
+    },
+    {
+      "label": "theta1_down",
+      "theta": [0.532740196020907, 0.4903885681395],
+      "reml": 232.516178164689,
+      "ml": 231.801031324006
+    },
+    {
+      "label": "theta2_up",
+      "theta": [0.591933551134341, 0.53942742495345],
+      "reml": 232.46468564512,
+      "ml": 231.881665810717
+    },
+    {
+      "label": "theta2_down",
+      "theta": [0.591933551134341, 0.44134971132555],
+      "reml": 232.474036137138,
+      "ml": 231.71320157761
+    },
+    {
+      "label": "boundary",
+      "theta": [0, 0],
+      "reml": 243.909967149248,
+      "ml": 241.881356434821
+    },
+    {
+      "label": "random1",
+      "theta": [1.76526101212949, 1.06999922730029],
+      "reml": 245.998825466873,
+      "ml": 246.825500116966
+    },
+    {
+      "label": "random2",
+      "theta": [1.22722379723564, 1.29540354432538],
+      "reml": 241.435359637749,
+      "ml": 242.202984305769
+    },
+    {
+      "label": "random3",
+      "theta": [1.86486880807206, 1.09713324764743],
+      "reml": 247.18121567552,
+      "ml": 248.085045929133
+    }
+  ],
+  "optimizers": {
+    "fits": [
+      {
+        "optimizer": "bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 232.417768189875,
+        "theta": [0.591915422346208, 0.490381687634436],
+        "fixef": {
+          "(Intercept)": 9.87402107337273
+        },
+        "se": {
+          "(Intercept)": 0.285930615495452
+        },
+        "vcov": [0.35502773103447, 0.243675268583522, 1.01331148631365],
+        "notes": []
+      },
+      {
+        "optimizer": "Nelder_Mead",
+        "ok": true,
+        "converged": true,
+        "criterion": 232.417768190256,
+        "theta": [0.591915549368034, 0.490385921522959],
+        "fixef": {
+          "(Intercept)": 9.87402109587494
+        },
+        "se": {
+          "(Intercept)": 0.285931729617236
+        },
+        "vcov": [0.355027553400277, 0.243679249812852, 1.01331054441258],
+        "notes": []
+      },
+      {
+        "optimizer": "nlopt_bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 232.41776819885,
+        "theta": [0.591933551134341, 0.4903885681395],
+        "fixef": {
+          "(Intercept)": 9.87402122142462
+        },
+        "se": {
+          "(Intercept)": 0.285934379430119
+        },
+        "vcov": [0.355046598185035, 0.243680129773039, 1.01330326597971],
+        "notes": []
+      },
+      {
+        "optimizer": "nlopt_neldermead",
+        "ok": true,
+        "converged": true,
+        "criterion": 232.417768199128,
+        "theta": [0.591911040460896, 0.490360872371917],
+        "fixef": {
+          "(Intercept)": 9.87402093936613
+        },
+        "se": {
+          "(Intercept)": 0.285924728640506
+        },
+        "vcov": [0.355024588465543, 0.243656033191555, 1.01331751977273],
+        "notes": []
+      }
+    ],
+    "n_converged": 4,
+    "n_used": 4,
+    "spread": {
+      "criterion": 9.25305698729062e-09,
+      "theta": [2.25106734454972e-05, 2.76957675829359e-05],
+      "fixef": {
+        "(Intercept)": 2.8205849389451e-07
+      },
+      "se": {
+        "(Intercept)": 9.65078961279175e-06
+      },
+      "vcov": [2.20097194914559e-05, 2.4096581483668e-05, 1.42537930190034e-05]
+    }
+  }
+}

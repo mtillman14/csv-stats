@@ -12,8 +12,8 @@
     "seed": 104626
   },
   "factors": ["group", "time"],
-  "between": "group",
-  "within": "time",
+  "between": ["group"],
+  "within": ["time"],
   "levels": {
     "group": ["ctl", "trt"],
     "time": ["t1", "t2", "t3"]

@@ -1,0 +1,248 @@
+{
+  "id": "CROSSED_001",
+  "scenario": {
+    "structure": "CROSSED",
+    "index": 1,
+    "stratum": "balanced",
+    "seed": 38784,
+    "fixed": "none",
+    "n_subjects": 10,
+    "n_items": 23,
+    "n_sites": null,
+    "reps": 1,
+    "missing": "complete",
+    "missing_p": null,
+    "scale": "unit",
+    "x_offset": false,
+    "collinear": false,
+    "effect": "effect"
+  },
+  "truth": [
+    {
+      "sd": 0.516402292550415,
+      "corr": null
+    },
+    {
+      "sd": 0.382555491662574,
+      "corr": null
+    }
+  ],
+  "random": [
+    {
+      "group": ["subject"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    },
+    {
+      "group": ["item"],
+      "terms": ["(Intercept)"],
+      "correlated": true
+    }
+  ],
+  "factors": [],
+  "between": [],
+  "within": [],
+  "covariates": [],
+  "collinear": null,
+  "levels": [],
+  "subject": "subject",
+  "dv": "y",
+  "n_rows": 230,
+  "n_subjects": 10,
+  "versions": {
+    "R": "R version 4.4.3 (2025-02-28)",
+    "lme4": "2.0.1",
+    "lmerTest": "3.2.1",
+    "emmeans": "2.0.2",
+    "pbkrtest": "0.5.5",
+    "jsonlite": "2.0.0"
+  },
+  "formula": "y ~ 1 + (1 | subject) + (1 | item)",
+  "coding": "contr.sum",
+  "fixed_terms": [],
+  "fixed_columns": ["(Intercept)"],
+  "dropped_columns": [],
+  "fixed": [
+    {
+      "name": "(Intercept)",
+      "estimate": 9.93641428156214,
+      "se": 0.202950399506432,
+      "df": 15.2706905134438,
+      "t": 48.9598163183081,
+      "p": 3.29015531448101e-18,
+      "_row": "(Intercept)"
+    }
+  ],
+  "anova_satterthwaite": [],
+  "anova_kenward_roger": [],
+  "wald_terms": [],
+  "contrasts_satterthwaite": [],
+  "contrasts_wald": [],
+  "varcorr": [
+    {
+      "grp": "item",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0.260377061868855,
+      "sdcor": 0.51027155698594
+    },
+    {
+      "grp": "subject",
+      "var1": "(Intercept)",
+      "var2": null,
+      "vcov": 0.250385083388334,
+      "sdcor": 0.500384935213216
+    },
+    {
+      "grp": "Residual",
+      "var1": null,
+      "var2": null,
+      "vcov": 1.1108113351384,
+      "sdcor": 1.05395034756785
+    }
+  ],
+  "reml_criterion": 722.333779810481,
+  "loglik_reml": -361.16688990524,
+  "singular": false,
+  "convergence_messages": [],
+  "notes": [],
+  "theta": [0.48415141962187, 0.474770881159561],
+  "theta_names": ["item.(Intercept)", "subject.(Intercept)"],
+  "theta_lower": [0, 0],
+  "vcov_beta": [
+    [0.0411888646598202]
+  ],
+  "probes": [
+    {
+      "label": "estimate",
+      "theta": [0.48415141962187, 0.474770881159561],
+      "reml": 722.333779810481,
+      "ml": 720.979889307626
+    },
+    {
+      "label": "theta1_up",
+      "theta": [0.532566561584058, 0.474770881159561],
+      "reml": 722.514499204449,
+      "ml": 721.20431917624
+    },
+    {
+      "label": "theta1_down",
+      "theta": [0.435736277659683, 0.474770881159561],
+      "reml": 722.544882887192,
+      "ml": 721.152010798074
+    },
+    {
+      "label": "theta2_up",
+      "theta": [0.48415141962187, 0.522247969275518],
+      "reml": 722.441981958491,
+      "ml": 721.202333906499
+    },
+    {
+      "label": "theta2_down",
+      "theta": [0.48415141962187, 0.427293793043605],
+      "reml": 722.471098415412,
+      "ml": 721.001893239186
+    },
+    {
+      "label": "boundary",
+      "theta": [0, 0],
+      "reml": 761.115776916841,
+      "ml": 757.9754199827
+    },
+    {
+      "label": "random1",
+      "theta": [0.827227902133018, 0.49959032330662],
+      "reml": 728.094555011295,
+      "ml": 727.146005887225
+    },
+    {
+      "label": "random2",
+      "theta": [0.339855207130313, 0.182341922540218],
+      "reml": 733.672020775109,
+      "ml": 731.387229223893
+    },
+    {
+      "label": "random3",
+      "theta": [1.9771065749228, 0.142504266928881],
+      "reml": 772.641883990424,
+      "ml": 772.884889492774
+    }
+  ],
+  "optimizers": {
+    "fits": [
+      {
+        "optimizer": "bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 722.33377981048,
+        "theta": [0.484151410596242, 0.474770861145482],
+        "fixef": {
+          "(Intercept)": 9.93641428156209
+        },
+        "se": {
+          "(Intercept)": 0.202950393802407
+        },
+        "vcov": [0.260377053537875, 0.250385063602408, 1.11081134101291],
+        "notes": []
+      },
+      {
+        "optimizer": "Nelder_Mead",
+        "ok": true,
+        "converged": true,
+        "criterion": 722.333779811214,
+        "theta": [0.48415367333495, 0.474768664459769],
+        "fixef": {
+          "(Intercept)": 9.93641428156211
+        },
+        "se": {
+          "(Intercept)": 0.202950050742034
+        },
+        "vcov": [0.260379402836938, 0.250382665360111, 1.1108109804727],
+        "notes": []
+      },
+      {
+        "optimizer": "nlopt_bobyqa",
+        "ok": true,
+        "converged": true,
+        "criterion": 722.333779810481,
+        "theta": [0.48415141962187, 0.474770881159561],
+        "fixef": {
+          "(Intercept)": 9.93641428156214
+        },
+        "se": {
+          "(Intercept)": 0.202950399506432
+        },
+        "vcov": [0.260377061868855, 0.250385083388334, 1.1108113351384],
+        "notes": []
+      },
+      {
+        "optimizer": "nlopt_neldermead",
+        "ok": true,
+        "converged": true,
+        "criterion": 722.333779825121,
+        "theta": [0.48413894137849, 0.47477551743482],
+        "fixef": {
+          "(Intercept)": 9.93641428156208
+        },
+        "se": {
+          "(Intercept)": 0.202950453591815
+        },
+        "vcov": [0.260364376689681, 0.250390681642554, 1.11081447634285],
+        "notes": []
+      }
+    ],
+    "n_converged": 4,
+    "n_used": 4,
+    "spread": {
+      "criterion": 1.46401362144388e-08,
+      "theta": [1.47319564597348e-05, 6.85297505054194e-06],
+      "fixef": {
+        "(Intercept)": 5.32907051820075e-14
+      },
+      "se": {
+        "(Intercept)": 4.0284978075622e-07
+      },
+      "vcov": [1.50261472564583e-05, 8.016282443013e-06, 3.49587015557873e-06]
+    }
+  }
+}

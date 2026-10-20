@@ -12,7 +12,7 @@
     "seed": 98771
   },
   "factors": ["speed", "session"],
-  "between": null,
+  "between": [],
   "within": ["speed", "session"],
   "levels": {
     "speed": ["slow", "fast"],

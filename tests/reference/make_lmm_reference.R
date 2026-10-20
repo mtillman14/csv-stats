@@ -21,24 +21,14 @@
 # exactly 0 = a singular fit), null vs real effects, numeric scale, odd level
 # labels and level order, and (marked "future") random slopes.
 #
-# Plan: .claude/plan-lmm-satterthwaite.md in the scistack repo.
-
-suppressPackageStartupMessages({
-  library(lme4)
-  library(lmerTest)
-  library(emmeans)
-  library(jsonlite)
-})
-has_kr <- requireNamespace("pbkrtest", quietly = TRUE)
-
-# Sum-to-zero coding, as csv-stats uses (type-III style main effects).
-options(contrasts = c("contr.sum", "contr.poly"))
-# Our datasets are small; never let emmeans silently switch df methods.
-emm_options(lmerTest.limit = 1e6, pbkrtest.limit = 1e6)
+# Plan: .claude/plan-lmm-satterthwaite.md in the scistack repo. The fit ->
+# JSON code is shared with make_lmm_scenarios.R in lmm_reference_common.R.
 
 # The folder this script lives in, whether it was started with Rscript
 # (--file=) or with source() from the R console / RStudio (ofile). Outputs
 # always go next to the script, never into whatever folder R happens to be in.
+# (This bootstrap is how lmm_reference_common.R is found, so it can't live
+# there.)
 script_dir <- local({
   args <- commandArgs(trailingOnly = FALSE)
   f <- sub("^--file=", "", args[grep("^--file=", args)])
@@ -49,6 +39,7 @@ script_dir <- local({
   }
   getwd()
 })
+source(file.path(script_dir, "lmm_reference_common.R"))
 data_dir <- file.path(script_dir, "datasets")
 res_dir <- file.path(script_dir, "results")
 dir.create(data_dir, showWarnings = FALSE, recursive = TRUE)
@@ -140,16 +131,7 @@ for (m in c("complete", "monotone15")) add("LABELS", m)
 # on replicated data, plus the same data intercept-only as a baseline.
 for (m in c("complete", "mcar15")) for (sl in c(TRUE, FALSE)) add("W3rep", m, slopes = sl)
 
-# Remove outputs of scenarios no longer in the list, so results/ is exactly
-# this run's scenarios (the Python tests parametrize over every file there).
-for (dir in c(data_dir, res_dir)) {
-  ids <- sub("\\.(csv|json)$", "", list.files(dir, pattern = "\\.(csv|json)$"))
-  stale <- setdiff(ids, names(SCENARIOS))
-  for (id in stale) {
-    unlink(file.path(dir, paste0(id, c(".csv", ".json"))))
-    cat(sprintf("removed stale %s from %s/\n", id, basename(dir)))
-  }
-}
+remove_stale(c(data_dir, res_dir), names(SCENARIOS))
 
 # ---------------------------------------------------------------------------
 # Data generation
@@ -271,33 +253,9 @@ apply_missing <- function(data, sc, d) {
 # ---------------------------------------------------------------------------
 # Fitting and extraction
 # ---------------------------------------------------------------------------
-finite_or_na <- function(df) {
-  df[] <- lapply(df, function(x) if (is.numeric(x)) ifelse(is.finite(x), x, NA) else as.character(x))
-  df
-}
-
-pair_method <- function(levels) {
-  meth <- list()
-  for (i in seq_along(levels)) for (j in seq_along(levels)) if (i < j) {
-    v <- rep(0, length(levels)); v[i] <- 1; v[j] <- -1
-    meth[[paste0(i, "_", j)]] <- v
-  }
-  meth
-}
-
-contrasts_for <- function(fit, f, others, levels, df_method) {
-  emm <- emmeans(fit, specs = f, by = if (length(others)) others else NULL, lmer.df = df_method)
-  s <- as.data.frame(summary(contrast(emm, method = pair_method(levels), adjust = "none")))
-  ij <- strsplit(as.character(s$contrast), "_")
-  s$a <- vapply(ij, function(p) levels[as.integer(p[1])], "")
-  s$b <- vapply(ij, function(p) levels[as.integer(p[2])], "")
-  s$factor <- f
-  s$contrast <- NULL
-  stat <- intersect(c("t.ratio", "z.ratio"), names(s))
-  names(s)[names(s) == stat] <- "statistic"
-  finite_or_na(s)
-}
-
+# finite_or_na, contrasts_for, fit_quietly, describe_* and versions live in
+# lmm_reference_common.R. The JSON keys and their order are unchanged, so the
+# committed results reproduce byte for byte.
 fit_and_describe <- function(sc, data) {
   d <- DESIGNS[[sc$design]]
   facs <- factors_of(d)
@@ -306,62 +264,14 @@ fit_and_describe <- function(sc, data) {
   data$subject <- factor(data$subject)
   re <- if (isTRUE(sc$slopes)) "(1 + time_num | subject)" else "(1 | subject)"
   form <- as.formula(paste("y ~", paste(facs, collapse = " * "), "+", re))
-  notes <- character()
-  fit <- withCallingHandlers(
-    lmerTest::lmer(form, data = data, REML = TRUE),
-    warning = function(w) { notes <<- c(notes, paste("warning:", conditionMessage(w))); invokeRestart("muffleWarning") },
-    message = function(m) { notes <<- c(notes, paste("message:", trimws(conditionMessage(m)))); invokeRestart("muffleMessage") }
-  )
-  coefs <- as.data.frame(summary(fit)$coefficients)
-  names(coefs) <- c("estimate", "se", "df", "t", "p")
-  coefs <- cbind(name = rownames(coefs), finite_or_na(coefs))
-  a_s <- as.data.frame(anova(fit, type = 3, ddf = "Satterthwaite"))
-  a_s <- cbind(term = rownames(a_s), finite_or_na(a_s[c("NumDF", "DenDF", "F value", "Pr(>F)")]))
-  names(a_s) <- c("term", "num_df", "den_df", "F", "p")
-  wald_terms <- data.frame(term = a_s$term, chi2 = a_s$F * a_s$num_df, df = a_s$num_df,
-                           p = pchisq(a_s$F * a_s$num_df, a_s$num_df, lower.tail = FALSE))
-  a_kr <- if (has_kr) tryCatch({
-    k <- as.data.frame(anova(fit, type = 3, ddf = "Kenward-Roger"))
-    k <- cbind(term = rownames(k), finite_or_na(k[c("NumDF", "DenDF", "F value", "Pr(>F)")]))
-    names(k) <- c("term", "num_df", "den_df", "F", "p")
-    k
-  }, error = function(e) paste("unavailable:", conditionMessage(e))) else "pbkrtest not installed"
-  sat_contrasts <- list(); wald_contrasts <- list()
-  for (f in facs) {
-    others <- setdiff(facs, f)
-    sat_contrasts[[f]] <- tryCatch(contrasts_for(fit, f, others, lv[[f]], "satterthwaite"),
-                                   error = function(e) paste("unavailable:", conditionMessage(e)))
-    wald_contrasts[[f]] <- tryCatch(contrasts_for(fit, f, others, lv[[f]], "asymptotic"),
-                                    error = function(e) paste("unavailable:", conditionMessage(e)))
-  }
-  vc <- as.data.frame(VarCorr(fit))
-  vc <- finite_or_na(vc[c("grp", "var1", "var2", "vcov", "sdcor")])
-  list(
-    formula = paste(deparse(form), collapse = " "),
-    coding = "contr.sum",
-    fixed = coefs,
-    anova_satterthwaite = a_s,
-    anova_kenward_roger = a_kr,
-    wald_terms = finite_or_na(wald_terms),
-    contrasts_satterthwaite = sat_contrasts,
-    contrasts_wald = wald_contrasts,
-    varcorr = vc,
-    reml_criterion = as.numeric(REMLcrit(fit)),
-    loglik_reml = as.numeric(logLik(fit)),
-    singular = isSingular(fit),
-    convergence_messages = as.list(fit@optinfo$conv$lme4$messages),
-    notes = as.list(notes)
+  q <- fit_quietly(form, data)
+  c(
+    list(formula = paste(deparse(form), collapse = " "), coding = "contr.sum"),
+    describe_fixed(q$fit),
+    describe_contrasts(q$fit, facs, lv),
+    describe_variance(q$fit, q$notes)
   )
 }
-
-versions <- list(
-  R = R.version.string,
-  lme4 = as.character(packageVersion("lme4")),
-  lmerTest = as.character(packageVersion("lmerTest")),
-  emmeans = as.character(packageVersion("emmeans")),
-  pbkrtest = if (has_kr) as.character(packageVersion("pbkrtest")) else NA,
-  jsonlite = as.character(packageVersion("jsonlite"))
-)
 
 # ---------------------------------------------------------------------------
 # Main
@@ -387,8 +297,7 @@ for (sc in SCENARIOS) {
   )
   res <- tryCatch(fit_and_describe(sc, data), error = function(e) list(error = conditionMessage(e)))
   out <- c(out, res)
-  write_json(out, file.path(res_dir, paste0(sc$id, ".json")),
-             auto_unbox = TRUE, digits = NA, na = "null", null = "null", pretty = TRUE)
+  write_result(out, file.path(res_dir, paste0(sc$id, ".json")))
   if (!is.null(res$error)) {
     status["failed"] <- status["failed"] + 1
     cat(sprintf("FAILED %-55s %s\n", sc$id, res$error))

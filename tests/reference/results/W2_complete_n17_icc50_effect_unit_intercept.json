@@ -11,9 +11,9 @@
     "future": false,
     "seed": 96077
   },
-  "factors": "time",
-  "between": null,
-  "within": "time",
+  "factors": ["time"],
+  "between": [],
+  "within": ["time"],
   "levels": {
     "time": ["pre", "post"]
   },

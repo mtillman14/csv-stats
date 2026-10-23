@@ -20,6 +20,22 @@ ci_interval([4.1, 5.0, 6.2])       # (low, high); also a seaborn errorbar= calla
 ci_half_width(sd=1.2, n=5)         # t(0.975, 4) * 1.2 / sqrt(5)
 ```
 
+## Linear regression (0.5.0)
+`csvstats.regression.linear_fit` is the one definition of a line of best fit:
+ordinary least squares on the pairs where both x and y are finite, x centred
+first (so epoch-millisecond datetimes keep their precision), R² as
+`1 - SS_res / SS_tot`, and p as the two-sided t-test of slope = 0 on n - 2
+degrees of freedom (what `scipy.stats.linregress` reports). Fewer than three
+pairs, or no spread in x, give NaN and a `reason`.
+
+```python
+from csvstats.regression import linear_fit
+
+fit = linear_fit(x, y)            # n, slope, intercept, r_squared, p_value, slope_se, reason
+fit.predict([0, 10])              # the line
+low, high = fit.band([0, 5, 10])  # t-based 95% CI of the mean response
+```
+
 ## Linear mixed models (0.4.1)
 `csvstats.lmm` uses every observation: a subject missing some within-subject
 levels is kept, not dropped (a repeated-measures ANOVA or paired t-test would
